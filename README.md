@@ -143,7 +143,7 @@ Lokalne pliki planowania znajdują się w `local/`. Ten katalog jest ignorowany 
 
 ## Aktualne Route'y
 
-- `/` - w aktualnej wersji startowej prowadzi do logowania
+- `/` - startowy widok aplikacji
 - `/login` - widok logowania
 - `/dashboard` - startowy route dashboard/index
 
