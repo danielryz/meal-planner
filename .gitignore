@@ -1,0 +1,7 @@
+.vscode
+.vs
+.idea
+config.php
+.env
+
+local
