@@ -15,4 +15,8 @@ class DashboardController extends AppController {
     public function about() {
         return $this->render("about");
     }
+
+    public function recipes() {
+        return $this->render("recipes");
+    }
 }

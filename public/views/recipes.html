@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Przepisy - MealPlanner';
+      include __DIR__ . '/partials/head.html';
+    ?>
+  </head>
+  <body>
+    <div class="page-shell">
+      <?php include __DIR__ . '/partials/public-nav.html'; ?>
+
+      <main class="page-main">
+        <section class="section">
+          <div class="container stack">
+            <span class="badge">Przepisy</span>
+            <h1 class="page-title">Biblioteka przepisów</h1>
+            <p>
+              Pełny widok przepisów zostanie wdrożony w zadaniu FE-06.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <?php include __DIR__ . '/partials/footer.html'; ?>
+    </div>
+  </body>
+</html>

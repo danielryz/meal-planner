@@ -1,17 +1,24 @@
 <header class="site-header">
   <div class="container site-header__inner">
     <a class="brand-link" href="/" aria-label="MealPlanner">
-      <span class="brand-mark" aria-hidden="true">M</span>
-      <span>MealPlanner</span>
+      <span class="brand-mark" aria-hidden="true">
+        <img src="/public/assets/icons/brand.svg" alt="" />
+      </span>
+      <span class="brand-name">MealPlanner</span>
     </a>
 
-    <nav aria-label="Nawigacja główna">
+    <nav class="site-nav" aria-label="Nawigacja główna">
       <ul class="nav-list">
-        <li><a class="nav-link" href="/">Start</a></li>
+        <li><a class="nav-link" href="/#features">Funkcje</a></li>
+        <li><a class="nav-link" href="/recipes">Przepisy</a></li>
+        <li><a class="nav-link" href="/#support">Wsparcie</a></li>
         <li><a class="nav-link" href="/about">O nas</a></li>
-        <li><a class="nav-link" href="/login">Logowanie</a></li>
-        <li><a class="button" href="/register">Rejestracja</a></li>
       </ul>
     </nav>
+
+    <div class="site-header__actions">
+      <a class="button button-secondary" href="/login">Logowanie</a>
+      <a class="button" href="/register">Rejestracja</a>
+    </div>
   </div>
 </header>
