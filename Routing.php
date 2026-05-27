@@ -16,13 +16,21 @@ class Routing {
             "controller" => "SecurityController",
             "action" => "login"
         ],
+        "register" => [
+            "controller" => "SecurityController",
+            "action" => "register"
+        ],
+        "about" => [
+            "controller" => "DashboardController",
+            "action" => "about"
+        ],
         "dashboard" => [
             "controller" => "DashboardController",
             "action" => "index"
         ],
         "" => [
-            "controller" => "SecurityController",
-            "action" => "login"
+            "controller" => "DashboardController",
+            "action" => "index"
         ],
     ];
 
@@ -31,7 +39,9 @@ class Routing {
         switch($path) {
             case 'dashboard':
             case '':
+            case 'about':
             case 'login':
+            case 'register':
                 $controller = Routing::$routes[$path]["controller"];
                 $action = Routing::$routes[$path]["action"];
 
@@ -41,6 +51,7 @@ class Routing {
                 $controllerObj->$action($id);
                 break; 
             default:
+                http_response_code(404);
                 include 'public/views/404.html';
                 break;
         }

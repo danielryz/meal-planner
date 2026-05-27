@@ -1,13 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="pl">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><?= $title; ?></title>
+    <?php
+      $pageTitle = $pageTitle ?? 'MealPlanner';
+      include __DIR__ . '/partials/head.html';
+    ?>
   </head>
   <body>
-    <?php include __DIR__ . '/partials/nav.html'; ?>
+    <div class="page-shell">
+      <?php include __DIR__ . '/partials/public-nav.html'; ?>
 
-    <h1>INDEX</h1>
+      <main class="page-main">
+        <section class="section">
+          <div class="container stack">
+            <span class="badge">Fundament aplikacji</span>
+            <h1 class="page-title"><?= htmlspecialchars($title ?? 'MealPlanner') ?></h1>
+            <p>
+              Wspólny układ, style i komponenty są gotowe do implementacji kolejnych widoków z Figmy.
+            </p>
+            <div class="cluster">
+              <a class="button" href="/login">Przejdź do logowania</a>
+              <a class="button button-secondary" href="/about">Zobacz informacje</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <?php include __DIR__ . '/partials/footer.html'; ?>
+    </div>
   </body>
 </html>
