@@ -5,9 +5,9 @@
   --color-text: #23211f;
   --color-text-muted: #6f6760;
   --color-border: #ded7cf;
-  --color-primary: #2f6f4e;
-  --color-primary-hover: #275c41;
-  --color-primary-soft: #e2f1e8;
+  --color-primary: #3cbe40;
+  --color-primary-hover: #32a936;
+  --color-primary-soft: rgba(60, 190, 64, 0.1);
   --color-danger: #b42318;
   --color-warning: #b7791f;
   --color-focus: #276ef1;

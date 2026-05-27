@@ -23,7 +23,10 @@
 }
 
 .site-header {
-  background: rgba(255, 255, 255, 0.88);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.8);
   border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(14px);
 }
@@ -33,33 +36,51 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 28px;
 }
 
 .brand-link {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: var(--color-text);
   font-weight: 700;
   text-decoration: none;
 }
 
 .brand-mark {
-  width: 36px;
-  height: 36px;
+  width: 22px;
+  height: 22px;
   display: inline-grid;
   place-items: center;
-  border-radius: var(--radius-medium);
-  background: var(--color-primary);
-  color: #ffffff;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-primary);
   font-weight: 800;
+}
+
+.brand-mark img {
+  width: 22px;
+  height: 22px;
+}
+
+.brand-name {
+  color: #0f172a;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.site-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .nav-list {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 24px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -67,12 +88,13 @@
 
 .nav-link {
   display: inline-flex;
-  min-height: 40px;
+  min-height: 32px;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
-  border-radius: var(--radius-small);
-  color: var(--color-text-muted);
+  padding: 6px 0;
+  border-radius: 0;
+  color: #475569;
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -80,8 +102,26 @@
 
 .nav-link:hover,
 .nav-link:focus-visible {
-  color: var(--color-text);
-  background: var(--color-surface-muted);
+  color: #0f172a;
+  background: transparent;
+}
+
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-header__actions .button {
+  min-height: 40px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  padding: 9px 20px;
+}
+
+.site-header__actions .button-secondary {
+  border-color: transparent;
+  background: #f1f5f9;
 }
 
 .site-footer {
@@ -122,10 +162,14 @@
 
   .site-header__inner,
   .site-footer__inner {
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
     padding-block: 16px;
+  }
+
+  .site-nav {
+    display: none;
   }
 
   .nav-list {
@@ -136,6 +180,19 @@
   .nav-link {
     min-height: 38px;
     padding-inline: 10px;
+  }
+
+  .brand-name {
+    font-size: 1.125rem;
+  }
+
+  .site-header__actions .button {
+    min-height: 36px;
+    padding: 8px 14px;
+  }
+
+  .site-header__actions .button-secondary {
+    display: none;
   }
 
   .app-layout {

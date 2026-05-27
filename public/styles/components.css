@@ -11,6 +11,7 @@
   color: #ffffff;
   font-weight: 700;
   text-decoration: none;
+  box-shadow: 0 14px 24px rgba(60, 190, 64, 0.22);
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
@@ -23,6 +24,7 @@
   border-color: var(--color-border);
   background: var(--color-surface);
   color: var(--color-text);
+  box-shadow: none;
 }
 
 .button-secondary:hover,

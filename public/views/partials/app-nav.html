@@ -1,11 +1,13 @@
 <header class="site-header">
   <div class="container site-header__inner">
     <a class="brand-link" href="/meal-planner" aria-label="MealPlanner">
-      <span class="brand-mark" aria-hidden="true">M</span>
-      <span>MealPlanner</span>
+      <span class="brand-mark" aria-hidden="true">
+        <img src="/public/assets/icons/brand.svg" alt="" />
+      </span>
+      <span class="brand-name">MealPlanner</span>
     </a>
 
-    <nav aria-label="Nawigacja aplikacji">
+    <nav class="site-nav" aria-label="Nawigacja aplikacji">
       <ul class="nav-list">
         <li><a class="nav-link" href="/meal-planner">Plan</a></li>
         <li><a class="nav-link" href="/recipes">Przepisy</a></li>
@@ -13,8 +15,11 @@
         <?php if (($currentUserRole ?? null) === 'owner'): ?>
           <li><a class="nav-link" href="/users">Użytkownicy</a></li>
         <?php endif; ?>
-        <li><a class="button button-secondary" href="/logout">Wyloguj</a></li>
       </ul>
     </nav>
+
+    <div class="site-header__actions">
+      <a class="button button-secondary" href="/logout">Wyloguj</a>
+    </div>
   </div>
 </header>
