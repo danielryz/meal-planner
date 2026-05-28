@@ -29,7 +29,11 @@ class DashboardController extends AppController {
     }
 
     public function groceryList() {
-        return $this->renderAppPlaceholder("grocery-list", "Lista zakupów", "Interaktywna lista zakupów zostanie wdrożona w FE-08.");
+        return $this->render("grocery-list", [
+            "currentRoute" => "grocery-list",
+            "currentUserRole" => "owner",
+            "currentUserName" => "Anna Nowak"
+        ]);
     }
 
     public function users() {

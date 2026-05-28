@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Lista zakupów - MealPlanner';
+      include __DIR__ . '/partials/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <script defer src="/public/scripts/grocery-list.js"></script>
+  </head>
+  <body>
+    <div class="app-page grocery-page">
+      <?php include __DIR__ . '/partials/app-nav.html'; ?>
+
+      <main class="grocery-main" data-grocery-view>
+        <section class="grocery-shell">
+          <header class="grocery-header">
+            <div>
+              <span class="grocery-kicker">Zakupy tygodniowe</span>
+              <h1>Lista zakupów</h1>
+              <p data-grocery-week>Ładowanie tygodnia...</p>
+            </div>
+            <div class="grocery-header__actions">
+              <button class="button button-secondary" type="button" data-add-item>
+                <img src="/public/assets/icons/plus.svg" alt="" />
+                <span>Dodaj produkt</span>
+              </button>
+              <button class="button grocery-export" type="button" data-export-list>
+                <img src="/public/assets/icons/download.svg" alt="" />
+                <span>Eksportuj</span>
+              </button>
+            </div>
+          </header>
+
+          <p class="grocery-state" data-grocery-loading>Ładowanie listy zakupów...</p>
+          <p class="grocery-state grocery-state--error" data-grocery-error hidden>Nie udało się załadować listy zakupów.</p>
+
+          <section class="grocery-content" data-grocery-content hidden>
+            <section class="grocery-budget" aria-label="Budżet zakupów">
+              <div class="grocery-budget__header">
+                <div>
+                  <span>Budżet</span>
+                  <strong data-budget-label></strong>
+                </div>
+                <span data-budget-status></span>
+              </div>
+              <div class="grocery-budget__track">
+                <span data-budget-progress></span>
+              </div>
+              <div class="grocery-budget__footer">
+                <span data-budget-remaining></span>
+                <span data-budget-percent></span>
+              </div>
+            </section>
+
+            <nav class="grocery-tabs" aria-label="Widoki listy zakupów">
+              <button class="is-active" type="button" data-grocery-tab="all">Wszystkie</button>
+              <button type="button" data-grocery-tab="categorized">Kategorie</button>
+              <button type="button" data-grocery-tab="recent">Ostatnie</button>
+            </nav>
+
+            <form class="grocery-search" action="/grocery-list" method="get" role="search">
+              <label class="visually-hidden" for="grocery-search-input">Szukaj produktu</label>
+              <span aria-hidden="true"></span>
+              <input id="grocery-search-input" name="query" type="search" placeholder="Szukaj produktów..." data-grocery-search />
+            </form>
+
+            <div class="grocery-list" data-grocery-list></div>
+
+            <p class="grocery-state" data-grocery-empty hidden>Nie znaleziono produktów dla wybranych filtrów.</p>
+
+            <footer class="grocery-summary">
+              <p data-bought-summary></p>
+              <div>
+                <span>
+                  <small>Szacowana suma</small>
+                  <strong data-total-cost></strong>
+                </span>
+                <span>
+                  <small>Oszczędność</small>
+                  <strong data-saved-cost></strong>
+                </span>
+              </div>
+            </footer>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
