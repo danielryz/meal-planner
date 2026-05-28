@@ -37,7 +37,11 @@ class DashboardController extends AppController {
     }
 
     public function users() {
-        return $this->renderAppPlaceholder("users", "Zespół", "Widok zarządzania użytkownikami dla właściciela zostanie wdrożony w FE-10.");
+        return $this->render("users", [
+            "currentRoute" => "users",
+            "currentUserRole" => "owner",
+            "currentUserName" => "Anna Nowak"
+        ]);
     }
 
     public function settings() {
