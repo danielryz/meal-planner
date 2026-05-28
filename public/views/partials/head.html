@@ -1,5 +1,18 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="MealPlanner - planowanie posiłków, przepisy i lista zakupów." />
-<link rel="stylesheet" type="text/css" href="/public/styles/main.css?v=<?= filemtime('public/styles/main.css') ?>" />
-<title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+<?php
+  $stylesheets = [
+    'public/styles/base.css',
+    'public/styles/layout.css',
+    'public/styles/components.css',
+    'public/styles/views/home.css',
+    'public/styles/views/auth.css',
+  ];
+
+  foreach ($stylesheets as $stylesheet) {
+    if (file_exists($stylesheet)) {
+      echo '<link rel="stylesheet" type="text/css" href="/' . htmlspecialchars($stylesheet) . '?v=' . filemtime($stylesheet) . '" />' . PHP_EOL;
+    }
+  }
+?>

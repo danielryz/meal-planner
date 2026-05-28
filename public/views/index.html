@@ -5,6 +5,7 @@
       $pageTitle = $pageTitle ?? 'MealPlanner - planowanie posiłków';
       include __DIR__ . '/partials/head.html';
     ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
   </head>
   <body>
     <div class="page-shell home-page">
