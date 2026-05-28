@@ -268,6 +268,21 @@
   height: 20px;
 }
 
+.allergy-tile--nuts img {
+  display: none;
+}
+
+.allergy-tile--nuts::before {
+  width: 20px;
+  height: 20px;
+  display: block;
+  background: #94a3b8;
+  content: "";
+  flex: 0 0 auto;
+  -webkit-mask: url("/public/assets/icons/nuts.svg") center / contain no-repeat;
+  mask: url("/public/assets/icons/nuts.svg") center / contain no-repeat;
+}
+
 .allergy-tile:has(input:checked) {
   border-color: var(--color-primary);
   background: rgba(60, 190, 64, 0.05);
@@ -276,6 +291,10 @@
 
 .allergy-tile:has(input:checked) img {
   filter: brightness(0) saturate(100%) invert(58%) sepia(80%) saturate(506%) hue-rotate(73deg) brightness(88%) contrast(91%);
+}
+
+.allergy-tile--nuts:has(input:checked)::before {
+  background: var(--color-primary);
 }
 
 .planner-range-row {
