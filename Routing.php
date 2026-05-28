@@ -28,13 +28,33 @@ class Routing {
             "controller" => "DashboardController",
             "action" => "recipes"
         ],
+        "meal-planner" => [
+            "controller" => "DashboardController",
+            "action" => "mealPlanner"
+        ],
+        "grocery-list" => [
+            "controller" => "DashboardController",
+            "action" => "groceryList"
+        ],
+        "users" => [
+            "controller" => "DashboardController",
+            "action" => "users"
+        ],
+        "settings" => [
+            "controller" => "DashboardController",
+            "action" => "settings"
+        ],
+        "logout" => [
+            "controller" => "SecurityController",
+            "action" => "logout"
+        ],
         "dashboard" => [
             "controller" => "DashboardController",
-            "action" => "index"
+            "action" => "dashboard"
         ],
         "" => [
             "controller" => "DashboardController",
-            "action" => "index"
+            "action" => "home"
         ],
     ];
 
@@ -45,7 +65,12 @@ class Routing {
             case '':
             case 'about':
             case 'recipes':
+            case 'meal-planner':
+            case 'grocery-list':
+            case 'users':
+            case 'settings':
             case 'login':
+            case 'logout':
             case 'register':
                 $controller = Routing::$routes[$path]["controller"];
                 $action = Routing::$routes[$path]["action"];

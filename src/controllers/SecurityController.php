@@ -13,4 +13,10 @@ class SecurityController extends AppController {
     public function register() {
         return $this->render("register");
     }
+
+    public function logout() {
+        return $this->render("login", [
+            "pageTitle" => "Logowanie - MealPlanner"
+        ]);
+    }
 }
