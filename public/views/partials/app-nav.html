@@ -1,25 +1,105 @@
-<header class="site-header">
-  <div class="container site-header__inner">
-    <a class="brand-link" href="/meal-planner" aria-label="MealPlanner">
-      <span class="brand-mark" aria-hidden="true">
-        <img src="/public/assets/icons/brand.svg" alt="" />
+<?php
+  $currentRoute = $currentRoute ?? 'dashboard';
+  $currentUserRole = $currentUserRole ?? 'user';
+  $currentUserName = $currentUserName ?? 'Użytkownik';
+
+  $appNavItems = [
+    [
+      'route' => 'dashboard',
+      'href' => '/dashboard',
+      'label' => 'Start',
+      'icon' => 'home.svg',
+      'roles' => ['owner', 'employee', 'user'],
+    ],
+    [
+      'route' => 'meal-planner',
+      'href' => '/meal-planner',
+      'label' => 'Plan',
+      'icon' => 'planner.svg',
+      'roles' => ['owner', 'employee', 'user'],
+    ],
+    [
+      'route' => 'recipes',
+      'href' => '/recipes',
+      'label' => 'Przepisy',
+      'icon' => 'recipes.svg',
+      'roles' => ['owner', 'employee', 'user'],
+    ],
+    [
+      'route' => 'grocery-list',
+      'href' => '/grocery-list',
+      'label' => 'Zakupy',
+      'icon' => 'grocery.svg',
+      'roles' => ['owner', 'employee', 'user'],
+    ],
+    [
+      'route' => 'users',
+      'href' => '/users',
+      'label' => 'Zespół',
+      'icon' => 'profile.svg',
+      'roles' => ['owner'],
+    ],
+    [
+      'route' => 'settings',
+      'href' => '/settings',
+      'label' => 'Ustawienia',
+      'icon' => 'settings.svg',
+      'roles' => ['owner', 'employee', 'user'],
+    ],
+  ];
+?>
+
+<header class="app-topbar">
+  <div class="app-topbar__inner">
+    <a class="app-brand" href="/dashboard" aria-label="MealPlanner">
+      <span class="app-brand__mark" aria-hidden="true">
+        <img src="/public/assets/icons/logo.svg" alt="" />
       </span>
-      <span class="brand-name">MealPlanner</span>
+      <span>MealPlanner</span>
     </a>
 
-    <nav class="site-nav" aria-label="Nawigacja aplikacji">
-      <ul class="nav-list">
-        <li><a class="nav-link" href="/meal-planner">Plan</a></li>
-        <li><a class="nav-link" href="/recipes">Przepisy</a></li>
-        <li><a class="nav-link" href="/grocery-list">Lista zakupów</a></li>
-        <?php if (($currentUserRole ?? null) === 'owner'): ?>
-          <li><a class="nav-link" href="/users">Użytkownicy</a></li>
+    <nav class="app-topbar__nav" aria-label="Nawigacja aplikacji">
+      <?php foreach ($appNavItems as $item): ?>
+        <?php if (in_array($currentUserRole, $item['roles'], true)): ?>
+          <a
+            class="app-topbar__link <?= $currentRoute === $item['route'] ? 'is-active' : '' ?>"
+            href="<?= htmlspecialchars($item['href']) ?>"
+          >
+            <?= htmlspecialchars($item['label']) ?>
+          </a>
         <?php endif; ?>
-      </ul>
+      <?php endforeach; ?>
     </nav>
 
-    <div class="site-header__actions">
-      <a class="button button-secondary" href="/logout">Wyloguj</a>
+    <form class="app-search" action="/recipes" method="get" role="search">
+      <label class="visually-hidden" for="app-search-query">Szukaj</label>
+      <span aria-hidden="true"></span>
+      <input id="app-search-query" name="query" type="search" placeholder="Szukaj przepisów, składników..." />
+    </form>
+
+    <div class="app-user-menu">
+      <div class="app-user-menu__avatar" aria-hidden="true">
+        <?= htmlspecialchars(substr($currentUserName, 0, 1)) ?>
+      </div>
+      <div class="app-user-menu__meta">
+        <span><?= htmlspecialchars($currentUserName) ?></span>
+        <small><?= htmlspecialchars($currentUserRole) ?></small>
+      </div>
+      <a class="app-user-menu__logout" href="/logout">Wyloguj</a>
     </div>
   </div>
 </header>
+
+<nav class="app-mobile-nav" aria-label="Nawigacja mobilna aplikacji">
+  <?php foreach ($appNavItems as $item): ?>
+    <?php if (in_array($currentUserRole, $item['roles'], true) && $item['route'] !== 'settings'): ?>
+      <a
+        class="app-mobile-nav__link <?= $currentRoute === $item['route'] ? 'is-active' : '' ?>"
+        href="<?= htmlspecialchars($item['href']) ?>"
+      >
+        <img src="/public/assets/icons/<?= htmlspecialchars($item['icon']) ?>" alt="" aria-hidden="true" />
+        <span><?= htmlspecialchars($item['label']) ?></span>
+      </a>
+    <?php endif; ?>
+  <?php endforeach; ?>
+</nav>
