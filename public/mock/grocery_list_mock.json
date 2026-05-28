@@ -1,0 +1,112 @@
+{
+  "weekLabel": "Zakupy na tydzień 12-18 października",
+  "currency": "PLN",
+  "budget": {
+    "limit": 320,
+    "spent": 208,
+    "saved": 49.6
+  },
+  "categories": [
+    {
+      "id": "produce",
+      "label": "Warzywa i owoce",
+      "icon": "pantry.svg",
+      "items": [
+        {
+          "id": 1,
+          "name": "Szpinak baby",
+          "quantity": "2 opakowania",
+          "estimatedPrice": 18,
+          "isBought": false,
+          "alternative": "Mix sałat"
+        },
+        {
+          "id": 2,
+          "name": "Awokado hass",
+          "quantity": "3 sztuki",
+          "estimatedPrice": 24,
+          "isBought": true,
+          "alternative": "Pasta z awokado"
+        },
+        {
+          "id": 3,
+          "name": "Pomidorki koktajlowe",
+          "quantity": "1 opakowanie",
+          "estimatedPrice": 16,
+          "isBought": false,
+          "alternative": "Pomidory malinowe"
+        },
+        {
+          "id": 4,
+          "name": "Cukinia",
+          "quantity": "2 sztuki",
+          "estimatedPrice": 10,
+          "isBought": false,
+          "alternative": "Bakłażan"
+        }
+      ]
+    },
+    {
+      "id": "dairy",
+      "label": "Nabiał i białko",
+      "icon": "dairy.svg",
+      "items": [
+        {
+          "id": 5,
+          "name": "Jogurt grecki",
+          "quantity": "1 duży kubek",
+          "estimatedPrice": 22,
+          "isBought": false,
+          "alternative": "Skyr naturalny"
+        },
+        {
+          "id": 6,
+          "name": "Jajka z wolnego wybiegu",
+          "quantity": "12 sztuk",
+          "estimatedPrice": 21,
+          "isBought": false,
+          "alternative": "Jajka ściółkowe"
+        },
+        {
+          "id": 7,
+          "name": "Pierś z kurczaka",
+          "quantity": "800 g",
+          "estimatedPrice": 34,
+          "isBought": true,
+          "alternative": "Filet z indyka"
+        }
+      ]
+    },
+    {
+      "id": "pantry",
+      "label": "Spiżarnia",
+      "icon": "cart.svg",
+      "items": [
+        {
+          "id": 8,
+          "name": "Makaron pełnoziarnisty",
+          "quantity": "2 opakowania",
+          "estimatedPrice": 14,
+          "isBought": true,
+          "alternative": "Makaron orkiszowy"
+        },
+        {
+          "id": 9,
+          "name": "Kasza quinoa",
+          "quantity": "500 g",
+          "estimatedPrice": 28,
+          "isBought": false,
+          "alternative": "Kasza bulgur"
+        },
+        {
+          "id": 10,
+          "name": "Oliwa z oliwek",
+          "quantity": "500 ml",
+          "estimatedPrice": 45,
+          "isBought": false,
+          "alternative": "Olej rzepakowy"
+        }
+      ]
+    }
+  ]
+}
