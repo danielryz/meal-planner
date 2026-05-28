@@ -5,28 +5,144 @@
       $pageTitle = $pageTitle ?? 'Rejestracja - MealPlanner';
       include __DIR__ . '/partials/head.html';
     ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <script defer src="/public/scripts/auth-validation.js"></script>
   </head>
   <body>
-    <div class="page-shell">
-      <?php include __DIR__ . '/partials/public-nav.html'; ?>
+    <div class="auth-page auth-page--register">
+      <header class="auth-topbar">
+        <a class="auth-topbar__brand" href="/" aria-label="MealPlanner">
+          <img src="/public/assets/icons/logo.svg" alt="" />
+          <span>MealPlanner</span>
+        </a>
 
-      <main class="page-main">
-        <section class="section">
-          <div class="container">
-            <article class="card">
-              <div class="card__body stack">
-                <span class="badge">Nowe konto</span>
-                <h1 class="page-title">Rejestracja</h1>
-                <p>
-                  Docelowy formularz rejestracji zostanie wdrożony w zadaniu FE-03.
-                </p>
+        <div class="auth-topbar__actions">
+          <span>Masz już konto?</span>
+          <a class="auth-outline-button" href="/login">Zaloguj się</a>
+        </div>
+      </header>
+
+      <main class="auth-register-shell">
+        <section class="auth-register-showcase" aria-label="Korzyści MealPlanner">
+          <article class="auth-testimonial">
+            <img class="auth-testimonial__image" src="/public/assets/images/auth-hero.png" alt="" />
+            <div class="auth-testimonial__overlay"></div>
+            <div class="auth-testimonial__quote">
+              <p>"MealPlanner całkowicie zmienił sposób, w jaki nasza rodzina planuje jedzenie."</p>
+              <div class="auth-testimonial__author">
+                <span>SJ</span>
+                <div>
+                  <strong>Sara Jenkins</strong>
+                  <small>Mama trójki dzieci</small>
+                </div>
               </div>
-            </article>
+            </div>
+          </article>
+
+          <div class="auth-benefit-list">
+            <h1>Planuj posiłki, żyj lepiej.</h1>
+            <ul>
+              <li>Spersonalizowane tygodniowe listy zakupów</li>
+              <li>Przepisy dopasowane do codziennych potrzeb</li>
+              <li>Wygodne zarządzanie zapasami w kuchni</li>
+            </ul>
           </div>
+        </section>
+
+        <section class="auth-form-card auth-form-card--register" aria-labelledby="register-title">
+          <header class="auth-form-card__header">
+            <h2 id="register-title">Utwórz konto</h2>
+            <p>Zacznij korzystać z MealPlanner już dziś.</p>
+          </header>
+
+          <form class="auth-form" action="/register" method="post" novalidate data-auth-form="register">
+            <div class="form-field">
+              <label class="form-label" for="register-name">Imię i nazwisko</label>
+              <div class="auth-input">
+                <img src="/public/assets/icons/profile.svg" alt="" aria-hidden="true" />
+                <input
+                  id="register-name"
+                  name="firstName"
+                  type="text"
+                  autocomplete="name"
+                  placeholder="Jan Kowalski"
+                  required
+                  minlength="2"
+                  data-validate="name"
+                />
+              </div>
+              <p class="form-error" data-error-for="register-name" aria-live="polite"></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="register-email">Adres e-mail</label>
+              <div class="auth-input">
+                <img src="/public/assets/icons/email.svg" alt="" aria-hidden="true" />
+                <input
+                  id="register-email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  inputmode="email"
+                  placeholder="name@example.com"
+                  required
+                  data-validate="email"
+                />
+              </div>
+              <p class="form-error" data-error-for="register-email" aria-live="polite"></p>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="register-password">Hasło</label>
+              <div class="auth-input">
+                <img src="/public/assets/icons/pass.svg" alt="" aria-hidden="true" />
+                <input
+                  id="register-password"
+                  name="password"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Minimum 8 znaków"
+                  required
+                  minlength="8"
+                  data-validate="password"
+                />
+                <button class="auth-password-toggle" type="button" aria-label="Pokaż hasło" data-password-toggle="register-password">
+                  <img src="/public/assets/icons/eye.svg" alt="" aria-hidden="true" />
+                </button>
+              </div>
+              <p class="form-help">Hasło musi mieć co najmniej 8 znaków.</p>
+              <p class="form-error" data-error-for="register-password" aria-live="polite"></p>
+            </div>
+
+            <label class="auth-checkbox auth-checkbox--terms">
+              <input type="checkbox" name="termsAccepted" value="1" required data-validate="terms" />
+              <span>Akceptuję regulamin i politykę prywatności.</span>
+            </label>
+            <p class="form-error" data-error-for="termsAccepted" aria-live="polite"></p>
+
+            <button class="button auth-primary-button" type="submit">Utwórz konto</button>
+
+            <div class="auth-divider">
+              <span>Lub kontynuuj przez</span>
+            </div>
+
+            <div class="auth-social-grid">
+              <button class="auth-social-button" type="button">
+                <img src="/public/assets/icons/google.svg" alt="" />
+                <span>Google</span>
+              </button>
+              <button class="auth-social-button" type="button">
+                <img src="/public/assets/icons/apple.png" alt="" />
+                <span>Apple</span>
+              </button>
+            </div>
+          </form>
         </section>
       </main>
 
-      <?php include __DIR__ . '/partials/footer.html'; ?>
+      <footer class="auth-register-footer">
+        &copy; <?= date('Y') ?> MealPlanner. Wszystkie prawa zastrzeżone.
+      </footer>
     </div>
   </body>
 </html>
