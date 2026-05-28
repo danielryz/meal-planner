@@ -51,12 +51,35 @@
 }
 
 .recipe-clear {
-  border: 0;
-  background: transparent;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(60, 190, 64, 0.18);
+  border-radius: 999px;
+  background: rgba(60, 190, 64, 0.08);
   color: var(--color-primary);
   font-size: 0.8125rem;
   font-weight: 900;
-  padding: 4px;
+  padding: 7px 11px;
+}
+
+.recipe-clear img {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.recipe-clear:hover,
+.recipe-clear:focus-visible {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.recipe-clear:hover img,
+.recipe-clear:focus-visible img {
+  filter: brightness(0) invert(1);
 }
 
 .recipe-filter-form {

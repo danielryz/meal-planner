@@ -53,7 +53,11 @@ class DashboardController extends AppController {
     }
 
     public function recipeDetails() {
-        return $this->renderAppPlaceholder("recipes", "Szczegóły przepisu", "Widok szczegółów przepisu zostanie wdrożony w FE-07.");
+        return $this->render("recipe-details", [
+            "currentRoute" => "recipes",
+            "currentUserRole" => "owner",
+            "currentUserName" => "Anna Nowak"
+        ]);
     }
 
     private function renderAppPlaceholder(string $route, string $title, string $description) {
