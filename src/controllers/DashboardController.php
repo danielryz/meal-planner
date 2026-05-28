@@ -21,7 +21,11 @@ class DashboardController extends AppController {
     }
 
     public function mealPlanner() {
-        return $this->renderAppPlaceholder("meal-planner", "Plan posiłków", "Widok planowania posiłków zostanie wdrożony w FE-05.");
+        return $this->render("meal-planner", [
+            "currentRoute" => "meal-planner",
+            "currentUserRole" => "owner",
+            "currentUserName" => "Anna Nowak"
+        ]);
     }
 
     public function groceryList() {
