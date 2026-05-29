@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Szczegóły przepisu - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <script defer src="/public/features/recipes/recipe-details.js"></script>
+  </head>
+  <body>
+    <div class="app-page recipe-details-page">
+      <?php include $partialsPath . '/app-nav.html'; ?>
+
+      <main class="recipe-details-main" data-recipe-details-view>
+        <div class="recipe-details-shell">
+          <a class="recipe-back-link" href="/recipes">Wróć do przepisów</a>
+
+          <p class="recipe-details-state" data-recipe-loading>Ładowanie przepisu...</p>
+          <p class="recipe-details-state recipe-details-state--error" data-recipe-error hidden>Nie udało się załadować przepisu.</p>
+
+          <article class="recipe-detail" data-recipe-content hidden>
+            <section class="recipe-detail-hero" data-recipe-hero>
+              <div class="recipe-detail-hero__overlay">
+                <span class="recipe-detail-label" data-recipe-label></span>
+                <h1 data-recipe-title></h1>
+                <p data-recipe-description></p>
+              </div>
+            </section>
+
+            <section class="recipe-detail-actions" aria-label="Akcje przepisu">
+              <div class="recipe-servings-control">
+                <button type="button" data-servings-decrease aria-label="Zmniejsz liczbę porcji">-</button>
+                <strong data-recipe-servings></strong>
+                <button type="button" data-servings-increase aria-label="Zwiększ liczbę porcji">+</button>
+              </div>
+              <button class="button recipe-plan-button" type="button" data-add-to-plan>
+                <img src="/public/assets/icons/planner.svg" alt="" />
+                <span>Dodaj do planu</span>
+              </button>
+              <button class="button button-secondary recipe-grocery-button" type="button" data-add-to-grocery>
+                <img src="/public/assets/icons/grocery.svg" alt="" />
+                <span>Dodaj do listy</span>
+              </button>
+            </section>
+
+            <section class="recipe-detail-stats" aria-label="Podsumowanie przepisu">
+              <article>
+                <img src="/public/assets/icons/clock.svg" alt="" />
+                <span>Czas przygotowania</span>
+                <strong data-recipe-prep-time></strong>
+              </article>
+              <article>
+                <img src="/public/assets/icons/calendar.svg" alt="" />
+                <span>Czas gotowania</span>
+                <strong data-recipe-cook-time></strong>
+              </article>
+              <article>
+                <img src="/public/assets/icons/star.svg" alt="" />
+                <span>Kalorie</span>
+                <strong data-recipe-calories></strong>
+              </article>
+            </section>
+
+            <section class="recipe-video-card">
+              <div class="recipe-video-card__visual">
+                <button type="button" aria-label="Odtwórz wideo">▶</button>
+                <span>Wideo z przygotowania</span>
+              </div>
+            </section>
+
+            <div class="recipe-detail-grid">
+              <section class="recipe-panel recipe-ingredients" aria-labelledby="recipe-ingredients-title">
+                <div class="recipe-panel__header">
+                  <h2 id="recipe-ingredients-title">Składniki</h2>
+                  <span data-ingredients-count></span>
+                </div>
+                <ul class="recipe-ingredient-list" data-ingredients-list></ul>
+              </section>
+
+              <aside class="recipe-side-panel">
+                <section class="recipe-nutrition" aria-labelledby="recipe-nutrition-title">
+                  <h2 id="recipe-nutrition-title">Wartości odżywcze</h2>
+                  <dl data-nutrition-list></dl>
+                </section>
+
+                <section class="recipe-tip" aria-labelledby="recipe-tip-title">
+                  <h2 id="recipe-tip-title">Wskazówka</h2>
+                  <p data-chef-tip></p>
+                </section>
+              </aside>
+            </div>
+
+            <section class="recipe-steps" aria-labelledby="recipe-steps-title">
+              <h2 id="recipe-steps-title">Przygotowanie</h2>
+              <ol data-steps-list></ol>
+            </section>
+
+            <section class="recipe-related" aria-labelledby="recipe-related-title">
+              <h2 id="recipe-related-title">Może Ci się spodobać</h2>
+              <div class="recipe-related-grid" data-related-list></div>
+            </section>
+          </article>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
