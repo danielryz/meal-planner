@@ -53,7 +53,11 @@ class DashboardController extends AppController {
     }
 
     public function settings() {
-        return $this->renderAppPlaceholder("settings", "Ustawienia", "Ustawienia konta i preferencji zostaną podłączone w późniejszym etapie.");
+        return $this->render("settings", [
+            "currentRoute" => "settings",
+            "currentUserRole" => "owner",
+            "currentUserName" => "Anna Nowak"
+        ]);
     }
 
     public function about() {
