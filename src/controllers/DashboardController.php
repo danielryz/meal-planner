@@ -60,6 +60,14 @@ class DashboardController extends AppController {
         ]);
     }
 
+    public function notificationSettings() {
+        return $this->render("notification-settings", [
+            "currentRoute" => "settings",
+            "currentUserRole" => "owner",
+            "currentUserName" => "Anna Nowak"
+        ]);
+    }
+
     public function about() {
         return $this->render("about");
     }
