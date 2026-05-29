@@ -120,6 +120,9 @@
 
             <div class="recipe-library__actions">
               <a class="button" href="/add-recipe">Dodaj przepis</a>
+              <?php if (in_array($currentUserRole ?? 'user', ['owner', 'employee', 'admin'], true)): ?>
+                <a class="button button-secondary" href="/recipe-reviews">Weryfikuj publikacje</a>
+              <?php endif; ?>
               <button class="button button-secondary" type="button">Załaduj więcej</button>
             </div>
           </section>
