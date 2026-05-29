@@ -7,3 +7,4 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 \i /docker-entrypoint-initdb.d/migrations/001_core_schema.sql
 \i /docker-entrypoint-initdb.d/migrations/002_recipe_domain_schema.sql
 \i /docker-entrypoint-initdb.d/migrations/003_media_metadata_schema.sql
+\i /docker-entrypoint-initdb.d/migrations/004_planning_grocery_schema.sql
