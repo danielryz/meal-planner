@@ -56,6 +56,10 @@ class Routing {
             "controller" => "DashboardController",
             "action" => "notificationSettings"
         ],
+        "preferences" => [
+            "controller" => "DashboardController",
+            "action" => "preferences"
+        ],
         "logout" => [
             "controller" => "SecurityController",
             "action" => "logout"
@@ -84,6 +88,7 @@ class Routing {
             case 'profile':
             case 'settings':
             case 'notification-settings':
+            case 'preferences':
             case 'login':
             case 'logout':
             case 'register':
