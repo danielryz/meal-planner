@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Zespół - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <script defer src="/public/features/users/users.js"></script>
+  </head>
+  <body>
+    <div class="app-page users-page">
+      <?php include $partialsPath . '/app-nav.html'; ?>
+
+      <main class="users-main" data-users-view>
+        <section class="users-shell">
+          <header class="users-header">
+            <div>
+              <span class="users-kicker">Panel właściciela</span>
+              <h1>Zespół</h1>
+              <p>Zarządzaj dostępem pracowników, rolami i zaproszeniami do konta MealPlanner.</p>
+            </div>
+            <button class="button users-header__button" type="button" data-focus-invite>
+              <img src="/public/assets/icons/plus.svg" alt="" />
+              <span>Zaproś osobę</span>
+            </button>
+          </header>
+
+          <p class="users-state" data-users-loading>Ładowanie zespołu...</p>
+          <p class="users-state users-state--error" data-users-error hidden>Nie udało się załadować listy użytkowników.</p>
+
+          <section class="users-content" data-users-content hidden>
+            <section class="users-stats" aria-label="Statystyki zespołu">
+              <article>
+                <span>Aktywni</span>
+                <strong data-users-active-count></strong>
+              </article>
+              <article>
+                <span>Oczekujący</span>
+                <strong data-users-pending-count></strong>
+              </article>
+              <article>
+                <span>Właściciele</span>
+                <strong data-users-owner-count></strong>
+              </article>
+            </section>
+
+            <section class="users-invite" aria-labelledby="users-invite-title">
+              <div>
+                <span class="users-kicker">Nowy dostęp</span>
+                <h2 id="users-invite-title">Zaproś pracownika</h2>
+                <p>Zaproszona osoba otrzyma dostęp dopiero po zaakceptowaniu wiadomości e-mail.</p>
+              </div>
+              <form class="users-invite-form" action="/users/invitations" method="post" data-invite-form novalidate>
+                <label>
+                  <span>Adres e-mail</span>
+                  <input name="email" type="email" placeholder="pracownik@example.com" autocomplete="email" required data-invite-email />
+                  <small data-invite-error hidden>Podaj poprawny adres e-mail.</small>
+                </label>
+                <label>
+                  <span>Rola</span>
+                  <select name="role" data-invite-role>
+                    <option value="employee">Pracownik</option>
+                    <option value="owner">Właściciel</option>
+                  </select>
+                </label>
+                <button class="button" type="submit">
+                  <img src="/public/assets/icons/email.svg" alt="" />
+                  <span>Wyślij zaproszenie</span>
+                </button>
+              </form>
+            </section>
+
+            <section class="users-panel" aria-labelledby="users-list-title">
+              <div class="users-panel__header">
+                <div>
+                  <span class="users-kicker">Uprawnienia</span>
+                  <h2 id="users-list-title">Lista użytkowników</h2>
+                </div>
+                <div class="users-filters">
+                  <label class="visually-hidden" for="users-search">Szukaj użytkownika</label>
+                  <div class="users-search">
+                    <span aria-hidden="true"></span>
+                    <input id="users-search" type="search" placeholder="Szukaj po imieniu lub e-mailu..." data-users-search />
+                  </div>
+                  <label class="visually-hidden" for="users-role-filter">Filtruj role</label>
+                  <select id="users-role-filter" data-users-role-filter>
+                    <option value="all">Wszystkie role</option>
+                    <option value="owner">Właściciel</option>
+                    <option value="employee">Pracownik</option>
+                    <option value="user">Użytkownik</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="users-table" role="table" aria-label="Lista członków zespołu">
+                <div class="users-table__head" role="row">
+                  <span role="columnheader">Osoba</span>
+                  <span role="columnheader">Rola</span>
+                  <span role="columnheader">Status</span>
+                  <span role="columnheader">Ostatnia aktywność</span>
+                  <span role="columnheader">Akcje</span>
+                </div>
+                <div data-users-list></div>
+              </div>
+
+              <p class="users-state" data-users-empty hidden>Nie znaleziono użytkowników dla wybranych filtrów.</p>
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

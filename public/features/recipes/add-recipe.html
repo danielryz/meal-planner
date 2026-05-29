@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Dodaj przepis - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <script defer src="/public/features/recipes/add-recipe.js"></script>
+  </head>
+  <body>
+    <div class="app-page add-recipe-page">
+      <?php include $partialsPath . '/app-nav.html'; ?>
+
+      <main class="add-recipe-main" data-add-recipe-view>
+        <section class="add-recipe-shell">
+          <header class="add-recipe-header">
+            <div>
+              <span class="add-recipe-kicker">Nowy przepis</span>
+              <h1>Dodaj przepis</h1>
+              <p>Utwórz własny przepis jako szkic albo wyślij go do weryfikacji przed publikacją publiczną.</p>
+            </div>
+            <a class="button button-secondary add-recipe-header__button" href="/recipes">
+              <img src="/public/assets/icons/recipes.svg" alt="" />
+              <span>Wróć do przepisów</span>
+            </a>
+          </header>
+
+          <p class="add-recipe-state" data-recipe-form-loading>Ładowanie formularza...</p>
+          <p class="add-recipe-state add-recipe-state--error" data-recipe-form-error hidden>Nie udało się załadować formularza przepisu.</p>
+
+          <form class="add-recipe-form" action="/add-recipe" method="post" data-recipe-form hidden novalidate>
+            <aside class="add-recipe-summary" aria-label="Status przepisu">
+              <div class="add-recipe-summary__icon" aria-hidden="true">
+                <img src="/public/assets/icons/recipes.svg" alt="" />
+              </div>
+              <div>
+                <span class="add-recipe-kicker">Status</span>
+                <h2>Szkic prywatny</h2>
+                <p>Publiczna publikacja będzie możliwa po weryfikacji przez właściciela, pracownika albo admina.</p>
+              </div>
+              <dl>
+                <div>
+                  <dt>Składniki</dt>
+                  <dd data-ingredients-count>0</dd>
+                </div>
+                <div>
+                  <dt>Kroki</dt>
+                  <dd data-steps-count>0</dd>
+                </div>
+              </dl>
+            </aside>
+
+            <section class="add-recipe-panels">
+              <section class="add-recipe-card">
+                <header>
+                  <span class="add-recipe-kicker">Podstawy</span>
+                  <h2>Informacje o przepisie</h2>
+                </header>
+                <div class="add-recipe-fields add-recipe-fields--two">
+                  <label>
+                    <span>Nazwa przepisu</span>
+                    <input name="title" type="text" required data-title />
+                    <small data-title-error hidden>Podaj nazwę przepisu.</small>
+                  </label>
+                  <label>
+                    <span>Kategoria</span>
+                    <select name="category" required data-category></select>
+                  </label>
+                </div>
+                <label class="add-recipe-field">
+                  <span>Opis</span>
+                  <textarea name="description" rows="4" required data-description></textarea>
+                  <small data-description-error hidden>Opis musi mieć co najmniej 20 znaków.</small>
+                </label>
+                <div class="add-recipe-fields add-recipe-fields--three">
+                  <label>
+                    <span>Poziom</span>
+                    <select name="difficulty" data-difficulty></select>
+                  </label>
+                  <label>
+                    <span>Czas przygotowania</span>
+                    <input name="prepTimeMinutes" type="number" min="1" data-prep-time />
+                  </label>
+                  <label>
+                    <span>Porcje</span>
+                    <input name="servings" type="number" min="1" max="12" data-servings />
+                  </label>
+                </div>
+              </section>
+
+              <section class="add-recipe-card">
+                <header class="add-recipe-card__header">
+                  <div>
+                    <span class="add-recipe-kicker">Lista</span>
+                    <h2>Składniki</h2>
+                  </div>
+                  <button class="button button-secondary" type="button" data-add-ingredient>
+                    <img src="/public/assets/icons/plus.svg" alt="" />
+                    Dodaj
+                  </button>
+                </header>
+                <div class="add-recipe-repeat-list" data-ingredients-list></div>
+              </section>
+
+              <section class="add-recipe-card">
+                <header class="add-recipe-card__header">
+                  <div>
+                    <span class="add-recipe-kicker">Instrukcja</span>
+                    <h2>Kroki przygotowania</h2>
+                  </div>
+                  <button class="button button-secondary" type="button" data-add-step>
+                    <img src="/public/assets/icons/plus.svg" alt="" />
+                    Dodaj
+                  </button>
+                </header>
+                <div class="add-recipe-repeat-list" data-steps-list></div>
+              </section>
+
+              <footer class="add-recipe-footer">
+                <p data-recipe-form-message hidden></p>
+                <div>
+                  <button class="button button-secondary" type="submit" data-submit-mode="draft">Zapisz szkic</button>
+                  <button class="button" type="submit" data-submit-mode="review">Wyślij do weryfikacji</button>
+                </div>
+              </footer>
+            </section>
+          </form>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

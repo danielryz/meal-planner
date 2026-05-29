@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Moje przepisy - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <script defer src="/public/features/recipes/recipe-management.js"></script>
+  </head>
+  <body>
+    <div class="app-page recipe-management-page">
+      <?php include $partialsPath . '/app-nav.html'; ?>
+
+      <main class="recipe-management-main" data-recipe-management-view>
+        <section class="recipe-management-shell">
+          <header class="recipe-management-header">
+            <div>
+              <span class="recipe-management-kicker">Przepisy użytkownika</span>
+              <h1>Moje przepisy</h1>
+              <p>Zarządzaj szkicami, zgłoszeniami do publikacji i przepisami widocznymi publicznie.</p>
+            </div>
+            <div class="recipe-management-header__actions">
+              <a class="button" href="/add-recipe">
+                <img src="/public/assets/icons/plus.svg" alt="" />
+                <span>Dodaj przepis</span>
+              </a>
+              <?php if (in_array($currentUserRole ?? 'user', ['owner', 'employee', 'admin'], true)): ?>
+                <a class="button button-secondary" href="/recipe-reviews">Kolejka weryfikacji</a>
+              <?php endif; ?>
+            </div>
+          </header>
+
+          <p class="recipe-management-state" data-management-loading>Ładowanie przepisów...</p>
+          <p class="recipe-management-state recipe-management-state--error" data-management-error hidden>Nie udało się załadować panelu przepisów.</p>
+
+          <section class="recipe-management-content" data-management-content hidden>
+            <section class="recipe-management-stats" aria-label="Statystyki przepisów">
+              <article>
+                <span>Szkice</span>
+                <strong data-management-draft-count></strong>
+              </article>
+              <article>
+                <span>W weryfikacji</span>
+                <strong data-management-submitted-count></strong>
+              </article>
+              <article>
+                <span>Publiczne</span>
+                <strong data-management-approved-count></strong>
+              </article>
+              <article>
+                <span>Do poprawy</span>
+                <strong data-management-rework-count></strong>
+              </article>
+            </section>
+
+            <section class="recipe-management-panel" aria-labelledby="management-list-title">
+              <div class="recipe-management-panel__header">
+                <div>
+                  <span class="recipe-management-kicker">Lista</span>
+                  <h2 id="management-list-title">Przepisy i statusy</h2>
+                </div>
+                <div class="recipe-management-filters">
+                  <label class="visually-hidden" for="management-search">Szukaj przepisu</label>
+                  <div class="recipe-management-search">
+                    <span aria-hidden="true"></span>
+                    <input id="management-search" type="search" placeholder="Szukaj po nazwie lub kategorii..." data-management-search />
+                  </div>
+                  <label class="visually-hidden" for="management-status-filter">Filtruj status</label>
+                  <select id="management-status-filter" data-management-status-filter>
+                    <option value="all">Wszystkie statusy</option>
+                    <option value="draft">Szkice</option>
+                    <option value="submitted">W weryfikacji</option>
+                    <option value="changes_requested">Do poprawy</option>
+                    <option value="approved">Publiczne</option>
+                    <option value="rejected">Odrzucone</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="recipe-management-table" role="table" aria-label="Lista przepisów użytkownika">
+                <div class="recipe-management-table__head" role="row">
+                  <span role="columnheader">Przepis</span>
+                  <span role="columnheader">Status</span>
+                  <span role="columnheader">Aktualizacja</span>
+                  <span role="columnheader">Publikacja</span>
+                  <span role="columnheader">Akcje</span>
+                </div>
+                <div data-management-list></div>
+              </div>
+
+              <p class="recipe-management-state" data-management-empty hidden>Nie znaleziono przepisów dla wybranych filtrów.</p>
+              <p class="recipe-management-message" data-management-message hidden></p>
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

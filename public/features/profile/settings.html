@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Ustawienia konta - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <script defer src="/public/features/profile/settings.js"></script>
+  </head>
+  <body>
+    <div class="app-page settings-page">
+      <?php include $partialsPath . '/app-nav.html'; ?>
+
+      <main class="settings-main" data-settings-view>
+        <section class="settings-shell">
+          <header class="settings-header">
+            <div>
+              <span class="settings-kicker">Profil użytkownika</span>
+              <h1>Ustawienia konta</h1>
+              <p>Zmień dane widoczne w aplikacji, adres e-mail i hasło logowania.</p>
+            </div>
+            <a class="button button-secondary settings-header__button" href="/profile">
+              <img src="/public/assets/icons/profile.svg" alt="" />
+              <span>Wróć do profilu</span>
+            </a>
+          </header>
+
+          <p class="settings-state" data-settings-loading>Ładowanie ustawień...</p>
+          <p class="settings-state settings-state--error" data-settings-error hidden>Nie udało się załadować ustawień konta.</p>
+
+          <section class="settings-content" data-settings-content hidden>
+            <aside class="settings-summary" aria-label="Podsumowanie konta">
+              <div class="settings-summary__avatar" data-settings-initials aria-hidden="true"></div>
+              <div>
+                <span class="settings-kicker" data-settings-role></span>
+                <h2 data-settings-name></h2>
+                <p data-settings-email></p>
+              </div>
+              <dl>
+                <div>
+                  <dt>Status</dt>
+                  <dd data-settings-status></dd>
+                </div>
+                <div>
+                  <dt>Nazwa użytkownika</dt>
+                  <dd data-settings-username></dd>
+                </div>
+                <div>
+                  <dt>Ostatnia zmiana hasła</dt>
+                  <dd data-settings-password-date></dd>
+                </div>
+              </dl>
+            </aside>
+
+            <section class="settings-panels" aria-label="Formularze ustawień konta">
+              <form class="settings-card" action="/settings/profile" method="post" data-settings-form="profile" novalidate>
+                <header>
+                  <span class="settings-kicker">Dane profilu</span>
+                  <h2>Nazwa i login</h2>
+                </header>
+                <div class="settings-fields settings-fields--two">
+                  <label>
+                    <span>Imię i nazwisko</span>
+                    <input name="displayName" type="text" autocomplete="name" required data-display-name />
+                    <small data-display-name-error hidden>Podaj nazwę widoczną w profilu.</small>
+                  </label>
+                  <label>
+                    <span>Nazwa użytkownika</span>
+                    <input name="username" type="text" autocomplete="username" required data-username />
+                    <small data-username-error hidden>Nazwa użytkownika musi mieć co najmniej 3 znaki.</small>
+                  </label>
+                </div>
+                <footer>
+                  <p data-profile-message hidden></p>
+                  <button class="button" type="submit">Zapisz dane profilu</button>
+                </footer>
+              </form>
+
+              <form class="settings-card" action="/settings/email" method="post" data-settings-form="email" novalidate>
+                <header>
+                  <span class="settings-kicker">Adres e-mail</span>
+                  <h2>Zmiana e-maila</h2>
+                </header>
+                <div class="settings-fields">
+                  <label>
+                    <span>Nowy adres e-mail</span>
+                    <input name="email" type="email" autocomplete="email" required data-email />
+                    <small data-email-error hidden>Podaj poprawny adres e-mail.</small>
+                  </label>
+                </div>
+                <footer>
+                  <p data-email-message hidden></p>
+                  <button class="button" type="submit">Wyślij potwierdzenie</button>
+                </footer>
+              </form>
+
+              <form class="settings-card" action="/settings/password" method="post" data-settings-form="password" novalidate>
+                <header>
+                  <span class="settings-kicker">Bezpieczeństwo</span>
+                  <h2>Zmiana hasła</h2>
+                </header>
+                <div class="settings-fields settings-fields--three">
+                  <label>
+                    <span>Obecne hasło</span>
+                    <input name="currentPassword" type="password" autocomplete="current-password" required data-current-password />
+                    <small data-current-password-error hidden>Podaj obecne hasło.</small>
+                  </label>
+                  <label>
+                    <span>Nowe hasło</span>
+                    <input name="newPassword" type="password" autocomplete="new-password" required data-new-password />
+                    <small data-new-password-error hidden>Nowe hasło musi mieć co najmniej 8 znaków.</small>
+                  </label>
+                  <label>
+                    <span>Powtórz nowe hasło</span>
+                    <input name="repeatPassword" type="password" autocomplete="new-password" required data-repeat-password />
+                    <small data-repeat-password-error hidden>Hasła muszą być takie same.</small>
+                  </label>
+                </div>
+                <footer>
+                  <p data-password-message hidden></p>
+                  <button class="button" type="submit">Zmień hasło</button>
+                </footer>
+              </form>
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

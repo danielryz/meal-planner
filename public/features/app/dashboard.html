@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Panel aplikacji - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+  </head>
+  <body>
+    <div class="app-page">
+      <?php include $partialsPath . '/app-nav.html'; ?>
+
+      <main class="app-main">
+        <div class="app-main__inner">
+          <section class="app-hero" aria-labelledby="dashboard-title">
+            <div>
+              <span class="app-kicker">Panel aplikacji</span>
+              <h1 id="dashboard-title">Witaj, <?= htmlspecialchars($currentUserName ?? 'Użytkowniku') ?></h1>
+              <p>
+                To wspólny shell dla chronionych widoków MealPlanner. Kolejne zadania wypełnią go planem posiłków,
+                przepisami, listą zakupów i zarządzaniem użytkownikami.
+              </p>
+            </div>
+            <a class="button app-hero__button" href="/meal-planner">Przejdź do planu</a>
+          </section>
+
+          <section class="app-overview-grid" aria-label="Skrót aplikacji">
+            <article class="app-overview-card">
+              <span class="app-overview-card__icon">
+                <img src="/public/assets/icons/planner.svg" alt="" />
+              </span>
+              <div>
+                <h2>Plan posiłków</h2>
+                <p>Widok planowania tygodnia zostanie wdrożony w FE-05.</p>
+              </div>
+            </article>
+
+            <article class="app-overview-card">
+              <span class="app-overview-card__icon">
+                <img src="/public/assets/icons/recipes.svg" alt="" />
+              </span>
+              <div>
+                <h2>Biblioteka przepisów</h2>
+                <p>Wyszukiwanie i filtry przepisów pojawią się w FE-06.</p>
+              </div>
+            </article>
+
+            <article class="app-overview-card">
+              <span class="app-overview-card__icon">
+                <img src="/public/assets/icons/grocery.svg" alt="" />
+              </span>
+              <div>
+                <h2>Lista zakupów</h2>
+                <p>Interaktywna lista zakupów zostanie przygotowana w FE-08.</p>
+              </div>
+            </article>
+          </section>
+
+          <?php if (($currentUserRole ?? null) === 'owner'): ?>
+            <section class="app-role-panel" aria-labelledby="owner-panel-title">
+              <div>
+                <span class="app-kicker">Rola właściciela</span>
+                <h2 id="owner-panel-title">Zarządzanie zespołem</h2>
+                <p>
+                  Link „Zespół” jest widoczny tylko dla roli właściciela. Backend później podłączy realne uprawnienia.
+                </p>
+              </div>
+              <a class="button button-secondary" href="/users">Zobacz użytkowników</a>
+            </section>
+          <?php endif; ?>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
