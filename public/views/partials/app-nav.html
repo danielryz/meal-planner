@@ -78,6 +78,7 @@
     </form>
 
     <div class="app-user-menu">
+      <a class="app-user-menu__profile <?= $currentRoute === 'profile' ? 'is-active' : '' ?>" href="/profile" aria-label="Profil użytkownika">
       <div class="app-user-menu__avatar" aria-hidden="true">
         <?= htmlspecialchars(substr($currentUserName, 0, 1)) ?>
       </div>
@@ -85,6 +86,7 @@
         <span><?= htmlspecialchars($currentUserName) ?></span>
         <small><?= htmlspecialchars($currentUserRole) ?></small>
       </div>
+      </a>
       <a class="app-user-menu__logout" href="/logout">Wyloguj</a>
     </div>
   </div>

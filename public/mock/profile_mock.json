@@ -1,0 +1,42 @@
+{
+  "profile": {
+    "name": "Anna Nowak",
+    "username": "anna.nowak",
+    "email": "anna.nowak@example.com",
+    "role": "owner",
+    "status": "active",
+    "initials": "AN",
+    "summary": "Planuje tygodniowe posiłki dla zespołu i nadzoruje przepisy publikowane w MealPlanner.",
+    "visibility": "private",
+    "joinedAt": "12 marca 2026",
+    "lastLogin": "Dzisiaj, 09:42",
+    "stats": {
+      "plannedMeals": 24,
+      "favoriteRecipes": 18,
+      "ownRecipes": 7
+    },
+    "preferences": {
+      "diet": "Zbilansowana",
+      "servings": "4 porcje",
+      "allergies": "Orzechy, gluten",
+      "notificationSummary": "Przypomnienia e-mail i alerty listy zakupów"
+    },
+    "activity": [
+      {
+        "title": "Dodano przepis do planu",
+        "description": "Makaron pełnoziarnisty z warzywami trafił do planu na środę.",
+        "time": "Dzisiaj, 09:18"
+      },
+      {
+        "title": "Zaktualizowano listę zakupów",
+        "description": "Odhaczono 3 produkty i dodano zamiennik dla awokado.",
+        "time": "Wczoraj, 18:20"
+      },
+      {
+        "title": "Zaproszono pracownika",
+        "description": "Wysłano zaproszenie do panelu zespołu.",
+        "time": "Poniedziałek, 12:05"
+      }
+    ]
+  }
+}

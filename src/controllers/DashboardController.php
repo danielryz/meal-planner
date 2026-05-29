@@ -44,6 +44,14 @@ class DashboardController extends AppController {
         ]);
     }
 
+    public function profile() {
+        return $this->render("profile", [
+            "currentRoute" => "profile",
+            "currentUserRole" => "owner",
+            "currentUserName" => "Anna Nowak"
+        ]);
+    }
+
     public function settings() {
         return $this->renderAppPlaceholder("settings", "Ustawienia", "Ustawienia konta i preferencji zostaną podłączone w późniejszym etapie.");
     }
