@@ -1,0 +1,70 @@
+{
+  "currentRole": "owner",
+  "allowedReviewerRoles": ["owner", "employee", "admin"],
+  "reviews": [
+    {
+      "id": 401,
+      "recipeId": 101,
+      "title": "Makaron z pieczonymi warzywami",
+      "author": "Katarzyna Wilk",
+      "authorEmail": "katarzyna.wilk@example.com",
+      "submittedAt": "2026-05-24 18:40",
+      "status": "pending",
+      "category": "Obiad",
+      "difficulty": "Łatwe",
+      "prepTimeMinutes": 35,
+      "servings": 4,
+      "summary": "Szybki obiad z pieczoną papryką, cukinią i lekkim sosem jogurtowym.",
+      "ingredients": ["makaron pełnoziarnisty", "papryka", "cukinia", "jogurt naturalny", "natka pietruszki"],
+      "reviewNote": "Autor prosi o sprawdzenie gramatury sosu i kategorii przepisu."
+    },
+    {
+      "id": 402,
+      "recipeId": 102,
+      "title": "Owsianka kokosowa z malinami",
+      "author": "Marek Zieliński",
+      "authorEmail": "marek.zielinski@example.com",
+      "submittedAt": "2026-05-25 09:15",
+      "status": "changes_requested",
+      "category": "Śniadanie",
+      "difficulty": "Łatwe",
+      "prepTimeMinutes": 12,
+      "servings": 2,
+      "summary": "Kremowa owsianka z mlekiem kokosowym, malinami i pestkami dyni.",
+      "ingredients": ["płatki owsiane", "mleko kokosowe", "maliny", "pestki dyni"],
+      "reviewNote": "Brakuje informacji o alerganach i zamienniku mleka kokosowego."
+    },
+    {
+      "id": 403,
+      "recipeId": 103,
+      "title": "Zupa krem z soczewicy",
+      "author": "Anna Nowak",
+      "authorEmail": "anna.nowak@example.com",
+      "submittedAt": "2026-05-20 14:05",
+      "status": "approved",
+      "category": "Zupa",
+      "difficulty": "Średnie",
+      "prepTimeMinutes": 45,
+      "servings": 5,
+      "summary": "Rozgrzewająca zupa z czerwonej soczewicy, pomidorów i przypraw.",
+      "ingredients": ["czerwona soczewica", "pomidory", "cebula", "czosnek", "kumin"],
+      "reviewNote": "Przepis zaakceptowany po uzupełnieniu instrukcji."
+    },
+    {
+      "id": 404,
+      "recipeId": 104,
+      "title": "Deser czekoladowy bez pieczenia",
+      "author": "Piotr Kaczmarek",
+      "authorEmail": "piotr.kaczmarek@example.com",
+      "submittedAt": "2026-05-22 11:30",
+      "status": "rejected",
+      "category": "Deser",
+      "difficulty": "Łatwe",
+      "prepTimeMinutes": 20,
+      "servings": 6,
+      "summary": "Warstwowy deser z herbatnikami, kremem czekoladowym i owocami.",
+      "ingredients": ["herbatniki", "czekolada", "śmietanka", "truskawki"],
+      "reviewNote": "Opis naruszał zasady publikacji i zawierał niepełne instrukcje."
+    }
+  ]
+}
