@@ -44,6 +44,10 @@ class Routing {
             "controller" => "DashboardController",
             "action" => "users"
         ],
+        "profile" => [
+            "controller" => "DashboardController",
+            "action" => "profile"
+        ],
         "settings" => [
             "controller" => "DashboardController",
             "action" => "settings"
@@ -73,6 +77,7 @@ class Routing {
             case 'meal-planner':
             case 'grocery-list':
             case 'users':
+            case 'profile':
             case 'settings':
             case 'login':
             case 'logout':
