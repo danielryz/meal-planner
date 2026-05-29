@@ -112,6 +112,14 @@ class DashboardController extends AppController {
         ]);
     }
 
+    public function recipeManagement() {
+        return $this->render("recipe-management", [
+            "currentRoute" => "recipes",
+            "currentUserRole" => "owner",
+            "currentUserName" => "Anna Nowak"
+        ]);
+    }
+
     private function renderAppPlaceholder(string $route, string $title, string $description) {
         return $this->render("app-placeholder", [
             "currentRoute" => $route,
