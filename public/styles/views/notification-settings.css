@@ -79,7 +79,7 @@
 }
 
 .notification-content {
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
   align-items: start;
 }
 
@@ -90,6 +90,7 @@
 .notification-summary,
 .notification-panel,
 .notification-card {
+  min-width: 0;
   border: 1px solid rgba(60, 190, 64, 0.1);
   border-radius: 32px;
   background: #ffffff;
@@ -104,6 +105,13 @@
 .notification-summary {
   position: sticky;
   top: 104px;
+}
+
+.notification-summary > *,
+.notification-summary h2,
+.notification-summary p {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .notification-summary__icon {
@@ -147,6 +155,7 @@
   color: #0f172a;
   font-weight: 800;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .notification-list {
