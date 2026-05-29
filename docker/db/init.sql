@@ -5,3 +5,4 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 );
 
 \i /docker-entrypoint-initdb.d/migrations/001_core_schema.sql
+\i /docker-entrypoint-initdb.d/migrations/002_recipe_domain_schema.sql
