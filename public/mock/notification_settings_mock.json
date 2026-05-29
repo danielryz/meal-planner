@@ -1,0 +1,46 @@
+{
+  "email": "anna.nowak@example.com",
+  "summary": "Powiadomienia są wysyłane na e-mail oraz pokazywane w aplikacji, gdy funkcja będzie dostępna po stronie backendu.",
+  "quietHours": {
+    "from": "22:00",
+    "to": "07:00"
+  },
+  "notifications": [
+    {
+      "id": "meal_reminders",
+      "title": "Przypomnienia o planie posiłków",
+      "description": "Informuj mnie o zaplanowanych posiłkach i brakujących daniach na tydzień.",
+      "channel": "email",
+      "enabled": true
+    },
+    {
+      "id": "grocery_reminders",
+      "title": "Lista zakupów",
+      "description": "Przypominaj o zakupach przed rozpoczęciem tygodnia i po zmianach w planie.",
+      "channel": "email",
+      "enabled": true
+    },
+    {
+      "id": "recipe_review",
+      "title": "Weryfikacja przepisów",
+      "description": "Powiadamiaj o akceptacji, odrzuceniu albo prośbie o poprawki w przepisie.",
+      "channel": "app",
+      "enabled": true
+    },
+    {
+      "id": "team_activity",
+      "title": "Aktywność zespołu",
+      "description": "Informuj o nowych zaproszeniach, zmianach ról i zablokowanych kontach.",
+      "channel": "app",
+      "enabled": false
+    },
+    {
+      "id": "account_security",
+      "title": "Bezpieczeństwo konta",
+      "description": "Wysyłaj informacje o zmianie hasła, e-maila i nowych logowaniach.",
+      "channel": "email",
+      "enabled": true,
+      "locked": true
+    }
+  ]
+}
