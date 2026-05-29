@@ -1,0 +1,35 @@
+{
+  "summary": "Preferencje pomagają dopasować przepisy, listę zakupów i domyślne ustawienia planu posiłków.",
+  "selected": {
+    "diet": "balanced",
+    "allergies": ["nuts", "gluten"],
+    "cuisines": ["polish", "mediterranean"],
+    "servings": 4,
+    "mealsPerDay": 3,
+    "weeklyBudget": 320
+  },
+  "options": {
+    "diets": [
+      { "id": "balanced", "label": "Zbilansowana", "description": "Różnorodne posiłki bez sztywnego ograniczania składników." },
+      { "id": "vegetarian", "label": "Wegetariańska", "description": "Posiłki bez mięsa, z nabiałem i jajkami." },
+      { "id": "high_protein", "label": "Wysokobiałkowa", "description": "Więcej białka w planie i przekąskach." },
+      { "id": "low_carb", "label": "Niskowęglowodanowa", "description": "Mniej produktów mącznych i słodkich dodatków." }
+    ],
+    "allergies": [
+      { "id": "nuts", "label": "Orzechy" },
+      { "id": "gluten", "label": "Gluten" },
+      { "id": "dairy", "label": "Nabiał" },
+      { "id": "eggs", "label": "Jajka" },
+      { "id": "soy", "label": "Soja" },
+      { "id": "fish", "label": "Ryby" }
+    ],
+    "cuisines": [
+      { "id": "polish", "label": "Polska" },
+      { "id": "mediterranean", "label": "Śródziemnomorska" },
+      { "id": "asian", "label": "Azjatycka" },
+      { "id": "mexican", "label": "Meksykańska" },
+      { "id": "italian", "label": "Włoska" },
+      { "id": "quick", "label": "Szybkie dania" }
+    ]
+  }
+}
