@@ -40,6 +40,10 @@ class Routing {
             "controller" => "DashboardController",
             "action" => "recipeReviews"
         ],
+        "recipe-management" => [
+            "controller" => "DashboardController",
+            "action" => "recipeManagement"
+        ],
         "meal-planner" => [
             "controller" => "DashboardController",
             "action" => "mealPlanner"
@@ -92,6 +96,7 @@ class Routing {
             case 'recipe-details':
             case 'add-recipe':
             case 'recipe-reviews':
+            case 'recipe-management':
             case 'meal-planner':
             case 'grocery-list':
             case 'users':
