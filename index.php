@@ -1,10 +1,8 @@
 <?php
 
-require_once 'Routing.php';
+declare(strict_types=1);
 
-$path = trim($_SERVER['REQUEST_URI'], '/');
-$path = parse_url($path, PHP_URL_PATH);
+require_once __DIR__ . '/src/bootstrap.php';
+require_once __DIR__ . '/Routing.php';
 
-Routing::run($path);
-
-
+Routing::run(App\Http\Request::fromGlobals(), __DIR__);

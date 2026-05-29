@@ -1,22 +1,27 @@
 <?php
 
-require_once 'AppController.php';
+declare(strict_types=1);
 
-class SecurityController extends AppController {
+namespace App\Controllers;
 
-    public function login() {
-        // TODO sprawdzeie czy user istnieje
+use App\Http\Response;
 
+final class SecurityController extends AppController
+{
+    public function login(): Response
+    {
         return $this->render("login");
     }
 
-    public function register() {
+    public function register(): Response
+    {
         return $this->render("register");
     }
 
-    public function logout() {
+    public function logout(): Response
+    {
         return $this->render("login", [
-            "pageTitle" => "Logowanie - MealPlanner"
+            "pageTitle" => "Logowanie - MealPlanner",
         ]);
     }
 }
