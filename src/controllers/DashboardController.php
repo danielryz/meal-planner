@@ -1,132 +1,94 @@
 <?php
 
-require_once 'AppController.php';
+declare(strict_types=1);
 
-class DashboardController extends AppController {
+namespace App\Controllers;
 
-    public function home() {
-        // TODO pobieranie danych z bazy
-        // wstawianie zmiennych na widok
-        $title = "MealPlanner";
+use App\Http\Response;
 
-        return $this->render("index", ["title" => $title]);
+final class DashboardController extends AppController
+{
+    public function home(): Response
+    {
+        return $this->render("index", ["title" => "MealPlanner"]);
     }
 
-    public function dashboard() {
-        return $this->render("dashboard", [
-            "currentRoute" => "dashboard",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function dashboard(): Response
+    {
+        return $this->renderAppView("dashboard", "dashboard");
     }
 
-    public function mealPlanner() {
-        return $this->render("meal-planner", [
-            "currentRoute" => "meal-planner",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function mealPlanner(): Response
+    {
+        return $this->renderAppView("meal-planner", "meal-planner");
     }
 
-    public function groceryList() {
-        return $this->render("grocery-list", [
-            "currentRoute" => "grocery-list",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function groceryList(): Response
+    {
+        return $this->renderAppView("grocery-list", "grocery-list");
     }
 
-    public function users() {
-        return $this->render("users", [
-            "currentRoute" => "users",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function users(): Response
+    {
+        return $this->renderAppView("users", "users");
     }
 
-    public function profile() {
-        return $this->render("profile", [
-            "currentRoute" => "profile",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function profile(): Response
+    {
+        return $this->renderAppView("profile", "profile");
     }
 
-    public function settings() {
-        return $this->render("settings", [
-            "currentRoute" => "settings",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function settings(): Response
+    {
+        return $this->renderAppView("settings", "settings");
     }
 
-    public function notificationSettings() {
-        return $this->render("notification-settings", [
-            "currentRoute" => "settings",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function notificationSettings(): Response
+    {
+        return $this->renderAppView("notification-settings", "settings");
     }
 
-    public function preferences() {
-        return $this->render("preferences", [
-            "currentRoute" => "settings",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function preferences(): Response
+    {
+        return $this->renderAppView("preferences", "settings");
     }
 
-    public function about() {
+    public function about(): Response
+    {
         return $this->render("about");
     }
 
-    public function recipes() {
-        return $this->render("recipes", [
-            "currentRoute" => "recipes",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function recipes(): Response
+    {
+        return $this->renderAppView("recipes", "recipes");
     }
 
-    public function recipeDetails() {
-        return $this->render("recipe-details", [
-            "currentRoute" => "recipes",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function recipeDetails(): Response
+    {
+        return $this->renderAppView("recipe-details", "recipes");
     }
 
-    public function addRecipe() {
-        return $this->render("add-recipe", [
-            "currentRoute" => "recipes",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function addRecipe(): Response
+    {
+        return $this->renderAppView("add-recipe", "recipes");
     }
 
-    public function recipeReviews() {
-        return $this->render("recipe-reviews", [
-            "currentRoute" => "recipes",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function recipeReviews(): Response
+    {
+        return $this->renderAppView("recipe-reviews", "recipes");
     }
 
-    public function recipeManagement() {
-        return $this->render("recipe-management", [
-            "currentRoute" => "recipes",
-            "currentUserRole" => "owner",
-            "currentUserName" => "Anna Nowak"
-        ]);
+    public function recipeManagement(): Response
+    {
+        return $this->renderAppView("recipe-management", "recipes");
     }
 
-    private function renderAppPlaceholder(string $route, string $title, string $description) {
-        return $this->render("app-placeholder", [
-            "currentRoute" => $route,
+    private function renderAppView(string $template, string $currentRoute): Response
+    {
+        return $this->render($template, [
+            "currentRoute" => $currentRoute,
             "currentUserRole" => "owner",
             "currentUserName" => "Anna Nowak",
-            "placeholderTitle" => $title,
-            "placeholderDescription" => $description,
         ]);
     }
 }

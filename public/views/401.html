@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Wymagane logowanie - MealPlanner';
+      include __DIR__ . '/partials/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+  </head>
+  <body>
+    <div class="page-shell">
+      <?php include __DIR__ . '/partials/public-nav.html'; ?>
+
+      <main class="page-main">
+        <section class="section">
+          <div class="container stack">
+            <span class="badge">401</span>
+            <h1 class="page-title">Zaloguj się, aby kontynuować</h1>
+            <p>Ta część aplikacji wymaga aktywnej sesji użytkownika.</p>
+            <a class="button" href="/login">Przejdź do logowania</a>
+          </div>
+        </section>
+      </main>
+
+      <?php include __DIR__ . '/partials/footer.html'; ?>
+    </div>
+  </body>
+</html>

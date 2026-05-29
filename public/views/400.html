@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Nieprawidłowe żądanie - MealPlanner';
+      include __DIR__ . '/partials/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+  </head>
+  <body>
+    <div class="page-shell">
+      <?php include __DIR__ . '/partials/public-nav.html'; ?>
+
+      <main class="page-main">
+        <section class="section">
+          <div class="container stack">
+            <span class="badge">400</span>
+            <h1 class="page-title">Nieprawidłowe żądanie</h1>
+            <p>Sprawdź przesłane dane i spróbuj ponownie.</p>
+            <a class="button" href="/">Wróć na stronę główną</a>
+          </div>
+        </section>
+      </main>
+
+      <?php include __DIR__ . '/partials/footer.html'; ?>
+    </div>
+  </body>
+</html>

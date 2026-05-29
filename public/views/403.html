@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Brak dostępu - MealPlanner';
+      include __DIR__ . '/partials/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+  </head>
+  <body>
+    <div class="page-shell">
+      <?php include __DIR__ . '/partials/public-nav.html'; ?>
+
+      <main class="page-main">
+        <section class="section">
+          <div class="container stack">
+            <span class="badge">403</span>
+            <h1 class="page-title">Brak dostępu</h1>
+            <p>Nie masz uprawnień do wykonania tej akcji.</p>
+            <a class="button" href="/dashboard">Wróć do aplikacji</a>
+          </div>
+        </section>
+      </main>
+
+      <?php include __DIR__ . '/partials/footer.html'; ?>
+    </div>
+  </body>
+</html>

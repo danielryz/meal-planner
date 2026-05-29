@@ -1,124 +1,93 @@
 <?php
 
-require_once 'src/controllers/SecurityController.php';
-require_once 'src/controllers/DashboardController.php';
+declare(strict_types=1);
 
-// TODO musimy zapewnic, ze utworzony 
-// obiekt kontrollera ma tylko jedna instancję - SINGLETON
+use App\Controllers\DashboardController;
+use App\Controllers\SecurityController;
+use App\Http\Request;
+use App\Http\Router;
+use App\Http\ViewRenderer;
 
-// TODO 2 /dashboard -- wszystkei dnae
-// /dashboard/12234 -- wyciagnie nam jakis elemtn o wskaznaym ID 12234
-// REGEX
-class Routing {
-
-    public static $routes = [
+final class Routing
+{
+    public static array $routes = [
         "login" => [
-            "controller" => "SecurityController",
-            "action" => "login"
+            "controller" => SecurityController::class,
+            "action" => "login",
         ],
         "register" => [
-            "controller" => "SecurityController",
-            "action" => "register"
+            "controller" => SecurityController::class,
+            "action" => "register",
         ],
         "about" => [
-            "controller" => "DashboardController",
-            "action" => "about"
+            "controller" => DashboardController::class,
+            "action" => "about",
         ],
         "recipes" => [
-            "controller" => "DashboardController",
-            "action" => "recipes"
+            "controller" => DashboardController::class,
+            "action" => "recipes",
         ],
         "recipe-details" => [
-            "controller" => "DashboardController",
-            "action" => "recipeDetails"
+            "controller" => DashboardController::class,
+            "action" => "recipeDetails",
         ],
         "add-recipe" => [
-            "controller" => "DashboardController",
-            "action" => "addRecipe"
+            "controller" => DashboardController::class,
+            "action" => "addRecipe",
         ],
         "recipe-reviews" => [
-            "controller" => "DashboardController",
-            "action" => "recipeReviews"
+            "controller" => DashboardController::class,
+            "action" => "recipeReviews",
         ],
         "recipe-management" => [
-            "controller" => "DashboardController",
-            "action" => "recipeManagement"
+            "controller" => DashboardController::class,
+            "action" => "recipeManagement",
         ],
         "meal-planner" => [
-            "controller" => "DashboardController",
-            "action" => "mealPlanner"
+            "controller" => DashboardController::class,
+            "action" => "mealPlanner",
         ],
         "grocery-list" => [
-            "controller" => "DashboardController",
-            "action" => "groceryList"
+            "controller" => DashboardController::class,
+            "action" => "groceryList",
         ],
         "users" => [
-            "controller" => "DashboardController",
-            "action" => "users"
+            "controller" => DashboardController::class,
+            "action" => "users",
         ],
         "profile" => [
-            "controller" => "DashboardController",
-            "action" => "profile"
+            "controller" => DashboardController::class,
+            "action" => "profile",
         ],
         "settings" => [
-            "controller" => "DashboardController",
-            "action" => "settings"
+            "controller" => DashboardController::class,
+            "action" => "settings",
         ],
         "notification-settings" => [
-            "controller" => "DashboardController",
-            "action" => "notificationSettings"
+            "controller" => DashboardController::class,
+            "action" => "notificationSettings",
         ],
         "preferences" => [
-            "controller" => "DashboardController",
-            "action" => "preferences"
+            "controller" => DashboardController::class,
+            "action" => "preferences",
         ],
         "logout" => [
-            "controller" => "SecurityController",
-            "action" => "logout"
+            "controller" => SecurityController::class,
+            "action" => "logout",
         ],
         "dashboard" => [
-            "controller" => "DashboardController",
-            "action" => "dashboard"
+            "controller" => DashboardController::class,
+            "action" => "dashboard",
         ],
         "" => [
-            "controller" => "DashboardController",
-            "action" => "home"
+            "controller" => DashboardController::class,
+            "action" => "home",
         ],
     ];
 
-    public static function run(string $path) {
-        // TODO sprawdzać za pomoca array_key_exists
-        switch($path) {
-            case 'dashboard':
-            case '':
-            case 'about':
-            case 'recipes':
-            case 'recipe-details':
-            case 'add-recipe':
-            case 'recipe-reviews':
-            case 'recipe-management':
-            case 'meal-planner':
-            case 'grocery-list':
-            case 'users':
-            case 'profile':
-            case 'settings':
-            case 'notification-settings':
-            case 'preferences':
-            case 'login':
-            case 'logout':
-            case 'register':
-                $controller = Routing::$routes[$path]["controller"];
-                $action = Routing::$routes[$path]["action"];
-
-                $controllerObj = new $controller;
-                $id = null;
-
-                $controllerObj->$action($id);
-                break; 
-            default:
-                http_response_code(404);
-                include 'public/views/404.html';
-                break;
-        }
+    public static function run(Request $request, string $projectRoot): void
+    {
+        $router = new Router(self::$routes, new ViewRenderer($projectRoot));
+        $router->dispatch($request)->send();
     }
 }

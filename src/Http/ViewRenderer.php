@@ -1,0 +1,67 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http;
+
+final class ViewRenderer
+{
+    private const VIEW_PATHS = [
+        'index' => 'public/features/public/index.html',
+        'about' => 'public/features/public/about.html',
+        'login' => 'public/features/auth/login.html',
+        'register' => 'public/features/auth/register.html',
+        'dashboard' => 'public/features/app/dashboard.html',
+        'app-placeholder' => 'public/features/app/app-placeholder.html',
+        'meal-planner' => 'public/features/meal-planner/meal-planner.html',
+        'recipes' => 'public/features/recipes/recipes.html',
+        'recipe-details' => 'public/features/recipes/recipe-details.html',
+        'add-recipe' => 'public/features/recipes/add-recipe.html',
+        'recipe-reviews' => 'public/features/recipes/recipe-reviews.html',
+        'recipe-management' => 'public/features/recipes/recipe-management.html',
+        'grocery-list' => 'public/features/grocery-list/grocery-list.html',
+        'users' => 'public/features/users/users.html',
+        'profile' => 'public/features/profile/profile.html',
+        'settings' => 'public/features/profile/settings.html',
+        'notification-settings' => 'public/features/profile/notification-settings.html',
+        'preferences' => 'public/features/profile/preferences.html',
+    ];
+
+    public function __construct(private readonly string $projectRoot)
+    {
+    }
+
+    public function render(string $template, array $variables = [], int $statusCode = 200): Response
+    {
+        $templatePath = self::VIEW_PATHS[$template] ?? 'public/views/' . $template . '.html';
+        $absoluteTemplatePath = $this->projectRoot . DIRECTORY_SEPARATOR . $templatePath;
+
+        if (!is_file($absoluteTemplatePath)) {
+            return $this->renderError(404);
+        }
+
+        return Response::html($this->renderFile($absoluteTemplatePath, $variables), $statusCode);
+    }
+
+    public function renderError(int $statusCode, array $variables = []): Response
+    {
+        $templatePath = $this->projectRoot . DIRECTORY_SEPARATOR . 'public/views/' . $statusCode . '.html';
+
+        if (!is_file($templatePath)) {
+            return Response::html('', $statusCode);
+        }
+
+        return Response::html($this->renderFile($templatePath, $variables), $statusCode);
+    }
+
+    private function renderFile(string $templatePath, array $variables): string
+    {
+        $partialsPath = 'public/views/partials';
+        extract($variables, EXTR_SKIP);
+
+        ob_start();
+        include $templatePath;
+
+        return (string) ob_get_clean();
+    }
+}
