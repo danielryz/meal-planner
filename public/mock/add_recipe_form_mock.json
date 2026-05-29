@@ -1,0 +1,27 @@
+{
+  "categories": [
+    { "id": "breakfast", "label": "Śniadanie" },
+    { "id": "lunch", "label": "Obiad" },
+    { "id": "dinner", "label": "Kolacja" },
+    { "id": "dessert", "label": "Deser" }
+  ],
+  "difficulties": [
+    { "id": "easy", "label": "Łatwy" },
+    { "id": "medium", "label": "Średni" },
+    { "id": "advanced", "label": "Zaawansowany" }
+  ],
+  "defaults": {
+    "category": "lunch",
+    "difficulty": "easy",
+    "prepTimeMinutes": 35,
+    "servings": 4,
+    "ingredients": [
+      { "name": "Makaron pełnoziarnisty", "amount": "250 g" },
+      { "name": "Pomidory", "amount": "400 g" }
+    ],
+    "steps": [
+      "Ugotuj makaron zgodnie z instrukcją na opakowaniu.",
+      "Przygotuj sos i wymieszaj go z makaronem."
+    ]
+  }
+}
