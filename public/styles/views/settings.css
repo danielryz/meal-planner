@@ -78,7 +78,7 @@
 }
 
 .settings-content {
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
   align-items: start;
 }
 
@@ -88,6 +88,7 @@
 
 .settings-summary,
 .settings-card {
+  min-width: 0;
   border: 1px solid rgba(60, 190, 64, 0.1);
   border-radius: 32px;
   background: #ffffff;
@@ -98,6 +99,13 @@
 .settings-summary {
   position: sticky;
   top: 104px;
+}
+
+.settings-summary > *,
+.settings-summary h2,
+.settings-summary p {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .settings-summary__avatar {
@@ -138,9 +146,11 @@
   color: #0f172a;
   font-weight: 800;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .settings-panels {
+  min-width: 0;
   display: grid;
   gap: 20px;
 }
