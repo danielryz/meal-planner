@@ -435,6 +435,8 @@
 
 .recipe-library__actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   justify-content: center;
   padding-top: 8px;
 }
@@ -568,5 +570,9 @@
 
   .recipe-library__actions {
     padding-bottom: 8px;
+  }
+
+  .recipe-library__actions .button {
+    width: 100%;
   }
 }

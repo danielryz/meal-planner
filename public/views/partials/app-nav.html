@@ -2,6 +2,13 @@
   $currentRoute = $currentRoute ?? 'dashboard';
   $currentUserRole = $currentUserRole ?? 'user';
   $currentUserName = $currentUserName ?? 'Użytkownik';
+  $currentUserRoleLabels = [
+    'admin' => 'Admin',
+    'owner' => 'Właściciel',
+    'employee' => 'Pracownik',
+    'user' => 'Użytkownik',
+  ];
+  $currentUserRoleLabel = $currentUserRoleLabels[$currentUserRole] ?? 'Użytkownik';
 
   $appNavItems = [
     [
@@ -84,7 +91,7 @@
       </div>
       <div class="app-user-menu__meta">
         <span><?= htmlspecialchars($currentUserName) ?></span>
-        <small><?= htmlspecialchars($currentUserRole) ?></small>
+        <small><?= htmlspecialchars($currentUserRoleLabel) ?></small>
       </div>
       </a>
       <a class="app-user-menu__logout" href="/logout">Wyloguj</a>
