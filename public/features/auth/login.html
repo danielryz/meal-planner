@@ -37,6 +37,10 @@
             </header>
 
             <form class="auth-form" action="/login" method="post" novalidate data-auth-form="login">
+              <input type="hidden" name="csrfToken" value="<?= htmlspecialchars($csrfToken ?? '') ?>" />
+              <?php if (!empty($authErrors['global'])): ?>
+                <p class="form-error" aria-live="polite"><?= htmlspecialchars($authErrors['global']) ?></p>
+              <?php endif; ?>
               <div class="form-field">
                 <label class="form-label" for="login-email">Adres e-mail</label>
                 <div class="auth-input">
@@ -48,6 +52,7 @@
                     autocomplete="email"
                     inputmode="email"
                     placeholder="name@example.com"
+                    value="<?= htmlspecialchars($oldEmail ?? '') ?>"
                     required
                     data-validate="email"
                   />

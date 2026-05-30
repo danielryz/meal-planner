@@ -56,6 +56,10 @@
           </header>
 
           <form class="auth-form" action="/register" method="post" novalidate data-auth-form="register">
+            <input type="hidden" name="csrfToken" value="<?= htmlspecialchars($csrfToken ?? '') ?>" />
+            <?php if (!empty($authErrors['global'])): ?>
+              <p class="form-error" aria-live="polite"><?= htmlspecialchars($authErrors['global']) ?></p>
+            <?php endif; ?>
             <div class="form-field">
               <label class="form-label" for="register-name">Imię i nazwisko</label>
               <div class="auth-input">
@@ -66,12 +70,16 @@
                   type="text"
                   autocomplete="name"
                   placeholder="Jan Kowalski"
+                  value="<?= htmlspecialchars($oldDisplayName ?? '') ?>"
                   required
                   minlength="2"
                   data-validate="name"
                 />
               </div>
               <p class="form-error" data-error-for="register-name" aria-live="polite"></p>
+              <?php if (!empty($authErrors['displayName'])): ?>
+                <p class="form-error" aria-live="polite"><?= htmlspecialchars($authErrors['displayName']) ?></p>
+              <?php endif; ?>
             </div>
 
             <div class="form-field">
@@ -85,11 +93,15 @@
                   autocomplete="email"
                   inputmode="email"
                   placeholder="name@example.com"
+                  value="<?= htmlspecialchars($oldEmail ?? '') ?>"
                   required
                   data-validate="email"
                 />
               </div>
               <p class="form-error" data-error-for="register-email" aria-live="polite"></p>
+              <?php if (!empty($authErrors['email'])): ?>
+                <p class="form-error" aria-live="polite"><?= htmlspecialchars($authErrors['email']) ?></p>
+              <?php endif; ?>
             </div>
 
             <div class="form-field">
@@ -112,6 +124,9 @@
               </div>
               <p class="form-help">Hasło musi mieć co najmniej 8 znaków.</p>
               <p class="form-error" data-error-for="register-password" aria-live="polite"></p>
+              <?php if (!empty($authErrors['password'])): ?>
+                <p class="form-error" aria-live="polite"><?= htmlspecialchars($authErrors['password']) ?></p>
+              <?php endif; ?>
             </div>
 
             <label class="auth-checkbox auth-checkbox--terms">
@@ -119,6 +134,9 @@
               <span>Akceptuję regulamin i politykę prywatności.</span>
             </label>
             <p class="form-error" data-error-for="termsAccepted" aria-live="polite"></p>
+            <?php if (!empty($authErrors['termsAccepted'])): ?>
+              <p class="form-error" aria-live="polite"><?= htmlspecialchars($authErrors['termsAccepted']) ?></p>
+            <?php endif; ?>
 
             <button class="button auth-primary-button" type="submit">Utwórz konto</button>
 
