@@ -49,7 +49,7 @@ abstract class AppController
             return null;
         }
 
-        return $this->viewRenderer->renderError(401);
+        return $this->redirect('/login');
     }
 
     /**
