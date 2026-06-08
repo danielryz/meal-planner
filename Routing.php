@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Controllers\DashboardController;
 use App\Controllers\ProfileController;
 use App\Controllers\SecurityController;
+use App\Controllers\UserController;
 use App\Http\Request;
 use App\Http\Router;
 use App\Http\ViewRenderer;
@@ -71,6 +72,22 @@ final class Routing
         "preferences" => [
             "controller" => DashboardController::class,
             "action" => "preferences",
+        ],
+        "api/users" => [
+            "controller" => UserController::class,
+            "action" => "listUsers",
+        ],
+        "api/users/invitations" => [
+            "controller" => UserController::class,
+            "action" => "createInvitation",
+        ],
+        "api/users/{userId}/role" => [
+            "controller" => UserController::class,
+            "action" => "updateRole",
+        ],
+        "api/users/{userId}/status" => [
+            "controller" => UserController::class,
+            "action" => "updateStatus",
         ],
         "api/profile" => [
             "controller" => ProfileController::class,

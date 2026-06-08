@@ -95,6 +95,68 @@ final class UserRepository extends AbstractRepository
         $statement->execute();
     }
 
+    public function findAll(): array
+    {
+        $statement = $this->connection->prepare(
+            'SELECT u.id, u.email, u.username, u.is_active, u.last_login_at,
+                r.name AS role, up.display_name, up.avatar_initials
+            FROM users u
+            JOIN roles r ON r.id = u.role_id
+            JOIN user_profiles up ON up.user_id = u.id
+            ORDER BY u.created_at ASC'
+        );
+        $statement->execute();
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateRole(int $userId, string $roleName): bool
+    {
+        $statement = $this->connection->prepare('SELECT id FROM roles WHERE name = :name');
+        $statement->bindValue(':name', $roleName);
+        $statement->execute();
+        $roleId = $statement->fetchColumn();
+
+        if ($roleId === false) {
+            return false;
+        }
+
+        $statement = $this->connection->prepare(
+            'UPDATE users SET role_id = :role_id, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id'
+        );
+        $statement->bindValue(':role_id', (int) $roleId, PDO::PARAM_INT);
+        $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $statement->execute();
+
+        return true;
+    }
+
+    public function updateStatus(int $userId, bool $isActive): void
+    {
+        $statement = $this->connection->prepare(
+            'UPDATE users SET is_active = :is_active, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id'
+        );
+        $statement->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
+        $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $statement->execute();
+    }
+
+    public function findById(int $userId): ?array
+    {
+        $statement = $this->connection->prepare(
+            'SELECT u.id, u.is_active, r.name AS role
+            FROM users u
+            JOIN roles r ON r.id = u.role_id
+            WHERE u.id = :user_id'
+        );
+        $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $statement->execute();
+
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+        return $row !== false ? $row : null;
+    }
+
     /**
      * @param array<string, mixed> $row
      */
