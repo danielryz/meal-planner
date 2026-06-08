@@ -1,6 +1,5 @@
 (() => {
   const view = document.querySelector("[data-recipe-management-view]");
-  const managementUrl = "/public/features/recipes/recipe_management_mock.json";
 
   if (!view) {
     return;
@@ -69,7 +68,6 @@
     const actions = [`<a href="${escapeHtml(recipe.url)}">Podgląd</a>`];
 
     if (recipe.status === "draft" || recipe.status === "changes_requested" || recipe.status === "rejected") {
-      actions.push(`<button type="button" data-management-action="edit">Edytuj</button>`);
       actions.push(`<button type="button" data-management-action="submit">Wyślij</button>`);
     }
 
@@ -128,7 +126,7 @@
 
   async function loadRecipes() {
     try {
-      const response = await fetch(managementUrl);
+      const response = await fetch("/api/my-recipes");
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -150,7 +148,7 @@
   searchInput?.addEventListener("input", render);
   statusFilter?.addEventListener("change", render);
 
-  list.addEventListener("click", (event) => {
+  list.addEventListener("click", async (event) => {
     const actionButton = event.target.closest("[data-management-action]");
 
     if (!actionButton) {
@@ -164,22 +162,42 @@
     }
 
     if (actionButton.dataset.managementAction === "submit") {
-      recipe.status = "submitted";
-      recipe.visibility = "private";
-      recipe.submittedAt = "Wysłano teraz";
-      recipe.reviewReason = "";
-      render();
-      showMessage("Przepis wysłany lokalnie do weryfikacji.");
-    }
+      try {
+        const res = await fetch(`/api/recipes/${recipe.id}/submit-for-review`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
 
-    if (actionButton.dataset.managementAction === "edit") {
-      showMessage("Edycja przepisu zostanie podłączona do formularza backendowego.");
+        if (res.ok) {
+          recipe.status = "submitted";
+          recipe.submittedAt = new Date().toISOString().slice(0, 10);
+          recipe.reviewReason = "";
+          render();
+          showMessage("Przepis wysłany do weryfikacji.");
+        } else {
+          const data = await res.json();
+          showMessage(data.error ?? "Wystąpił błąd.");
+        }
+      } catch {
+        showMessage("Błąd połączenia z serwerem.");
+      }
     }
 
     if (actionButton.dataset.managementAction === "delete") {
-      recipes = recipes.filter((item) => item.id !== recipe.id);
-      render();
-      showMessage("Szkic usunięty lokalnie.");
+      try {
+        const res = await fetch(`/api/recipes/${recipe.id}`, { method: "DELETE" });
+
+        if (res.ok) {
+          recipes = recipes.filter((item) => item.id !== recipe.id);
+          render();
+          showMessage("Szkic usunięty.");
+        } else {
+          const data = await res.json();
+          showMessage(data.error ?? "Wystąpił błąd.");
+        }
+      } catch {
+        showMessage("Błąd połączenia z serwerem.");
+      }
     }
   });
 

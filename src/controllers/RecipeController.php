@@ -53,6 +53,10 @@ final class RecipeController extends AppController
             return $response;
         }
 
+        if ($this->isDelete()) {
+            return $this->handleDeleteDraft();
+        }
+
         $recipeId = (int) $this->request->routeParam('recipeId');
         $userId   = $this->sessions->currentUser()->id();
 
@@ -122,5 +126,158 @@ final class RecipeController extends AppController
         $repo = new RecipeRepository($db->connection());
 
         return Response::json($repo->listFilterOptions());
+    }
+
+    public function myRecipes(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        $userId = $this->sessions->currentUser()->id();
+        $db     = new Database();
+        $repo   = new RecipeRepository($db->connection());
+        $rows   = $repo->listByAuthor($userId);
+
+        $recipes = array_map(fn(array $row) => [
+            'id'           => (int) $row['id'],
+            'title'        => $row['title'],
+            'category'     => $row['category_label'],
+            'status'       => $row['status'],
+            'updatedAt'    => $row['updated_at'] ? substr((string) $row['updated_at'], 0, 10) : null,
+            'visibility'   => $row['visibility'],
+            'submittedAt'  => $row['submitted_at'] ? substr((string) $row['submitted_at'], 0, 10) : null,
+            'reviewReason' => $row['review_reason'],
+            'url'          => '/recipe-details?id=' . (int) $row['id'],
+        ], $rows);
+
+        return Response::json(['recipes' => $recipes]);
+    }
+
+    private function handleDeleteDraft(): Response
+    {
+        $recipeId = (int) $this->request->routeParam('recipeId');
+        $userId   = $this->sessions->currentUser()->id();
+        $db       = new Database();
+        $repo     = new RecipeRepository($db->connection());
+
+        try {
+            $found = $repo->deleteDraft($recipeId, $userId);
+        } catch (\RuntimeException $e) {
+            return match ($e->getMessage()) {
+                'forbidden'      => $this->jsonError('Brak dostępu do tego przepisu.', 403),
+                'invalid_status' => $this->jsonError('Można usuwać tylko szkice.', 409),
+                default          => $this->jsonError('Błąd serwera.', 500),
+            };
+        }
+
+        if (!$found) {
+            return $this->jsonError('Przepis nie istnieje.', 404);
+        }
+
+        return Response::json(['deleted' => true]);
+    }
+
+    public function createDraft(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        if (!$this->isPost()) {
+            return $this->jsonError('Metoda niedozwolona.', 405);
+        }
+
+        $title       = trim((string) $this->request->input('title', ''));
+        $description = trim((string) $this->request->input('description', ''));
+        $ingredients = $this->request->input('ingredients', []);
+        $steps       = $this->request->input('steps', []);
+
+        if (strlen($title) < 3) {
+            return $this->jsonError('Tytuł musi mieć co najmniej 3 znaki.');
+        }
+
+        if (strlen($description) < 20) {
+            return $this->jsonError('Opis musi mieć co najmniej 20 znaków.');
+        }
+
+        if (empty($ingredients) || !is_array($ingredients)) {
+            return $this->jsonError('Przepis musi mieć co najmniej jeden składnik.');
+        }
+
+        if (empty($steps) || !is_array($steps)) {
+            return $this->jsonError('Przepis musi mieć co najmniej jeden krok.');
+        }
+
+        $userId = $this->sessions->currentUser()->id();
+        $db     = new Database();
+        $repo   = new RecipeRepository($db->connection());
+
+        $slug = $this->slugify($title);
+
+        if ($repo->slugExists($slug)) {
+            $slug .= '-' . time();
+        }
+
+        $recipeId = $repo->createDraft($userId, [
+            'title'           => $title,
+            'slug'            => $slug,
+            'description'     => $description,
+            'categoryCode'    => (string) $this->request->input('categoryCode', ''),
+            'difficulty'      => (string) $this->request->input('difficulty', 'easy'),
+            'prepTimeMinutes' => (int) $this->request->input('prepTimeMinutes', 30),
+            'servings'        => (int) $this->request->input('servings', 2),
+            'ingredients'     => $ingredients,
+            'steps'           => $steps,
+            'dietTypes'       => (array) $this->request->input('dietTypes', []),
+            'tags'            => (array) $this->request->input('tags', []),
+            'nutrition'       => $this->request->input('nutrition'),
+        ]);
+
+        return Response::json(['recipeId' => $recipeId], 201);
+    }
+
+    public function submitForReview(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        if (!$this->isPost()) {
+            return $this->jsonError('Metoda niedozwolona.', 405);
+        }
+
+        $recipeId = (int) $this->request->routeParam('recipeId');
+        $userId   = $this->sessions->currentUser()->id();
+
+        $db   = new Database();
+        $repo = new RecipeRepository($db->connection());
+
+        try {
+            $found = $repo->submitForReview($recipeId, $userId);
+        } catch (\RuntimeException $e) {
+            return match ($e->getMessage()) {
+                'forbidden'      => $this->jsonError('Brak dostępu do tego przepisu.', 403),
+                'invalid_status' => $this->jsonError('Przepis nie może być wysłany do recenzji w obecnym statusie.', 409),
+                default          => $this->jsonError('Błąd serwera.', 500),
+            };
+        }
+
+        if (!$found) {
+            return $this->jsonError('Przepis nie istnieje.', 404);
+        }
+
+        return Response::json(['status' => 'submitted']);
+    }
+
+    private function slugify(string $text): string
+    {
+        $map  = ['ą'=>'a','ć'=>'c','ę'=>'e','ł'=>'l','ń'=>'n','ó'=>'o','ś'=>'s','ź'=>'z','ż'=>'z',
+                 'Ą'=>'A','Ć'=>'C','Ę'=>'E','Ł'=>'L','Ń'=>'N','Ó'=>'O','Ś'=>'S','Ź'=>'Z','Ż'=>'Z'];
+        $text = strtr($text, $map);
+        $text = mb_strtolower($text);
+        $text = preg_replace('/[^a-z0-9]+/', '-', $text) ?? '';
+
+        return trim($text, '-') ?: 'przepis';
     }
 }

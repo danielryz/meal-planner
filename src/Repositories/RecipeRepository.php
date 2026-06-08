@@ -78,7 +78,7 @@ final class RecipeRepository extends AbstractRepository
             : '';
 
         $stmt = $this->connection->prepare(
-            "SELECT r.id, r.title, r.description, r.difficulty, r.prep_time_minutes, r.servings,
+            "SELECT r.id, r.author_user_id, r.title, r.description, r.difficulty, r.prep_time_minutes, r.servings,
                 r.status, r.visibility,
                 rc.code AS category_code, rc.label AS category_label,
                 up.display_name AS author_name,
@@ -143,12 +143,12 @@ final class RecipeRepository extends AbstractRepository
     public function listFilterOptions(): array
     {
         $stmt = $this->connection->prepare(
-            'SELECT code, label FROM recipe_categories ORDER BY sort_order'
+            'SELECT code AS id, label FROM recipe_categories ORDER BY sort_order'
         );
         $stmt->execute();
         $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $stmt = $this->connection->prepare('SELECT code, label FROM diet_types ORDER BY id');
+        $stmt = $this->connection->prepare('SELECT code AS id, label FROM diet_types ORDER BY id');
         $stmt->execute();
         $diets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -167,6 +167,270 @@ final class RecipeRepository extends AbstractRepository
                 ['id' => '120', 'label' => 'Do 2 godz.'],
             ],
         ];
+    }
+
+    public function listByAuthor(int $userId): array
+    {
+        $stmt = $this->connection->prepare(
+            "SELECT r.id, r.title, r.status, r.visibility, r.submitted_at,
+                r.updated_at, rc.label AS category_label,
+                (SELECT reason FROM recipe_publication_reviews
+                 WHERE recipe_id = r.id AND reason IS NOT NULL
+                 ORDER BY created_at DESC LIMIT 1) AS review_reason
+            FROM recipes r
+            LEFT JOIN recipe_categories rc ON rc.id = r.category_id
+            WHERE r.author_user_id = :user_id
+            ORDER BY r.updated_at DESC"
+        );
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function deleteDraft(int $recipeId, int $userId): bool
+    {
+        $stmt = $this->connection->prepare(
+            "SELECT author_user_id, status FROM recipes WHERE id = :id"
+        );
+        $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row === false) {
+            return false;
+        }
+
+        if ((int) $row['author_user_id'] !== $userId) {
+            throw new \RuntimeException('forbidden');
+        }
+
+        if ($row['status'] !== 'draft') {
+            throw new \RuntimeException('invalid_status');
+        }
+
+        $stmt = $this->connection->prepare('DELETE FROM recipes WHERE id = :id');
+        $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return true;
+    }
+
+    public function getReviewQueue(): array
+    {
+        $stmt = $this->connection->prepare(
+            "SELECT r.id, r.title, r.description, r.difficulty, r.prep_time_minutes, r.servings,
+                r.submitted_at, rc.label AS category_label,
+                u.email AS author_email, up.display_name AS author_name,
+                (SELECT reason FROM recipe_publication_reviews
+                 WHERE recipe_id = r.id AND reason IS NOT NULL
+                 ORDER BY created_at DESC LIMIT 1) AS review_note
+            FROM recipes r
+            JOIN users u ON u.id = r.author_user_id
+            JOIN user_profiles up ON up.user_id = u.id
+            LEFT JOIN recipe_categories rc ON rc.id = r.category_id
+            WHERE r.status = 'submitted'
+            ORDER BY r.submitted_at ASC"
+        );
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($rows as &$row) {
+            $ingredients = $this->ingredientsForRecipe((int) $row['id']);
+            $row['ingredients'] = array_map(
+                fn($i) => $i['note'] ? "{$i['name']} — {$i['amount']} ({$i['note']})" : "{$i['name']} — {$i['amount']}",
+                $ingredients
+            );
+        }
+
+        return $rows;
+    }
+
+    public function approveRecipe(int $recipeId, int $reviewerUserId): void
+    {
+        $this->assertReviewTransition($recipeId, ['submitted']);
+
+        $this->connection->beginTransaction();
+        try {
+            $stmt = $this->connection->prepare(
+                "UPDATE recipes SET status = 'approved', visibility = 'public',
+                    approved_at = CURRENT_TIMESTAMP, published_at = CURRENT_TIMESTAMP,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :id"
+            );
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $this->insertReviewRecord($recipeId, $reviewerUserId, 'approved', null);
+
+            $this->connection->commit();
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
+    public function requestChanges(int $recipeId, int $reviewerUserId, string $note): void
+    {
+        $this->assertReviewTransition($recipeId, ['submitted']);
+
+        $this->connection->beginTransaction();
+        try {
+            $stmt = $this->connection->prepare(
+                "UPDATE recipes SET status = 'changes_requested', updated_at = CURRENT_TIMESTAMP WHERE id = :id"
+            );
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $this->insertReviewRecord($recipeId, $reviewerUserId, 'changes_requested', $note);
+
+            $this->connection->commit();
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
+    public function rejectRecipe(int $recipeId, int $reviewerUserId, string $note): void
+    {
+        $this->assertReviewTransition($recipeId, ['submitted']);
+
+        $this->connection->beginTransaction();
+        try {
+            $stmt = $this->connection->prepare(
+                "UPDATE recipes SET status = 'rejected', updated_at = CURRENT_TIMESTAMP WHERE id = :id"
+            );
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $this->insertReviewRecord($recipeId, $reviewerUserId, 'rejected', $note);
+
+            $this->connection->commit();
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
+    private function assertReviewTransition(int $recipeId, array $allowedStatuses): void
+    {
+        $stmt = $this->connection->prepare('SELECT status FROM recipes WHERE id = :id');
+        $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row === false) {
+            throw new \RuntimeException('not_found');
+        }
+
+        if (!in_array($row['status'], $allowedStatuses, true)) {
+            throw new \RuntimeException('invalid_status');
+        }
+    }
+
+    private function insertReviewRecord(int $recipeId, int $reviewerUserId, string $action, ?string $reason): void
+    {
+        $stmt = $this->connection->prepare(
+            'INSERT INTO recipe_publication_reviews (recipe_id, reviewer_user_id, action, reason)
+            VALUES (:recipe_id, :reviewer_id, :action, :reason)'
+        );
+        $stmt->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
+        $stmt->bindValue(':reviewer_id', $reviewerUserId, PDO::PARAM_INT);
+        $stmt->bindValue(':action', $action);
+        $stmt->bindValue(':reason', $reason);
+        $stmt->execute();
+    }
+
+    public function createDraft(int $userId, array $data): int
+    {
+        $this->connection->beginTransaction();
+
+        try {
+            $recipeId = $this->createRecipe($userId, array_merge($data, [
+                'status'     => 'draft',
+                'visibility' => 'private',
+            ]));
+
+            foreach ($data['ingredients'] ?? [] as $i => $ingredient) {
+                $this->addIngredient(
+                    $recipeId,
+                    $i + 1,
+                    (string) ($ingredient['name'] ?? ''),
+                    (string) ($ingredient['amount'] ?? ''),
+                    isset($ingredient['note']) ? (string) $ingredient['note'] : null
+                );
+            }
+
+            foreach ($data['steps'] ?? [] as $i => $step) {
+                $this->addStep($recipeId, $i + 1, (string) ($step['instruction'] ?? ''));
+            }
+
+            foreach ($data['dietTypes'] ?? [] as $code) {
+                $this->addDietType($recipeId, (string) $code);
+            }
+
+            foreach ($data['tags'] ?? [] as $code) {
+                $this->addTag($recipeId, (string) $code);
+            }
+
+            if (!empty($data['nutrition'])) {
+                $this->addNutrition($recipeId, $data['nutrition']);
+            }
+
+            $this->connection->commit();
+
+            return $recipeId;
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
+    public function submitForReview(int $recipeId, int $userId): bool
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT author_user_id, status FROM recipes WHERE id = :id'
+        );
+        $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row === false) {
+            return false;
+        }
+
+        if ((int) $row['author_user_id'] !== $userId) {
+            throw new \RuntimeException('forbidden');
+        }
+
+        if (!in_array($row['status'], ['draft', 'changes_requested'], true)) {
+            throw new \RuntimeException('invalid_status');
+        }
+
+        $this->connection->beginTransaction();
+
+        try {
+            $stmt = $this->connection->prepare(
+                "UPDATE recipes
+                SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                WHERE id = :id"
+            );
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $stmt = $this->connection->prepare(
+                "INSERT INTO recipe_publication_reviews (recipe_id, action) VALUES (:recipe_id, 'submitted')"
+            );
+            $stmt->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $this->connection->commit();
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
     }
 
     public function slugExists(string $slug): bool

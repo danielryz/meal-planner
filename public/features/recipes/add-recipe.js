@@ -1,6 +1,5 @@
 (() => {
   const view = document.querySelector("[data-add-recipe-view]");
-  const formUrl = "/public/features/recipes/add_recipe_form_mock.json";
 
   if (!view) {
     return;
@@ -95,21 +94,38 @@
     }, 2400);
   }
 
+  function collectIngredients() {
+    return Array.from(ingredientsList.querySelectorAll("[data-ingredient-row]"))
+      .map((row) => ({
+        name: (row.querySelector("input[name='ingredientName[]']")?.value ?? "").trim(),
+        amount: (row.querySelector("input[name='ingredientAmount[]']")?.value ?? "").trim(),
+      }))
+      .filter((i) => i.name && i.amount);
+  }
+
+  function collectSteps() {
+    return Array.from(stepsList.querySelectorAll("[data-step-row]"))
+      .map((row) => ({
+        instruction: (row.querySelector("textarea")?.value ?? "").trim(),
+      }))
+      .filter((s) => s.instruction);
+  }
+
   async function loadForm() {
     try {
-      const response = await fetch(formUrl);
+      const response = await fetch("/api/recipes/form-options");
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      fillSelect(categorySelect, data.categories, data.defaults.category);
-      fillSelect(difficultySelect, data.difficulties, data.defaults.difficulty);
-      prepTimeInput.value = data.defaults.prepTimeMinutes;
-      servingsInput.value = data.defaults.servings;
-      data.defaults.ingredients.forEach((ingredient) => createIngredientRow(ingredient.name, ingredient.amount));
-      data.defaults.steps.forEach(createStepRow);
+      fillSelect(categorySelect, data.categories, "dinner");
+      fillSelect(difficultySelect, data.difficulties, "easy");
+      prepTimeInput.value = 30;
+      servingsInput.value = 2;
+      createIngredientRow();
+      createStepRow();
       loadingState.hidden = true;
       errorState.hidden = true;
       form.hidden = false;
@@ -145,8 +161,9 @@
     setFieldState(descriptionInput, descriptionError, descriptionInput.value.trim().length >= 20);
   });
 
-  form?.addEventListener("submit", (event) => {
+  form?.addEventListener("submit", async (event) => {
     event.preventDefault();
+
     const validTitle = titleInput.value.trim().length > 0;
     const validDescription = descriptionInput.value.trim().length >= 20;
     setFieldState(titleInput, titleError, validTitle);
@@ -156,7 +173,43 @@
       return;
     }
 
-    showMessage(submitMode === "review" ? "Przepis wysłany lokalnie do weryfikacji." : "Szkic przepisu zapisany lokalnie.");
+    const payload = {
+      title: titleInput.value.trim(),
+      description: descriptionInput.value.trim(),
+      categoryCode: categorySelect.value,
+      difficulty: difficultySelect.value,
+      prepTimeMinutes: parseInt(prepTimeInput.value, 10) || 30,
+      servings: parseInt(servingsInput.value, 10) || 2,
+      ingredients: collectIngredients(),
+      steps: collectSteps(),
+    };
+
+    try {
+      const draftRes = await fetch("/api/recipes/drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const draftData = await draftRes.json();
+
+      if (!draftRes.ok) {
+        showMessage(draftData.error ?? "Wystąpił błąd podczas zapisu.");
+        return;
+      }
+
+      if (submitMode === "review") {
+        await fetch(`/api/recipes/${draftData.recipeId}/submit-for-review`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        showMessage("Przepis wysłany do weryfikacji.");
+      } else {
+        showMessage("Szkic przepisu zapisany.");
+      }
+    } catch {
+      showMessage("Błąd połączenia z serwerem.");
+    }
   });
 
   loadForm();

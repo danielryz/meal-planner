@@ -1,6 +1,5 @@
 (() => {
   const view = document.querySelector("[data-review-view]");
-  const reviewsUrl = "/public/features/recipes/recipe_reviews_mock.json";
 
   if (!view) {
     return;
@@ -26,6 +25,12 @@
     changes_requested: "Do poprawek",
     approved: "Zaakceptowany",
     rejected: "Odrzucony",
+  };
+
+  const actionEndpoints = {
+    approved: "approve",
+    changes_requested: "request-changes",
+    rejected: "reject",
   };
 
   function escapeHtml(value) {
@@ -160,27 +165,23 @@
     `;
   }
 
-  function setReviewStatus(status, reason) {
-    const review = reviews.find((item) => item.id === selectedReviewId);
+  async function submitReviewAction(reviewId, action, reason) {
+    const endpoint = actionEndpoints[action];
+    const res = await fetch(`/api/recipe-reviews/${reviewId}/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    });
 
-    if (!review) {
-      return;
-    }
-
-    review.status = status;
-    review.reviewNote = reason || review.reviewNote;
-    renderList();
-
-    const message = detail.querySelector("[data-review-message]");
-    if (message) {
-      message.textContent = status === "approved" ? "Przepis zaakceptowany lokalnie." : "Decyzja zapisana lokalnie.";
-      message.hidden = false;
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error ?? `HTTP ${res.status}`);
     }
   }
 
   async function loadReviews() {
     try {
-      const response = await fetch(reviewsUrl);
+      const response = await fetch("/api/recipe-reviews");
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -220,15 +221,42 @@
     renderList();
   });
 
-  detail.addEventListener("click", (event) => {
+  detail.addEventListener("click", async (event) => {
     const actionButton = event.target.closest("[data-review-action]");
 
     if (!actionButton) {
       return;
     }
 
+    const action = actionButton.dataset.reviewAction;
     const reason = detail.querySelector("[data-review-reason]")?.value.trim() ?? "";
-    setReviewStatus(actionButton.dataset.reviewAction, reason);
+    const messageEl = detail.querySelector("[data-review-message]");
+
+    actionButton.disabled = true;
+
+    try {
+      await submitReviewAction(selectedReviewId, action, reason);
+
+      const review = reviews.find((item) => item.id === selectedReviewId);
+      if (review) {
+        review.status = action === "approved" ? "approved" : action;
+        review.reviewNote = reason || review.reviewNote;
+      }
+
+      renderList();
+
+      const updatedMessage = detail.querySelector("[data-review-message]");
+      if (updatedMessage) {
+        updatedMessage.textContent = action === "approved" ? "Przepis zaakceptowany." : "Decyzja zapisana.";
+        updatedMessage.hidden = false;
+      }
+    } catch (error) {
+      actionButton.disabled = false;
+      if (messageEl) {
+        messageEl.textContent = error.message ?? "Wystąpił błąd.";
+        messageEl.hidden = false;
+      }
+    }
   });
 
   loadReviews();

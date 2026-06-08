@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Controllers\DashboardController;
 use App\Controllers\ProfileController;
 use App\Controllers\RecipeController;
+use App\Controllers\ReviewController;
 use App\Controllers\SecurityController;
 use App\Controllers\UserController;
 use App\Http\Request;
@@ -98,6 +99,10 @@ final class Routing
             "controller" => RecipeController::class,
             "action" => "formOptions",
         ],
+        "api/recipes/drafts" => [
+            "controller" => RecipeController::class,
+            "action" => "createDraft",
+        ],
         "api/recipes/{recipeId}" => [
             "controller" => RecipeController::class,
             "action" => "details",
@@ -105,6 +110,30 @@ final class Routing
         "api/recipes/{recipeId}/favorite" => [
             "controller" => RecipeController::class,
             "action" => "toggleFavorite",
+        ],
+        "api/recipes/{recipeId}/submit-for-review" => [
+            "controller" => RecipeController::class,
+            "action" => "submitForReview",
+        ],
+        "api/my-recipes" => [
+            "controller" => RecipeController::class,
+            "action" => "myRecipes",
+        ],
+        "api/recipe-reviews" => [
+            "controller" => ReviewController::class,
+            "action" => "queue",
+        ],
+        "api/recipe-reviews/{reviewId}/approve" => [
+            "controller" => ReviewController::class,
+            "action" => "approve",
+        ],
+        "api/recipe-reviews/{reviewId}/request-changes" => [
+            "controller" => ReviewController::class,
+            "action" => "requestChanges",
+        ],
+        "api/recipe-reviews/{reviewId}/reject" => [
+            "controller" => ReviewController::class,
+            "action" => "reject",
         ],
         "api/profile" => [
             "controller" => ProfileController::class,
