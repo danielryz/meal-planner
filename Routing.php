@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\DashboardController;
+use App\Controllers\MealPlanController;
 use App\Controllers\ProfileController;
 use App\Controllers\RecipeController;
 use App\Controllers\ReviewController;
@@ -134,6 +135,22 @@ final class Routing
         "api/recipe-reviews/{reviewId}/reject" => [
             "controller" => ReviewController::class,
             "action" => "reject",
+        ],
+        "api/meal-plans" => [
+            "controller" => MealPlanController::class,
+            "action" => "index",
+        ],
+        "api/meal-plans/{planId}" => [
+            "controller" => MealPlanController::class,
+            "action" => "details",
+        ],
+        "api/meal-plans/{planId}/slots/{slotId}/recipes" => [
+            "controller" => MealPlanController::class,
+            "action" => "addRecipe",
+        ],
+        "api/meal-plans/{planId}/slots/{slotId}/recipes/{recipeId}" => [
+            "controller" => MealPlanController::class,
+            "action" => "removeRecipe",
         ],
         "api/profile" => [
             "controller" => ProfileController::class,
