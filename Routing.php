@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\DashboardController;
+use App\Controllers\ProfileController;
 use App\Controllers\SecurityController;
 use App\Http\Request;
 use App\Http\Router;
@@ -69,6 +70,30 @@ final class Routing
         ],
         "preferences" => [
             "controller" => DashboardController::class,
+            "action" => "preferences",
+        ],
+        "api/profile" => [
+            "controller" => ProfileController::class,
+            "action" => "getProfile",
+        ],
+        "api/settings/account" => [
+            "controller" => ProfileController::class,
+            "action" => "getAccount",
+        ],
+        "api/settings/profile" => [
+            "controller" => ProfileController::class,
+            "action" => "updateProfile",
+        ],
+        "api/settings/password-change" => [
+            "controller" => ProfileController::class,
+            "action" => "changePassword",
+        ],
+        "api/settings/notifications" => [
+            "controller" => ProfileController::class,
+            "action" => "notifications",
+        ],
+        "api/settings/preferences" => [
+            "controller" => ProfileController::class,
             "action" => "preferences",
         ],
         "logout" => [

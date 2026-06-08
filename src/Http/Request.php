@@ -18,11 +18,24 @@ final class Request
 
     public static function fromGlobals(): self
     {
+        $post = $_POST;
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        if (str_contains($contentType, 'application/json')) {
+            $raw = (string) file_get_contents('php://input');
+            if ($raw !== '') {
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded)) {
+                    $post = $decoded;
+                }
+            }
+        }
+
         return new self(
             $_SERVER['REQUEST_METHOD'] ?? 'GET',
             $_SERVER['REQUEST_URI'] ?? '/',
             $_GET,
-            $_POST,
+            $post,
             $_SERVER
         );
     }
@@ -51,6 +64,16 @@ final class Request
     public function isPost(): bool
     {
         return $this->method() === 'POST';
+    }
+
+    public function isPatch(): bool
+    {
+        return $this->method() === 'PATCH';
+    }
+
+    public function isDelete(): bool
+    {
+        return $this->method() === 'DELETE';
     }
 
     public function query(string $key, mixed $default = null): mixed

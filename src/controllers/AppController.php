@@ -33,6 +33,16 @@ abstract class AppController
         return $this->request->isPost();
     }
 
+    protected function isPatch(): bool
+    {
+        return $this->request->isPatch();
+    }
+
+    protected function isDelete(): bool
+    {
+        return $this->request->isDelete();
+    }
+
     protected function render(string $template, array $variables = [], int $statusCode = 200): Response
     {
         return $this->viewRenderer->render($template, $variables, $statusCode);
