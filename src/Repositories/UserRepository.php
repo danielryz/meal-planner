@@ -95,6 +95,39 @@ final class UserRepository extends AbstractRepository
         $statement->execute();
     }
 
+    public function createUserWithRole(
+        string $roleName,
+        string $email,
+        string $username,
+        string $passwordHash,
+        string $displayName
+    ): AuthUser {
+        $roleId = $this->roleIdByName($roleName);
+        $statement = $this->connection->prepare(
+            'INSERT INTO users (role_id, email, username, password_hash, email_verified_at)
+            VALUES (:role_id, :email, :username, :password_hash, CURRENT_TIMESTAMP)
+            RETURNING id'
+        );
+        $statement->bindValue(':role_id', $roleId, PDO::PARAM_INT);
+        $statement->bindValue(':email', $email);
+        $statement->bindValue(':username', $username);
+        $statement->bindValue(':password_hash', $passwordHash);
+        $statement->execute();
+
+        $userId = (int) $statement->fetchColumn();
+
+        $this->createProfile($userId, $displayName);
+        $this->createDefaultSettings($userId);
+
+        $user = $this->findAuthUserByEmail($email);
+
+        if ($user === null) {
+            throw new \RuntimeException("Seeded user cannot be loaded: {$email}");
+        }
+
+        return $user;
+    }
+
     public function findAll(): array
     {
         $statement = $this->connection->prepare(
@@ -175,11 +208,22 @@ final class UserRepository extends AbstractRepository
 
     private function userRoleId(): int
     {
+        return $this->roleIdByName('user');
+    }
+
+    private function roleIdByName(string $name): int
+    {
         $statement = $this->connection->prepare('SELECT id FROM roles WHERE name = :name');
-        $statement->bindValue(':name', 'user');
+        $statement->bindValue(':name', $name);
         $statement->execute();
 
-        return (int) $statement->fetchColumn();
+        $id = $statement->fetchColumn();
+
+        if ($id === false) {
+            throw new \RuntimeException("Role not found: {$name}");
+        }
+
+        return (int) $id;
     }
 
     private function createProfile(int $userId, string $displayName): void

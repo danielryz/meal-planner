@@ -148,29 +148,6 @@ CREATE INDEX IF NOT EXISTS recipe_publication_reviews_recipe_id_idx ON recipe_pu
 CREATE INDEX IF NOT EXISTS recipe_publication_reviews_reviewer_user_id_idx ON recipe_publication_reviews (reviewer_user_id);
 CREATE INDEX IF NOT EXISTS recipe_publication_reviews_action_idx ON recipe_publication_reviews (action);
 
-INSERT INTO recipe_categories (code, label, sort_order)
-VALUES
-    ('breakfast', 'Śniadanie', 10),
-    ('lunch', 'Lunch', 20),
-    ('dinner', 'Obiad', 30),
-    ('supper', 'Kolacja', 40),
-    ('soup', 'Zupa', 50),
-    ('dessert', 'Deser', 60),
-    ('snack', 'Przekąska', 70)
-ON CONFLICT (code) DO UPDATE
-SET label = EXCLUDED.label,
-    sort_order = EXCLUDED.sort_order;
-
-INSERT INTO recipe_tags (code, label)
-VALUES
-    ('quick', 'Szybkie'),
-    ('budget', 'Budżetowe'),
-    ('family', 'Rodzinne'),
-    ('protein', 'Białkowe'),
-    ('seasonal', 'Sezonowe'),
-    ('meal_prep', 'Meal prep')
-ON CONFLICT (code) DO UPDATE SET label = EXCLUDED.label;
-
 INSERT INTO schema_migrations (version, name)
 VALUES ('002', 'recipe_domain_schema')
 ON CONFLICT (version) DO NOTHING;

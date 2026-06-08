@@ -123,40 +123,6 @@ CREATE TABLE IF NOT EXISTS user_activity_events (
 CREATE INDEX IF NOT EXISTS user_activity_events_user_id_idx ON user_activity_events (user_id);
 CREATE INDEX IF NOT EXISTS user_activity_events_event_type_idx ON user_activity_events (event_type);
 
-INSERT INTO roles (name, label)
-VALUES
-    ('admin', 'Admin'),
-    ('owner', 'Właściciel'),
-    ('employee', 'Pracownik'),
-    ('user', 'Użytkownik')
-ON CONFLICT (name) DO UPDATE SET label = EXCLUDED.label;
-
-INSERT INTO diet_types (code, label)
-VALUES
-    ('standard', 'Standardowa'),
-    ('vegetarian', 'Wegetariańska'),
-    ('vegan', 'Wegańska'),
-    ('gluten_free', 'Bez glutenu'),
-    ('keto', 'Keto')
-ON CONFLICT (code) DO UPDATE SET label = EXCLUDED.label;
-
-INSERT INTO allergy_types (code, label)
-VALUES
-    ('nuts', 'Orzechy'),
-    ('gluten', 'Gluten'),
-    ('dairy', 'Nabiał'),
-    ('eggs', 'Jajka')
-ON CONFLICT (code) DO UPDATE SET label = EXCLUDED.label;
-
-INSERT INTO cuisine_types (code, label)
-VALUES
-    ('polish', 'Polska'),
-    ('italian', 'Włoska'),
-    ('asian', 'Azjatycka'),
-    ('mexican', 'Meksykańska'),
-    ('mediterranean', 'Śródziemnomorska')
-ON CONFLICT (code) DO UPDATE SET label = EXCLUDED.label;
-
 INSERT INTO schema_migrations (version, name)
 VALUES ('001', 'core_schema')
 ON CONFLICT (version) DO NOTHING;

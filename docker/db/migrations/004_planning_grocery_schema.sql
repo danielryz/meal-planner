@@ -112,19 +112,6 @@ CREATE INDEX IF NOT EXISTS grocery_items_source_recipe_id_idx ON grocery_items(s
 CREATE INDEX IF NOT EXISTS grocery_items_source_meal_slot_id_idx ON grocery_items(source_meal_slot_id);
 CREATE INDEX IF NOT EXISTS grocery_items_is_checked_idx ON grocery_items(is_checked);
 
-INSERT INTO grocery_item_categories (code, label, sort_order)
-VALUES
-    ('vegetables', 'Warzywa', 10),
-    ('fruit', 'Owoce', 20),
-    ('meat_fish', 'Mieso i ryby', 30),
-    ('dairy', 'Nabial', 40),
-    ('grains', 'Produkty sypkie', 50),
-    ('spices', 'Przyprawy', 60),
-    ('other', 'Inne', 100)
-ON CONFLICT (code) DO UPDATE
-SET label = EXCLUDED.label,
-    sort_order = EXCLUDED.sort_order;
-
 INSERT INTO schema_migrations (version, name)
 VALUES ('004', 'planning_grocery_schema')
 ON CONFLICT (version) DO NOTHING;

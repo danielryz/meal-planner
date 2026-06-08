@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\DashboardController;
 use App\Controllers\ProfileController;
+use App\Controllers\RecipeController;
 use App\Controllers\SecurityController;
 use App\Controllers\UserController;
 use App\Http\Request;
@@ -88,6 +89,22 @@ final class Routing
         "api/users/{userId}/status" => [
             "controller" => UserController::class,
             "action" => "updateStatus",
+        ],
+        "api/recipes" => [
+            "controller" => RecipeController::class,
+            "action" => "list",
+        ],
+        "api/recipes/form-options" => [
+            "controller" => RecipeController::class,
+            "action" => "formOptions",
+        ],
+        "api/recipes/{recipeId}" => [
+            "controller" => RecipeController::class,
+            "action" => "details",
+        ],
+        "api/recipes/{recipeId}/favorite" => [
+            "controller" => RecipeController::class,
+            "action" => "toggleFavorite",
         ],
         "api/profile" => [
             "controller" => ProfileController::class,
