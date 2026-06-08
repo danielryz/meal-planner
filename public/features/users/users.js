@@ -1,6 +1,6 @@
 (() => {
   const view = document.querySelector("[data-users-view]");
-  const usersUrl = "/public/features/users/users_mock.json";
+  const usersUrl = "/api/users";
 
   if (!view) {
     return;
@@ -22,6 +22,7 @@
   const inviteError = view.querySelector("[data-invite-error]");
   const focusInviteButton = view.querySelector("[data-focus-invite]");
   let users = [];
+  let committedSearchQuery = "";
 
   const roleLabels = {
     owner: "Właściciel",
@@ -53,7 +54,7 @@
   }
 
   function getFilteredUsers() {
-    const query = normalize(searchInput?.value ?? "");
+    const query = normalize(committedSearchQuery);
     const role = roleFilter?.value ?? "all";
 
     return users.filter((user) => {
@@ -137,7 +138,13 @@
     }
   }
 
-  searchInput?.addEventListener("input", render);
+  searchInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      committedSearchQuery = searchInput.value;
+      render();
+    }
+  });
   roleFilter?.addEventListener("change", render);
 
   focusInviteButton?.addEventListener("click", () => {
