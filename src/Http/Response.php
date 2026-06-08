@@ -23,6 +23,15 @@ final class Response
         return new self('', $statusCode, ['Location' => $location]);
     }
 
+    public static function json(mixed $data, int $statusCode = 200): self
+    {
+        return new self(
+            json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
+            $statusCode,
+            ['Content-Type' => 'application/json; charset=UTF-8']
+        );
+    }
+
     public function send(): void
     {
         http_response_code($this->statusCode);

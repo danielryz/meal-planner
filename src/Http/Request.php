@@ -11,7 +11,8 @@ final class Request
         private readonly string $uri,
         private readonly array $query,
         private readonly array $post,
-        private readonly array $server
+        private readonly array $server,
+        private array $routeParams = []
     ) {
     }
 
@@ -65,5 +66,17 @@ final class Request
     public function server(string $key, mixed $default = null): mixed
     {
         return $this->server[$key] ?? $default;
+    }
+
+    public function withRouteParams(array $params): self
+    {
+        $clone = clone $this;
+        $clone->routeParams = $params;
+        return $clone;
+    }
+
+    public function routeParam(string $key, mixed $default = null): mixed
+    {
+        return $this->routeParams[$key] ?? $default;
     }
 }

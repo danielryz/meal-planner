@@ -21,12 +21,32 @@ final class Router
     {
         $path = $request->path();
 
-        if (!array_key_exists($path, $this->routes)) {
-            return $this->viewRenderer->renderError(404);
+        if (array_key_exists($path, $this->routes)) {
+            return $this->handle($request, $this->routes[$path]);
         }
 
-        $controllerClass = $this->routes[$path]['controller'];
-        $action = $this->routes[$path]['action'];
+        foreach ($this->routes as $pattern => $route) {
+            $params = $this->matchPattern($pattern, $path);
+            if ($params !== null) {
+                return $this->handle($request->withRouteParams($params), $route);
+            }
+        }
+        return $this->viewRenderer->renderError(404);
+    }
+
+    private function matchPattern(string $pattern, string $path): ?array
+    {
+        $regex = preg_replace('/{(\w+)}/', '(?P<$1>[^/]+)', $pattern);
+        if (!preg_match('#^' . $regex . '$#', $path, $matches)) {
+            return null;
+        }
+        return array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+    }
+
+    private function handle(Request $request, array $route): Response
+    {
+        $controllerClass = $route['controller'];
+        $action = $route['action'];
         $controller = new $controllerClass($request, $this->viewRenderer);
 
         if (!method_exists($controller, $action)) {
@@ -45,4 +65,5 @@ final class Router
 
         return $response;
     }
+
 }

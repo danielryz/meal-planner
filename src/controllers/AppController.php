@@ -71,4 +71,24 @@ abstract class AppController
             "currentUserName" => $user->displayName(),
         ];
     }
+
+    protected function requireRole(string ...$roles): ?Response
+    {
+        if($redirect = $this->requireLogin()) {
+            return $redirect;
+        }
+
+        $user = $this->sessions->currentUser();
+
+        if(!in_array($user?->role(), $roles, true)) {
+            return Response::json(['error' => 'Brak uprawnień.'], 403);
+        }
+        return null;
+    }
+
+    protected function jsonError(string $message, int $status = 400): Response
+    {
+        return Response::json(['error' => $message], $status);
+
+    }
 }
