@@ -122,6 +122,19 @@ final class DashboardController extends AppController
 
     public function recipeDetails(): Response
     {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        return $this->renderAppView("recipe-details", "recipes");
+    }
+
+    public function recipeDetail(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
         return $this->renderAppView("recipe-details", "recipes");
     }
 

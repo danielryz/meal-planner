@@ -12,7 +12,7 @@
     <div class="app-page recipe-details-page">
       <?php include $partialsPath . '/app-nav.html'; ?>
 
-      <main class="recipe-details-main" data-recipe-details-view>
+      <main class="recipe-details-main" data-recipe-details-view data-authenticated="<?= ($currentUserRole ?? 'guest') !== 'guest' ? 'true' : 'false' ?>">
         <div class="recipe-details-shell">
           <a class="recipe-back-link" href="/recipes">Wróć do przepisów</a>
 
@@ -30,10 +30,11 @@
 
             <section class="recipe-detail-actions" aria-label="Akcje przepisu">
               <div class="recipe-servings-control">
-                <button type="button" data-servings-decrease aria-label="Zmniejsz liczbę porcji">-</button>
+                <button type="button" data-servings-decrease aria-label="Zmniejsz liczbę porcji">−</button>
                 <strong data-recipe-servings></strong>
                 <button type="button" data-servings-increase aria-label="Zwiększ liczbę porcji">+</button>
               </div>
+              <button class="recipe-favorite" type="button" data-favorite-btn aria-label="Dodaj do ulubionych" aria-pressed="false">♥</button>
               <button class="button recipe-plan-button" type="button" data-add-to-plan>
                 <img src="/public/assets/icons/planner.svg" alt="" />
                 <span>Dodaj do planu</span>
@@ -62,13 +63,6 @@
               </article>
             </section>
 
-            <section class="recipe-video-card">
-              <div class="recipe-video-card__visual">
-                <button type="button" aria-label="Odtwórz wideo">▶</button>
-                <span>Wideo z przygotowania</span>
-              </div>
-            </section>
-
             <div class="recipe-detail-grid">
               <section class="recipe-panel recipe-ingredients" aria-labelledby="recipe-ingredients-title">
                 <div class="recipe-panel__header">
@@ -84,7 +78,7 @@
                   <dl data-nutrition-list></dl>
                 </section>
 
-                <section class="recipe-tip" aria-labelledby="recipe-tip-title">
+                <section class="recipe-tip" aria-labelledby="recipe-tip-title" data-tip-section hidden>
                   <h2 id="recipe-tip-title">Wskazówka</h2>
                   <p data-chef-tip></p>
                 </section>
@@ -96,7 +90,7 @@
               <ol data-steps-list></ol>
             </section>
 
-            <section class="recipe-related" aria-labelledby="recipe-related-title">
+            <section class="recipe-related" aria-labelledby="recipe-related-title" data-related-section hidden>
               <h2 id="recipe-related-title">Może Ci się spodobać</h2>
               <div class="recipe-related-grid" data-related-list></div>
             </section>
@@ -104,5 +98,38 @@
         </div>
       </main>
     </div>
+
+    <dialog class="meal-plan-dialog" data-plan-dialog>
+      <form method="dialog" class="meal-plan-dialog__form">
+        <h3>Dodaj do planu posiłków</h3>
+        <div class="meal-plan-dialog__fields">
+          <label>
+            Dzień
+            <select name="day" data-plan-day>
+              <option value="monday">Poniedziałek</option>
+              <option value="tuesday">Wtorek</option>
+              <option value="wednesday">Środa</option>
+              <option value="thursday">Czwartek</option>
+              <option value="friday">Piątek</option>
+              <option value="saturday">Sobota</option>
+              <option value="sunday">Niedziela</option>
+            </select>
+          </label>
+          <label>
+            Pora posiłku
+            <select name="mealType" data-plan-meal-type>
+              <option value="breakfast">Śniadanie</option>
+              <option value="lunch">Obiad</option>
+              <option value="dinner">Kolacja</option>
+              <option value="snack">Przekąska</option>
+            </select>
+          </label>
+        </div>
+        <div class="meal-plan-dialog__actions">
+          <button class="button" type="button" data-plan-confirm>Dodaj</button>
+          <button class="button button-secondary" type="submit">Anuluj</button>
+        </div>
+      </form>
+    </dialog>
   </body>
 </html>

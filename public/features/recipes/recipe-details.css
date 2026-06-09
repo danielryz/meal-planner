@@ -606,3 +606,81 @@
     min-height: 140px;
   }
 }
+
+/* Ingredient add button */
+.recipe-ingredient-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recipe-ingredient-add {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-primary, #22c55e);
+  background: transparent;
+  color: var(--color-primary, #22c55e);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.recipe-ingredient-add:hover {
+  background: var(--color-primary, #22c55e);
+  color: #fff;
+}
+
+/* Meal plan dialog */
+.meal-plan-dialog {
+  border: none;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 420px;
+  width: calc(100% - 32px);
+  box-shadow: 0 8px 40px rgba(0,0,0,.18);
+}
+
+.meal-plan-dialog::backdrop {
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+}
+
+.meal-plan-dialog h3 {
+  margin: 0 0 20px;
+  font-size: 1.125rem;
+}
+
+.meal-plan-dialog__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.meal-plan-dialog__fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.meal-plan-dialog__fields select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.9375rem;
+  background: #fff;
+}
+
+.meal-plan-dialog__actions {
+  display: flex;
+  gap: 10px;
+}

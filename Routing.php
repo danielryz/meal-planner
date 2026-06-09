@@ -54,6 +54,10 @@ final class Routing
             "controller" => DashboardController::class,
             "action" => "recipeDetails",
         ],
+        "recipe/{recipeId}" => [
+            "controller" => DashboardController::class,
+            "action" => "recipeDetail",
+        ],
         "add-recipe" => [
             "controller" => DashboardController::class,
             "action" => "addRecipe",

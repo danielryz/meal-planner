@@ -49,7 +49,7 @@
   function createRecipeCard(recipe) {
     const favoriteClass = recipe.isFavorite ? "is-active" : "";
     const favoriteLabel = recipe.isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych";
-    const detailUrl     = `/recipe-details?id=${encodeURIComponent(recipe.id)}`;
+    const detailUrl     = `/recipe/${encodeURIComponent(recipe.id)}`;
     const ratingHtml    = recipe.rating != null
       ? `<strong>${escapeHtml(recipe.rating)}</strong> <small>(${escapeHtml(recipe.reviewCount)} opinii)</small>`
       : `<strong>—</strong>`;
