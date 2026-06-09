@@ -59,6 +59,10 @@ abstract class AppController
             return null;
         }
 
+        if (str_starts_with($this->request->path(), 'api/')) {
+            return Response::json(['error' => 'Wymagane logowanie.'], 401);
+        }
+
         return $this->redirect('/login');
     }
 

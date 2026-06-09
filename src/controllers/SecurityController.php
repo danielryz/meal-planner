@@ -21,6 +21,10 @@ final class SecurityController extends AppController
             return $this->renderLogin();
         }
 
+        if ($this->isRateLimited()) {
+            return $this->renderLogin(['global' => 'Zbyt wiele prób logowania. Spróbuj za 15 minut.'], 429);
+        }
+
         $csrfToken = $this->request->input('csrfToken');
 
         if (!$this->csrfTokens->isValid('login', $csrfToken)) {
@@ -33,9 +37,11 @@ final class SecurityController extends AppController
         );
 
         if (!$result->isSuccess()) {
+            $this->recordFailedAttempt();
             return $this->renderLogin($result->errors(), 401);
         }
 
+        $this->clearRateLimit();
         return $this->redirect('/dashboard');
     }
 
@@ -101,6 +107,41 @@ final class SecurityController extends AppController
             "oldDisplayName" => (string) $this->request->input('firstName', ''),
             "oldEmail" => (string) $this->request->input('email', ''),
         ], $statusCode);
+    }
+
+    private function isRateLimited(): bool
+    {
+        $key = $this->rateLimitKey();
+
+        if (isset($_SESSION[$key . '_until']) && $_SESSION[$key . '_until'] > time()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function recordFailedAttempt(): void
+    {
+        $key      = $this->rateLimitKey();
+        $attempts = (int) ($_SESSION[$key . '_count'] ?? 0) + 1;
+
+        if ($attempts >= 5) {
+            $_SESSION[$key . '_until'] = time() + 900;
+            unset($_SESSION[$key . '_count']);
+        } else {
+            $_SESSION[$key . '_count'] = $attempts;
+        }
+    }
+
+    private function clearRateLimit(): void
+    {
+        $key = $this->rateLimitKey();
+        unset($_SESSION[$key . '_count'], $_SESSION[$key . '_until']);
+    }
+
+    private function rateLimitKey(): string
+    {
+        return 'rl_' . md5((string) $this->request->server('REMOTE_ADDR', ''));
     }
 
     private function authService(): AuthService
