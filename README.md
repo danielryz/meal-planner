@@ -144,9 +144,13 @@ Demo konta:
 ```text
 docker/
   db/
-    migrations/     # pliki SQL migracji (001–007)
+    migrations/     # pliki SQL migracji (001–005)
   nginx/
   php/
+docs/
+  erd.md            # diagram ERD (Mermaid)
+  schema.sql        # skonsolidowany schemat SQL
+  test-scenario.md  # scenariusz testów manualnych
 public/
   features/         # widoki i JS per feature
   assets/
@@ -176,6 +180,14 @@ docker-compose.yaml
 ```
 
 Lokalne pliki planowania znajdują się w `local/`. Ten katalog jest ignorowany przez Git.
+
+## Dokumentacja
+
+| Plik | Opis |
+|------|------|
+| `docs/erd.md` | Diagram ERD wszystkich tabel i relacji (Mermaid) |
+| `docs/schema.sql` | Skonsolidowany schemat SQL z migracji 001–005 |
+| `docs/test-scenario.md` | Scenariusz testów manualnych |
 
 ## API — Główne Endpointy
 
