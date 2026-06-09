@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Polityka prywatności - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="page-shell static-page">
+      <?php include $partialsPath . '/public-nav.html'; ?>
+
+      <main class="page-main">
+        <section class="static-page__hero">
+          <div class="container">
+            <span class="about-kicker">Prywatność</span>
+            <h1 class="static-page__title">Polityka prywatności</h1>
+            <p class="static-page__lead">
+              Dbamy o Twoje dane i przejrzystość w ich przetwarzaniu.
+              Ostatnia aktualizacja: <?= date('d.m.Y') ?>.
+            </p>
+          </div>
+        </section>
+
+        <section class="static-page__content">
+          <div class="container">
+            <div class="static-page__prose">
+              <h2>Administrator danych</h2>
+              <p>
+                Administratorem danych osobowych jest MealPlanner.
+                Kontakt w sprawach dotyczących danych osobowych: <a href="mailto:privacy@mealplanner.pl">privacy@mealplanner.pl</a>.
+              </p>
+
+              <h2>Jakie dane zbieramy</h2>
+              <ul>
+                <li><strong>Dane konta:</strong> adres e-mail, nazwa wyświetlana, hasło (przechowywane jako hash bcrypt)</li>
+                <li><strong>Dane profilu:</strong> preferencje dietetyczne, zdjęcie profilowe (opcjonalnie)</li>
+                <li><strong>Dane aktywności:</strong> stworzone przepisy, listy zakupów, plany posiłków, ulubione przepisy</li>
+                <li><strong>Dane techniczne:</strong> adres IP, sesja, logi błędów</li>
+              </ul>
+
+              <h2>Cel przetwarzania danych</h2>
+              <ul>
+                <li>Świadczenie usługi MealPlanner (podstawa: umowa)</li>
+                <li>Weryfikacja adresu e-mail i bezpieczeństwo konta (podstawa: uzasadniony interes)</li>
+                <li>Wysyłka e-maili transakcyjnych (aktywacja konta, reset hasła) (podstawa: umowa)</li>
+                <li>Diagnostyka błędów i poprawa jakości usługi (podstawa: uzasadniony interes)</li>
+              </ul>
+
+              <h2>Przechowywanie danych</h2>
+              <p>
+                Dane konta są przechowywane przez czas trwania konta lub do jego usunięcia.
+                Logi techniczne są usuwane po 90 dniach.
+              </p>
+
+              <h2>Twoje prawa</h2>
+              <p>Masz prawo do:</p>
+              <ul>
+                <li>Dostępu do swoich danych</li>
+                <li>Sprostowania nieprawidłowych danych</li>
+                <li>Usunięcia danych (prawo do bycia zapomnianym)</li>
+                <li>Ograniczenia przetwarzania</li>
+                <li>Przenoszenia danych</li>
+                <li>Wniesienia skargi do organu nadzorczego (UODO)</li>
+              </ul>
+              <p>Aby skorzystać z praw, wyślij wiadomość na <a href="mailto:privacy@mealplanner.pl">privacy@mealplanner.pl</a>.</p>
+
+              <h2>Pliki cookie i sesje</h2>
+              <p>
+                Aplikacja używa wyłącznie technicznych plików cookie do zarządzania sesją użytkownika.
+                Nie używamy plików cookie reklamowych ani śledzących.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <?php include $partialsPath . '/footer.html'; ?>
+    </div>
+  </body>
+</html>

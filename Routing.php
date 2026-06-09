@@ -30,6 +30,22 @@ final class Routing
             "controller" => DashboardController::class,
             "action" => "about",
         ],
+        "support" => [
+            "controller" => DashboardController::class,
+            "action" => "support",
+        ],
+        "contact" => [
+            "controller" => DashboardController::class,
+            "action" => "contact",
+        ],
+        "privacy" => [
+            "controller" => DashboardController::class,
+            "action" => "privacy",
+        ],
+        "terms" => [
+            "controller" => DashboardController::class,
+            "action" => "terms",
+        ],
         "recipes" => [
             "controller" => DashboardController::class,
             "action" => "recipes",

@@ -10,7 +10,31 @@ final class DashboardController extends AppController
 {
     public function home(): Response
     {
+        if ($this->sessions->isLoggedIn()) {
+            return $this->redirect('/dashboard');
+        }
+
         return $this->render("index", ["title" => "MealPlanner"]);
+    }
+
+    public function support(): Response
+    {
+        return $this->render("support");
+    }
+
+    public function contact(): Response
+    {
+        return $this->render("contact");
+    }
+
+    public function privacy(): Response
+    {
+        return $this->render("privacy");
+    }
+
+    public function terms(): Response
+    {
+        return $this->render("terms");
     }
 
     public function dashboard(): Response

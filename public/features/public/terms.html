@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Regulamin - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="page-shell static-page">
+      <?php include $partialsPath . '/public-nav.html'; ?>
+
+      <main class="page-main">
+        <section class="static-page__hero">
+          <div class="container">
+            <span class="about-kicker">Regulamin</span>
+            <h1 class="static-page__title">Regulamin serwisu</h1>
+            <p class="static-page__lead">
+              Zasady korzystania z aplikacji MealPlanner.
+              Ostatnia aktualizacja: <?= date('d.m.Y') ?>.
+            </p>
+          </div>
+        </section>
+
+        <section class="static-page__content">
+          <div class="container">
+            <div class="static-page__prose">
+              <h2>§1 Postanowienia ogólne</h2>
+              <p>
+                Serwis MealPlanner (dalej: „Serwis") jest aplikacją internetową umożliwiającą planowanie posiłków,
+                przeglądanie i dodawanie przepisów oraz zarządzanie listą zakupów.
+              </p>
+              <p>
+                Korzystanie z Serwisu oznacza akceptację niniejszego Regulaminu.
+              </p>
+
+              <h2>§2 Rejestracja i konto</h2>
+              <ul>
+                <li>Rejestracja jest bezpłatna i wymaga podania adresu e-mail oraz hasła.</li>
+                <li>Użytkownik jest zobowiązany podać prawdziwy adres e-mail i potwierdzić go linkiem aktywacyjnym.</li>
+                <li>Konto jest osobiste — nie można go udostępniać innym osobom.</li>
+                <li>Użytkownik odpowiada za bezpieczeństwo swojego hasła.</li>
+              </ul>
+
+              <h2>§3 Treści użytkownika</h2>
+              <ul>
+                <li>Użytkownik może dodawać przepisy kulinarne do Serwisu.</li>
+                <li>Przepisy podlegają weryfikacji przez moderatorów przed publikacją.</li>
+                <li>Zabronione jest dodawanie treści niezgodnych z prawem, obraźliwych lub niezwiązanych z tematyką Serwisu.</li>
+                <li>Serwis zastrzega sobie prawo do usunięcia treści naruszających Regulamin.</li>
+              </ul>
+
+              <h2>§4 Odpowiedzialność</h2>
+              <p>
+                Serwis jest udostępniany w stanie „takim, jaki jest". Nie ponosimy odpowiedzialności za
+                przerwy w działaniu, błędy ani utratę danych wynikające z przyczyn niezależnych od nas.
+                Przepisy w Serwisie mają charakter informacyjny — przed stosowaniem diety skonsultuj się z dietetykiem.
+              </p>
+
+              <h2>§5 Usunięcie konta</h2>
+              <p>
+                Użytkownik może usunąć konto w ustawieniach aplikacji lub przez kontakt na
+                <a href="mailto:kontakt@mealplanner.pl">kontakt@mealplanner.pl</a>.
+                Usunięcie konta powoduje trwałe usunięcie danych osobowych, z wyjątkiem danych wymaganych przez prawo.
+              </p>
+
+              <h2>§6 Zmiany Regulaminu</h2>
+              <p>
+                O istotnych zmianach Regulaminu informujemy e-mailem z 14-dniowym wyprzedzeniem.
+                Dalsze korzystanie z Serwisu po tym terminie oznacza akceptację zmian.
+              </p>
+
+              <h2>§7 Kontakt</h2>
+              <p>
+                W sprawach dotyczących Regulaminu kontaktuj się pod adresem
+                <a href="mailto:kontakt@mealplanner.pl">kontakt@mealplanner.pl</a>.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <?php include $partialsPath . '/footer.html'; ?>
+    </div>
+  </body>
+</html>

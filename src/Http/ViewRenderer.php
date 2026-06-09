@@ -8,7 +8,11 @@ final class ViewRenderer
 {
     private const VIEW_PATHS = [
         'index' => 'public/features/public/index.html',
-        'about' => 'public/features/public/about.html',
+        'about'   => 'public/features/public/about.html',
+        'support' => 'public/features/public/support.html',
+        'contact' => 'public/features/public/contact.html',
+        'privacy' => 'public/features/public/privacy.html',
+        'terms'   => 'public/features/public/terms.html',
         'login' => 'public/features/auth/login.html',
         'register' => 'public/features/auth/register.html',
         'activate' => 'public/features/auth/activate.html',

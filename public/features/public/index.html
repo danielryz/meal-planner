@@ -125,7 +125,7 @@
               <p class="support-panel__copy">
                 MealPlanner rozwijamy jako mały projekt tworzony z myślą o osobach, które chcą jeść lepiej i planować zakupy rozsądniej. Twoje wsparcie pomaga utrzymać aplikację i rozwijać kolejne funkcje.
               </p>
-              <a class="button" href="/about">
+              <a class="button" href="/support">
                 <img class="support-panel__button-icon" src="/public/assets/icons/heart.svg" alt="" />
                 Wesprzyj MealPlanner
               </a>
@@ -195,7 +195,7 @@
                 </p>
                 <div class="home-cta__actions">
                   <a class="button" href="/register">Zacznij planować</a>
-                  <a class="button button-secondary" href="/login">Zobacz demo</a>
+                  <button class="button button-secondary" type="button" data-demo-open>Zobacz demo</button>
                 </div>
               </div>
             </article>
@@ -226,15 +226,15 @@
               <div class="home-footer__heading">Firma</div>
               <ul class="home-footer__list">
                 <li><a class="home-footer__link" href="/about">O nas</a></li>
-                <li><a class="home-footer__link" href="/about">Kontakt</a></li>
+                <li><a class="home-footer__link" href="/contact">Kontakt</a></li>
               </ul>
             </div>
 
             <div>
               <div class="home-footer__heading">Informacje</div>
               <ul class="home-footer__list">
-                <li><a class="home-footer__link" href="/about">Prywatność</a></li>
-                <li><a class="home-footer__link" href="/about">Regulamin</a></li>
+                <li><a class="home-footer__link" href="/privacy">Prywatność</a></li>
+                <li><a class="home-footer__link" href="/terms">Regulamin</a></li>
               </ul>
             </div>
           </div>
@@ -245,5 +245,31 @@
         </div>
       </footer>
     </div>
+
+    <dialog class="demo-dialog" id="demo-dialog" aria-label="Demo MealPlanner">
+      <button class="demo-dialog__close" type="button" aria-label="Zamknij" data-demo-close>✕</button>
+      <div class="demo-dialog__body">
+        <span class="about-kicker">Demo</span>
+        <h2 class="demo-dialog__title">MealPlanner w akcji</h2>
+        <p class="demo-dialog__copy">
+          Film demonstracyjny jest w przygotowaniu. Chcesz zobaczyć, jak działa aplikacja?
+          Zarejestruj się za darmo i przekonaj się sam.
+        </p>
+        <div class="demo-dialog__actions">
+          <a class="button" href="/register">Wypróbuj za darmo</a>
+          <button class="button button-secondary" type="button" data-demo-close>Zamknij</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      (() => {
+        const dialog = document.getElementById("demo-dialog");
+        document.querySelector("[data-demo-open]")?.addEventListener("click", () => dialog.showModal());
+        dialog.addEventListener("click", (e) => {
+          if (e.target === dialog || e.target.closest("[data-demo-close]")) dialog.close();
+        });
+      })();
+    </script>
   </body>
 </html>

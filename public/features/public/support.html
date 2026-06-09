@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Wesprzyj nas - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="page-shell static-page">
+      <?php include $partialsPath . '/public-nav.html'; ?>
+
+      <main class="page-main">
+        <section class="home-section support-hero">
+          <div class="container">
+            <div class="support-hero__icon" aria-hidden="true">
+              <img src="/public/assets/icons/heart.svg" alt="" />
+            </div>
+            <span class="about-kicker">Wesprzyj projekt</span>
+            <h1 class="static-page__title">Pomóż nam rozwijać MealPlanner</h1>
+            <p class="static-page__lead">
+              MealPlanner to projekt tworzony z pasji do zdrowego żywienia i dobrego oprogramowania.
+              Twoje wsparcie finansowe pozwala utrzymać serwery, rozwijać nowe funkcje i udostępniać aplikację bezpłatnie.
+            </p>
+
+            <div class="support-tiers">
+              <article class="support-tier">
+                <div class="support-tier__amount">10 zł</div>
+                <div class="support-tier__label">Kawa</div>
+                <p class="support-tier__copy">
+                  Postaw kawę twórcom. Każdy gest się liczy i motywuje do dalszej pracy.
+                </p>
+              </article>
+
+              <article class="support-tier support-tier--featured">
+                <div class="support-tier__amount">30 zł</div>
+                <div class="support-tier__label">Wsparcie miesiąca</div>
+                <p class="support-tier__copy">
+                  Pokrywa koszty serwera przez miesiąc i pozwala zaplanować kolejne funkcje.
+                </p>
+              </article>
+
+              <article class="support-tier">
+                <div class="support-tier__amount">100 zł</div>
+                <div class="support-tier__label">Patron</div>
+                <p class="support-tier__copy">
+                  Zostań patronem projektu i zyskaj wpływ na kierunek rozwoju aplikacji.
+                </p>
+              </article>
+            </div>
+
+            <div class="support-coming-soon">
+              <strong>Płatności online — wkrótce.</strong>
+              Integracja z bramką płatności jest w przygotowaniu.
+              Na razie możesz wesprzeć projekt przez przelew na adres e-mail
+              <a href="mailto:support@mealplanner.pl">support@mealplanner.pl</a>.
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <?php include $partialsPath . '/footer.html'; ?>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Kontakt - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="page-shell static-page">
+      <?php include $partialsPath . '/public-nav.html'; ?>
+
+      <main class="page-main">
+        <section class="static-page__hero">
+          <div class="container">
+            <span class="about-kicker">Kontakt</span>
+            <h1 class="static-page__title">Napisz do nas</h1>
+            <p class="static-page__lead">
+              Masz pytania, sugestie lub chcesz zgłosić błąd? Chętnie odpowiemy.
+            </p>
+          </div>
+        </section>
+
+        <section class="static-page__content">
+          <div class="container">
+            <div class="static-page__prose">
+              <h2>E-mail</h2>
+              <p>
+                Najszybszy sposób na kontakt to wiadomość e-mail:<br />
+                <a href="mailto:kontakt@mealplanner.pl">kontakt@mealplanner.pl</a>
+              </p>
+              <p>Odpowiadamy w ciągu 1–2 dni roboczych.</p>
+
+              <h2>Zgłoszenia błędów</h2>
+              <p>
+                Jeśli natknąłeś się na błąd w aplikacji, opisz dokładnie:
+              </p>
+              <ul>
+                <li>Co robiłeś, kiedy błąd wystąpił</li>
+                <li>Jakiego urządzenia i przeglądarki używasz</li>
+                <li>Co widziałeś na ekranie (opcjonalnie: zrzut ekranu)</li>
+              </ul>
+              <p>Wyślij zgłoszenie na <a href="mailto:bugs@mealplanner.pl">bugs@mealplanner.pl</a>.</p>
+
+              <h2>Propozycje funkcji</h2>
+              <p>
+                Masz pomysł na nową funkcję lub ulepszenie? Piszemy aplikację z myślą o użytkownikach —
+                każda sugestia jest przez nas czytana i rozważana.
+              </p>
+
+              <h2>Wsparcie projektu</h2>
+              <p>
+                Chcesz wesprzeć MealPlanner finansowo? Przejdź na stronę
+                <a href="/support">Wesprzyj nas</a>.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <?php include $partialsPath . '/footer.html'; ?>
+    </div>
+  </body>
+</html>
