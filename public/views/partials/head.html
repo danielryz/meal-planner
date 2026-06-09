@@ -33,16 +33,11 @@
     }
   }
 
-  $globalScripts = [
-    'public/features/notifications/toast.js',
-  ];
-  foreach ($globalScripts as $script) {
-    if (file_exists($script)) {
-      echo '<script defer src="/' . htmlspecialchars($script) . '?v=' . filemtime($script) . '"></script>' . PHP_EOL;
-    }
-  }
-
-  foreach ($pageScripts ?? [] as $script) {
+  $scripts = array_merge(
+    ['public/features/notifications/toast.js'],
+    $pageScripts ?? []
+  );
+  foreach ($scripts as $script) {
     if (file_exists($script)) {
       echo '<script defer src="/' . htmlspecialchars($script) . '?v=' . filemtime($script) . '"></script>' . PHP_EOL;
     }
