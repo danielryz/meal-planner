@@ -66,6 +66,28 @@ abstract class AppController
         return $this->redirect('/login');
     }
 
+    protected function requireVerified(): ?Response
+    {
+        if ($redirect = $this->requireLogin()) {
+            return $redirect;
+        }
+
+        $user = $this->sessions->currentUser();
+
+        if ($user?->isPending()) {
+            if (str_starts_with($this->request->path(), 'api/')) {
+                return Response::json([
+                    'error' => 'Potwierdź adres e-mail, żeby korzystać z tej funkcji.',
+                    'code'  => 'EMAIL_NOT_VERIFIED',
+                ], 403);
+            }
+
+            return $this->redirect('/dashboard');
+        }
+
+        return null;
+    }
+
     /**
      * @return array<string, string>
      */
@@ -81,8 +103,9 @@ abstract class AppController
         }
 
         return [
-            "currentUserRole" => $user->role(),
-            "currentUserName" => $user->displayName(),
+            "currentUserRole"      => $user->role(),
+            "currentUserName"      => $user->displayName(),
+            "currentUserPending"   => $user->isPending() ? 'true' : 'false',
         ];
     }
 
@@ -103,6 +126,5 @@ abstract class AppController
     protected function jsonError(string $message, int $status = 400): Response
     {
         return Response::json(['error' => $message], $status);
-
     }
 }

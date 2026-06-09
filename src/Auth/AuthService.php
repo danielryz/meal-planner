@@ -6,6 +6,7 @@ namespace App\Auth;
 
 use App\Database\TransactionManager;
 use App\Repositories\UserRepository;
+use App\Services\MailService;
 
 final class AuthService
 {
@@ -42,9 +43,9 @@ final class AuthService
     public function register(string $displayName, string $email, string $password, bool $termsAccepted): AuthResult
     {
         $displayName = trim($displayName);
-        $email = strtolower(trim($email));
-        $password = trim($password);
-        $errors = [];
+        $email       = strtolower(trim($email));
+        $password    = trim($password);
+        $errors      = [];
 
         if (strlen($displayName) < 2 || strlen($displayName) > 120) {
             $errors['displayName'] = 'Podaj imię i nazwisko.';
@@ -68,19 +69,26 @@ final class AuthService
             return AuthResult::failure($errors);
         }
 
-        $user = $this->transactions->transactional(function () use ($displayName, $email, $password) {
-            $user = $this->users->createUser(
+        [$user, $rawToken] = $this->transactions->transactional(function () use ($displayName, $email, $password) {
+            $user     = $this->users->createUser(
                 $email,
                 $this->createUsername($displayName, $email),
                 password_hash($password, PASSWORD_DEFAULT),
                 $displayName
             );
             $this->users->recordActivity($user->id(), 'registered');
+            $rawToken = $this->users->createEmailToken($user->id(), 'activation', 48 * 3600);
 
-            return $user;
+            return [$user, $rawToken];
         });
 
         $this->sessions->login($user->authenticatedUser());
+
+        try {
+            (new MailService())->sendActivationEmail($email, $displayName, $rawToken);
+        } catch (\Throwable) {
+            // mail failure must not break registration
+        }
 
         return AuthResult::success();
     }
@@ -94,9 +102,9 @@ final class AuthService
             $base = strstr($email, '@', true) ?: 'user';
         }
 
-        $base = substr($base, 0, 40);
+        $base     = substr($base, 0, 40);
         $username = $base;
-        $suffix = 1;
+        $suffix   = 1;
 
         while ($this->users->usernameExists($username)) {
             $username = substr($base, 0, 36) . '_' . $suffix;

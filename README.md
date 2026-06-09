@@ -216,6 +216,106 @@ Wszystkie endpointy API wymagają zalogowania (sesja PHP). Brak sesji → przeki
 | GET | `/api/users` | Lista użytkowników (owner) |
 | GET | `/api/profile` | Profil zalogowanego użytkownika |
 
+## Integracja z Mailerem
+
+Aplikacja wysyła e-maile transakcyjne (aktywacja konta, reset hasła) przez SMTP za pomocą PHPMailer.
+Domyślnie wysyłka jest wyłączona — brakujące dane SMTP powodują wychwycony wyjątek (rejestracja mimo to działa).
+
+### Wybór providera SMTP
+
+Rekomendowane darmowe opcje:
+
+| Provider | Free tier | Konfiguracja |
+|----------|-----------|--------------|
+| **Mailgun** | 100 e-maili/dzień (przez 3 miesiące) | `smtp.mailgun.org:587` |
+| **Resend** | 3 000 e-maili/miesiąc | `smtp.resend.com:587` |
+| **Brevo** (Sendinblue) | 300 e-maili/dzień | `smtp-relay.brevo.com:587` |
+
+### Konfiguracja w `.env`
+
+Uzupełnij poniższe zmienne (są już w `.env`, ale puste):
+
+```env
+APP_URL=http://localhost:8080        # publiczny adres aplikacji — trafia do linków w mailach
+
+MAIL_HOST=smtp.mailgun.org           # adres serwera SMTP
+MAIL_PORT=587                        # port SMTP (587 = STARTTLS)
+MAIL_USERNAME=                       # login SMTP (zwykle adres e-mail lub API key)
+MAIL_PASSWORD=                       # hasło lub API key
+MAIL_FROM=no-reply@twojadomena.pl    # adres nadawcy
+MAIL_FROM_NAME=MealPlanner           # nazwa nadawcy
+```
+
+### Krok po kroku (przykład: Resend)
+
+1. Załóż konto na [resend.com](https://resend.com) (bezpłatne).
+2. Dodaj i zweryfikuj domenę wysyłającą (lub użyj `onboarding@resend.dev` do testów).
+3. Wygeneruj API key w panelu Resend.
+4. Uzupełnij `.env`:
+
+```env
+MAIL_HOST=smtp.resend.com
+MAIL_PORT=587
+MAIL_USERNAME=resend
+MAIL_PASSWORD=re_TWOJ_API_KEY
+MAIL_FROM=no-reply@twojadomena.pl
+MAIL_FROM_NAME=MealPlanner
+```
+
+5. Zaktualizuj `APP_URL` na adres dostępny z zewnątrz (link w mailu musi działać w przeglądarce odbiorcy).
+
+### Krok po kroku (przykład: Mailgun)
+
+1. Załóż konto na [mailgun.com](https://mailgun.com).
+2. Dodaj domenę i przejdź przez weryfikację DNS.
+3. W panelu Mailgun: **Sending → Domains → Twoja domena → SMTP credentials**.
+4. Skopiuj `Login` i `Password`.
+5. Uzupełnij `.env`:
+
+```env
+MAIL_HOST=smtp.mailgun.org
+MAIL_PORT=587
+MAIL_USERNAME=postmaster@mg.twojadomena.pl
+MAIL_PASSWORD=TWOJE_HASLO_SMTP
+MAIL_FROM=no-reply@twojadomena.pl
+MAIL_FROM_NAME=MealPlanner
+```
+
+### Testowanie wysyłki
+
+Aby przetestować lokalnie bez prawdziwego SMTP, możesz użyć [Mailpit](https://mailpit.axllent.org/) — lokalnego „pułapkowego" serwera SMTP, który przechwytuje e-maile i wyświetla je w przeglądarce:
+
+```bash
+# Uruchom Mailpit lokalnie
+docker run -d -p 1025:1025 -p 8025:8025 axllent/mailpit
+```
+
+Następnie w `.env`:
+
+```env
+MAIL_HOST=host.docker.internal   # lub IP hosta z poziomu kontenera PHP
+MAIL_PORT=1025
+MAIL_USERNAME=test
+MAIL_PASSWORD=test
+```
+
+Otwórz podgląd e-maili: `http://localhost:8025`
+
+### Szablony e-maili
+
+Szablony HTML są w `src/templates/emails/`:
+
+| Plik | Zdarzenie |
+|------|-----------|
+| `activation.html` | Weryfikacja adresu e-mail po rejestracji |
+| `password-reset.html` | Reset hasła (`/forgot-password`) — do zaimplementowania |
+
+### Uwagi
+
+- Błąd wysyłki e-maila **nie przerywa rejestracji** — wyjątek jest wychwytywany w `AuthService`.
+- Tokeny aktywacyjne są jednorazowe i wygasają po 48 h (tabela `email_tokens`).
+- Przy zmianie `APP_URL` na produkcji pamiętaj o aktualizacji w `.env` — linki w mailach używają tej zmiennej.
+
 ## Zasady Developmentu
 
 - Nie używamy frameworków PHP ani frontendowych.

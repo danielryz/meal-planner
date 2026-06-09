@@ -11,6 +11,8 @@ final class ViewRenderer
         'about' => 'public/features/public/about.html',
         'login' => 'public/features/auth/login.html',
         'register' => 'public/features/auth/register.html',
+        'activate' => 'public/features/auth/activate.html',
+        'resend-activation' => 'public/features/auth/resend-activation.html',
         'dashboard' => 'public/features/app/dashboard.html',
         'app-placeholder' => 'public/features/app/app-placeholder.html',
         'meal-planner' => 'public/features/meal-planner/meal-planner.html',

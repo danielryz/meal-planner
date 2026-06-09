@@ -33,12 +33,13 @@ final class SessionManager
         session_regenerate_id(true);
 
         $_SESSION[self::USER_KEY] = [
-            'id' => $user->id(),
-            'email' => $user->email(),
-            'username' => $user->username(),
-            'role' => $user->role(),
-            'display_name' => $user->displayName(),
-            'is_logged_in' => true,
+            'id'             => $user->id(),
+            'email'          => $user->email(),
+            'username'       => $user->username(),
+            'role'           => $user->role(),
+            'display_name'   => $user->displayName(),
+            'email_verified' => $user->isEmailVerified(),
+            'is_logged_in'   => true,
         ];
     }
 
@@ -55,8 +56,16 @@ final class SessionManager
             (string) $user['email'],
             (string) $user['username'],
             (string) $user['role'],
-            (string) $user['display_name']
+            (string) $user['display_name'],
+            (bool) ($user['email_verified'] ?? false),
         );
+    }
+
+    public function markEmailVerified(): void
+    {
+        if (isset($_SESSION[self::USER_KEY])) {
+            $_SESSION[self::USER_KEY]['email_verified'] = true;
+        }
     }
 
     public function isLoggedIn(): bool

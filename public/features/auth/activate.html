@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Aktywacja konta - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="auth-page">
+      <main class="auth-status-shell">
+        <div class="auth-status-card">
+
+          <?php if (($status ?? '') === 'success'): ?>
+
+            <div class="auth-status-icon auth-status-icon--success" aria-hidden="true">✓</div>
+            <h1>E-mail potwierdzony!</h1>
+            <p>Twoje konto jest aktywne. Możesz teraz korzystać ze wszystkich funkcji MealPlanner.</p>
+            <a class="button auth-primary-button" href="/dashboard">Przejdź do aplikacji</a>
+
+          <?php else: ?>
+
+            <div class="auth-status-icon auth-status-icon--error" aria-hidden="true">✗</div>
+            <h1>Link nieprawidłowy lub wygasł</h1>
+            <p>Ten link aktywacyjny jest nieważny lub wygasł.<br/>Zaloguj się i poproś o nowy link.</p>
+            <a class="button auth-primary-button" href="/login">Zaloguj się</a>
+            <a class="auth-status-back" href="/resend-activation">Wyślij nowy link aktywacyjny</a>
+
+          <?php endif; ?>
+
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

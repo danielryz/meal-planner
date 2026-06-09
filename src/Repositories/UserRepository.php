@@ -12,7 +12,8 @@ final class UserRepository extends AbstractRepository
     public function findAuthUserByEmail(string $email): ?AuthUser
     {
         $statement = $this->connection->prepare(
-            'SELECT u.id, u.email, u.username, u.password_hash, u.is_active, r.name AS role, up.display_name
+            'SELECT u.id, u.email, u.username, u.password_hash, u.is_active, u.email_verified_at,
+                    r.name AS role, up.display_name
             FROM users u
             JOIN roles r ON r.id = u.role_id
             JOIN user_profiles up ON up.user_id = u.id
@@ -82,6 +83,71 @@ final class UserRepository extends AbstractRepository
         $statement = $this->connection->prepare('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = :id');
         $statement->bindValue(':id', $userId, PDO::PARAM_INT);
         $statement->execute();
+    }
+
+    public function markEmailVerified(int $userId): void
+    {
+        $statement = $this->connection->prepare(
+            'UPDATE users SET email_verified_at = CURRENT_TIMESTAMP
+            WHERE id = :id AND email_verified_at IS NULL'
+        );
+        $statement->bindValue(':id', $userId, PDO::PARAM_INT);
+        $statement->execute();
+    }
+
+    public function findEmailById(int $userId): ?string
+    {
+        $statement = $this->connection->prepare('SELECT email FROM users WHERE id = :id');
+        $statement->bindValue(':id', $userId, PDO::PARAM_INT);
+        $statement->execute();
+        $result = $statement->fetchColumn();
+        return $result !== false ? (string) $result : null;
+    }
+
+    public function createEmailToken(int $userId, string $type, int $ttlSeconds): string
+    {
+        $statement = $this->connection->prepare(
+            'DELETE FROM email_tokens WHERE user_id = :user_id AND type = :type'
+        );
+        $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $statement->bindValue(':type', $type);
+        $statement->execute();
+
+        $rawToken  = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $rawToken);
+
+        $statement = $this->connection->prepare(
+            "INSERT INTO email_tokens (user_id, token_hash, type, expires_at)
+            VALUES (:user_id, :token_hash, :type, NOW() + INTERVAL '1 second' * :ttl)"
+        );
+        $statement->bindValue(':user_id',    $userId, PDO::PARAM_INT);
+        $statement->bindValue(':token_hash', $tokenHash);
+        $statement->bindValue(':type',       $type);
+        $statement->bindValue(':ttl',        $ttlSeconds, PDO::PARAM_INT);
+        $statement->execute();
+
+        return $rawToken;
+    }
+
+    public function findAndConsumeEmailToken(string $rawToken, string $type): ?int
+    {
+        $tokenHash = hash('sha256', $rawToken);
+
+        $statement = $this->connection->prepare(
+            'UPDATE email_tokens
+            SET used_at = NOW()
+            WHERE token_hash = :token_hash
+              AND type = :type
+              AND used_at IS NULL
+              AND expires_at > NOW()
+            RETURNING user_id'
+        );
+        $statement->bindValue(':token_hash', $tokenHash);
+        $statement->bindValue(':type', $type);
+        $statement->execute();
+
+        $userId = $statement->fetchColumn();
+        return $userId !== false ? (int) $userId : null;
     }
 
     public function recordActivity(?int $userId, string $eventType): void
@@ -202,7 +268,8 @@ final class UserRepository extends AbstractRepository
             (string) $row['password_hash'],
             (bool) $row['is_active'],
             (string) $row['role'],
-            (string) $row['display_name']
+            (string) $row['display_name'],
+            $row['email_verified_at'] !== null,
         );
     }
 

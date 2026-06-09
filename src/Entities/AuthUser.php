@@ -15,7 +15,8 @@ final class AuthUser
         private readonly string $passwordHash,
         private readonly bool $isActive,
         private readonly string $role,
-        private readonly string $displayName
+        private readonly string $displayName,
+        private readonly bool $emailVerified,
     ) {
     }
 
@@ -34,6 +35,11 @@ final class AuthUser
         return $this->isActive;
     }
 
+    public function emailVerified(): bool
+    {
+        return $this->emailVerified;
+    }
+
     public function authenticatedUser(): AuthenticatedUser
     {
         return new AuthenticatedUser(
@@ -41,7 +47,8 @@ final class AuthUser
             $this->email,
             $this->username,
             $this->role,
-            $this->displayName
+            $this->displayName,
+            $this->emailVerified,
         );
     }
 }

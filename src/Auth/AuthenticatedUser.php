@@ -11,7 +11,8 @@ final class AuthenticatedUser
         private readonly string $email,
         private readonly string $username,
         private readonly string $role,
-        private readonly string $displayName
+        private readonly string $displayName,
+        private readonly bool $emailVerified = false,
     ) {
     }
 
@@ -38,5 +39,15 @@ final class AuthenticatedUser
     public function displayName(): string
     {
         return $this->displayName;
+    }
+
+    public function isEmailVerified(): bool
+    {
+        return $this->emailVerified;
+    }
+
+    public function isPending(): bool
+    {
+        return !$this->emailVerified;
     }
 }

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Wyślij ponownie link aktywacyjny - MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+    <script defer src="/public/features/auth/resend-activation.js"></script>
+  </head>
+  <body>
+    <div class="auth-page">
+      <main class="auth-status-shell">
+        <div class="auth-status-card">
+
+          <div class="auth-status-icon auth-status-icon--success" aria-hidden="true">✉</div>
+          <h1>Potwierdź adres e-mail</h1>
+          <p>
+            Wyślemy nowy link aktywacyjny na Twój adres e-mail.<br/>
+            Link będzie ważny przez 48 godzin.
+          </p>
+
+          <button class="button auth-primary-button" type="button" data-resend-btn>
+            Wyślij ponownie link aktywacyjny
+          </button>
+
+          <a class="auth-status-back" href="/dashboard">Wróć do aplikacji</a>
+
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

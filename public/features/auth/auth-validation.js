@@ -141,9 +141,37 @@
       }
     });
 
-    form.addEventListener("submit", (event) => {
-      if (!validateForm(form)) {
-        event.preventDefault();
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!validateForm(form)) return;
+
+      const type = form.dataset.authForm;
+      const endpoint = `/api/auth/${type}`;
+      const successMsg = type === "login" ? "Zalogowano pomyślnie." : "Konto zostało utworzone.";
+      const submitBtn = form.querySelector('[type="submit"]');
+
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(new FormData(form)).toString(),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          window.toast.success(successMsg);
+          setTimeout(() => { window.location.href = "/dashboard"; }, 800);
+        } else {
+          window.toast.error(data.error ?? "Wystąpił błąd. Spróbuj ponownie.");
+          submitBtn.disabled = false;
+        }
+      } catch {
+        window.toast.error("Brak połączenia z serwerem. Spróbuj ponownie.");
+        submitBtn.disabled = false;
       }
     });
   });

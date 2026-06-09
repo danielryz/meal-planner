@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Config\Env;
-use App\Core\Autoloader;
+$vendorAutoload = dirname(__DIR__) . '/vendor/autoload.php';
 
-require_once __DIR__ . '/Core/Autoloader.php';
+if (file_exists($vendorAutoload)) {
+    require_once $vendorAutoload;
+} else {
+    require_once __DIR__ . '/Core/Autoloader.php';
+    App\Core\Autoloader::register(__DIR__);
+}
 
-Autoloader::register(__DIR__);
-Env::load(dirname(__DIR__) . '/.env');
+App\Config\Env::load(dirname(__DIR__) . '/.env');
 
 error_reporting(E_ALL);
 ini_set('log_errors', '1');

@@ -78,6 +78,26 @@ final class Routing
             "controller" => DashboardController::class,
             "action" => "preferences",
         ],
+        "api/auth/login" => [
+            "controller" => SecurityController::class,
+            "action" => "loginApi",
+        ],
+        "api/auth/register" => [
+            "controller" => SecurityController::class,
+            "action" => "registerApi",
+        ],
+        "api/auth/resend-activation" => [
+            "controller" => SecurityController::class,
+            "action" => "resendActivationApi",
+        ],
+        "activate" => [
+            "controller" => SecurityController::class,
+            "action" => "activate",
+        ],
+        "resend-activation" => [
+            "controller" => SecurityController::class,
+            "action" => "resendActivationPage",
+        ],
         "api/users" => [
             "controller" => UserController::class,
             "action" => "listUsers",

@@ -32,4 +32,13 @@
       echo '<link rel="stylesheet" type="text/css" href="/' . htmlspecialchars($stylesheet) . '?v=' . filemtime($stylesheet) . '" />' . PHP_EOL;
     }
   }
+
+  $globalScripts = [
+    'public/features/notifications/toast.js',
+  ];
+  foreach ($globalScripts as $script) {
+    if (file_exists($script)) {
+      echo '<script defer src="/' . htmlspecialchars($script) . '?v=' . filemtime($script) . '"></script>' . PHP_EOL;
+    }
+  }
 ?>

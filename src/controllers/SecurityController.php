@@ -8,6 +8,7 @@ use App\Auth\AuthService;
 use App\Database\Database;
 use App\Http\Response;
 use App\Repositories\UserRepository;
+use App\Services\MailService;
 
 final class SecurityController extends AppController
 {
@@ -17,18 +18,22 @@ final class SecurityController extends AppController
             return $this->redirect('/dashboard');
         }
 
-        if ($this->isGet()) {
-            return $this->renderLogin();
+        return $this->renderLogin();
+    }
+
+    public function loginApi(): Response
+    {
+        if (!$this->isPost()) {
+            return $this->jsonError('Method not allowed.', 405);
         }
 
         if ($this->isRateLimited()) {
-            return $this->renderLogin(['global' => 'Zbyt wiele prób logowania. Spróbuj za 15 minut.'], 429);
+            return Response::json(['error' => 'Zbyt wiele prób logowania. Spróbuj za 15 minut.'], 429);
         }
 
         $csrfToken = $this->request->input('csrfToken');
-
         if (!$this->csrfTokens->isValid('login', $csrfToken)) {
-            return $this->renderLogin(['global' => 'Sesja formularza wygasła. Spróbuj ponownie.'], 400);
+            return Response::json(['error' => 'Sesja formularza wygasła. Odśwież stronę i spróbuj ponownie.'], 400);
         }
 
         $result = $this->authService()->login(
@@ -38,11 +43,11 @@ final class SecurityController extends AppController
 
         if (!$result->isSuccess()) {
             $this->recordFailedAttempt();
-            return $this->renderLogin($result->errors(), 401);
+            return Response::json(['error' => 'Niepoprawny e-mail lub hasło.'], 401);
         }
 
         $this->clearRateLimit();
-        return $this->redirect('/dashboard');
+        return Response::json(['success' => true]);
     }
 
     public function register(): Response
@@ -51,14 +56,18 @@ final class SecurityController extends AppController
             return $this->redirect('/dashboard');
         }
 
-        if ($this->isGet()) {
-            return $this->renderRegister();
+        return $this->renderRegister();
+    }
+
+    public function registerApi(): Response
+    {
+        if (!$this->isPost()) {
+            return $this->jsonError('Method not allowed.', 405);
         }
 
         $csrfToken = $this->request->input('csrfToken');
-
         if (!$this->csrfTokens->isValid('register', $csrfToken)) {
-            return $this->renderRegister(['global' => 'Sesja formularza wygasła. Spróbuj ponownie.'], 400);
+            return Response::json(['error' => 'Sesja formularza wygasła. Odśwież stronę i spróbuj ponownie.'], 400);
         }
 
         $result = $this->authService()->register(
@@ -69,10 +78,88 @@ final class SecurityController extends AppController
         );
 
         if (!$result->isSuccess()) {
-            return $this->renderRegister($result->errors(), 400);
+            $errors  = $result->errors();
+            $message = $errors['email']
+                ?? $errors['displayName']
+                ?? $errors['password']
+                ?? $errors['termsAccepted']
+                ?? $errors['global']
+                ?? 'Rejestracja nie powiodła się. Spróbuj ponownie.';
+            return Response::json(['error' => $message], 400);
         }
 
-        return $this->redirect('/dashboard');
+        return Response::json(['success' => true]);
+    }
+
+    public function activate(): Response
+    {
+        $token = (string) ($this->request->query('token') ?? '');
+
+        if ($token === '') {
+            return $this->redirect('/login');
+        }
+
+        $users  = $this->userRepository();
+        $userId = $users->findAndConsumeEmailToken($token, 'activation');
+
+        if ($userId === null) {
+            return $this->render('activate', ['status' => 'invalid']);
+        }
+
+        $users->markEmailVerified($userId);
+
+        $current = $this->sessions->currentUser();
+        if ($current !== null && $current->id() === $userId) {
+            $this->sessions->markEmailVerified();
+        }
+
+        return $this->render('activate', ['status' => 'success']);
+    }
+
+    public function resendActivationPage(): Response
+    {
+        if ($redirect = $this->requireLogin()) {
+            return $redirect;
+        }
+
+        $user = $this->sessions->currentUser();
+        if ($user?->isEmailVerified()) {
+            return $this->redirect('/dashboard');
+        }
+
+        return $this->render('resend-activation', [
+            'csrfToken' => $this->csrfTokens->token('resend-activation'),
+        ]);
+    }
+
+    public function resendActivationApi(): Response
+    {
+        if ($redirect = $this->requireLogin()) {
+            return $redirect;
+        }
+
+        $user = $this->sessions->currentUser();
+
+        if ($user?->isEmailVerified()) {
+            return Response::json(['error' => 'Adres e-mail jest już potwierdzony.'], 400);
+        }
+
+        $users = $this->userRepository();
+        $email = $users->findEmailById((int) $user?->id());
+
+        if ($email === null) {
+            return $this->jsonError('Nie znaleziono użytkownika.', 404);
+        }
+
+        $rawToken = $users->createEmailToken((int) $user?->id(), 'activation', 48 * 3600);
+
+        try {
+            (new MailService())->sendActivationEmail($email, (string) $user?->displayName(), $rawToken);
+        } catch (\Throwable) {
+            return Response::json(['error' => 'Nie udało się wysłać e-maila. Spróbuj ponownie później.'], 500);
+        }
+
+        return Response::json(['success' => true]);
     }
 
     public function logout(): Response
@@ -84,28 +171,17 @@ final class SecurityController extends AppController
         return $this->redirect('/login');
     }
 
-    /**
-     * @param array<string, string> $errors
-     */
     private function renderLogin(array $errors = [], int $statusCode = 200): Response
     {
         return $this->render("login", [
-            "authErrors" => $errors,
             "csrfToken" => $this->csrfTokens->token('login'),
-            "oldEmail" => (string) $this->request->input('email', ''),
         ], $statusCode);
     }
 
-    /**
-     * @param array<string, string> $errors
-     */
     private function renderRegister(array $errors = [], int $statusCode = 200): Response
     {
         return $this->render("register", [
-            "authErrors" => $errors,
             "csrfToken" => $this->csrfTokens->token('register'),
-            "oldDisplayName" => (string) $this->request->input('firstName', ''),
-            "oldEmail" => (string) $this->request->input('email', ''),
         ], $statusCode);
     }
 
@@ -146,7 +222,7 @@ final class SecurityController extends AppController
 
     private function authService(): AuthService
     {
-        $database = new Database();
+        $database   = new Database();
         $connection = $database->connection();
 
         return new AuthService(
@@ -154,5 +230,10 @@ final class SecurityController extends AppController
             $database->transactions(),
             $this->sessions
         );
+    }
+
+    private function userRepository(): UserRepository
+    {
+        return new UserRepository((new Database())->connection());
     }
 }
