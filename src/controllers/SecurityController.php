@@ -243,8 +243,12 @@ final class SecurityController extends AppController
             return Response::json(['error' => 'Brakuje tokenu resetowania.'], 400);
         }
 
-        if (strlen($password) < 8) {
-            return Response::json(['error' => 'Hasło musi mieć co najmniej 8 znaków.'], 400);
+        if (strlen($password) < 8 || strlen($password) > 128) {
+            return Response::json(['error' => 'Hasło musi mieć od 8 do 128 znaków.'], 400);
+        }
+
+        if (!preg_match('/[A-Z]/', $password) || !preg_match('/[^A-Za-z0-9]/', $password)) {
+            return Response::json(['error' => 'Hasło musi zawierać co najmniej 1 dużą literę i 1 znak specjalny.'], 400);
         }
 
         if ($password !== $confirm) {

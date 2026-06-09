@@ -23,8 +23,8 @@
     if (passErr) passErr.textContent = "";
     if (confErr) confErr.textContent = "";
 
-    if (password.length < 8) {
-      if (passErr) passErr.textContent = "Hasło musi mieć co najmniej 8 znaków.";
+    if (!/^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/.test(password)) {
+      if (passErr) passErr.textContent = "Hasło musi mieć min. 8 znaków, 1 dużą literę i 1 znak specjalny.";
       return;
     }
 

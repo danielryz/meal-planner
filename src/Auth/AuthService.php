@@ -59,6 +59,8 @@ final class AuthService
 
         if (strlen($password) < 8 || strlen($password) > 128) {
             $errors['password'] = 'Hasło musi mieć od 8 do 128 znaków.';
+        } elseif (!preg_match('/[A-Z]/', $password) || !preg_match('/[^A-Za-z0-9]/', $password)) {
+            $errors['password'] = 'Hasło musi zawierać co najmniej 1 dużą literę i 1 znak specjalny.';
         }
 
         if (!$termsAccepted) {

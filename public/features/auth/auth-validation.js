@@ -8,12 +8,15 @@
     emailInvalid: "Podaj poprawny adres e-mail.",
     passwordRequired: "Podaj hasło.",
     passwordTooShort: "Hasło musi mieć co najmniej 8 znaków.",
+    passwordWeak: "Hasło musi mieć min. 8 znaków, 1 dużą literę i 1 znak specjalny.",
     nameRequired: "Podaj imię.",
     nameTooShort: "Imię musi mieć co najmniej 2 znaki.",
     passwordConfirmationRequired: "Powtórz hasło.",
     passwordMismatch: "Hasła muszą być takie same.",
     termsRequired: "Zaakceptuj regulamin i politykę prywatności."
   };
+
+  const strongPasswordPattern = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
   function getErrorElement(form, input) {
     return form.querySelector(`[data-error-for="${input.id || input.name}"]`);
@@ -55,9 +58,15 @@
       if (value === "") {
         return setInputState(form, input, messages.passwordRequired);
       }
+    }
 
-      if (input.minLength > 0 && value.length < input.minLength) {
-        return setInputState(form, input, messages.passwordTooShort);
+    if (validationType === "password-strong") {
+      if (value === "") {
+        return setInputState(form, input, messages.passwordRequired);
+      }
+
+      if (!strongPasswordPattern.test(value)) {
+        return setInputState(form, input, messages.passwordWeak);
       }
     }
 
@@ -163,8 +172,8 @@
         });
 
         if (res.ok) {
-          window.toast?.success(successMsg);
-          setTimeout(() => { window.location.href = "/dashboard"; }, 1500);
+          sessionStorage.setItem('flash', JSON.stringify({ type: 'success', message: successMsg }));
+          window.location.href = "/dashboard";
         } else {
           const data = await res.json().catch(() => ({}));
           window.toast?.error(data.error ?? "Wystąpił błąd. Spróbuj ponownie.");

@@ -102,16 +102,16 @@
                   name="password"
                   type="password"
                   autocomplete="new-password"
-                  placeholder="Minimum 8 znaków"
+                  placeholder="Min. 8 znaków, 1 duża litera, 1 znak specjalny"
                   required
                   minlength="8"
-                  data-validate="password"
+                  data-validate="password-strong"
                 />
                 <button class="auth-password-toggle" type="button" aria-label="Pokaż hasło" data-password-toggle="register-password">
                   <img src="/public/assets/icons/eye.svg" alt="" aria-hidden="true" />
                 </button>
               </div>
-              <p class="form-help">Hasło musi mieć co najmniej 8 znaków.</p>
+              <p class="form-help">Min. 8 znaków, 1 duża litera, 1 znak specjalny (!@#$%...).</p>
               <p class="form-error" data-error-for="register-password" aria-live="polite"></p>
             </div>
 
