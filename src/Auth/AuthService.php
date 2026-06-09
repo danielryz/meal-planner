@@ -69,12 +69,13 @@ final class AuthService
             return AuthResult::failure($errors);
         }
 
-        [$user, $rawToken] = $this->transactions->transactional(function () use ($displayName, $email, $password) {
+        [$user, $rawToken] = $this->transactions->transactional(function () use ($displayName, $email, $password, $termsAccepted) {
             $user     = $this->users->createUser(
                 $email,
                 $this->createUsername($displayName, $email),
                 password_hash($password, PASSWORD_DEFAULT),
-                $displayName
+                $displayName,
+                $termsAccepted
             );
             $this->users->recordActivity($user->id(), 'registered');
             $rawToken = $this->users->createEmailToken($user->id(), 'activation', 48 * 3600);

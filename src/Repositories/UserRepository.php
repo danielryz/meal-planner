@@ -50,18 +50,19 @@ final class UserRepository extends AbstractRepository
         return $statement->fetchColumn() !== false;
     }
 
-    public function createUser(string $email, string $username, string $passwordHash, string $displayName): AuthUser
+    public function createUser(string $email, string $username, string $passwordHash, string $displayName, bool $termsAccepted = false): AuthUser
     {
         $roleId = $this->userRoleId();
         $statement = $this->connection->prepare(
-            'INSERT INTO users (role_id, email, username, password_hash)
-            VALUES (:role_id, :email, :username, :password_hash)
+            'INSERT INTO users (role_id, email, username, password_hash, terms_accepted_at)
+            VALUES (:role_id, :email, :username, :password_hash, :terms_accepted_at)
             RETURNING id'
         );
         $statement->bindValue(':role_id', $roleId, PDO::PARAM_INT);
         $statement->bindValue(':email', $email);
         $statement->bindValue(':username', $username);
         $statement->bindValue(':password_hash', $passwordHash);
+        $statement->bindValue(':terms_accepted_at', $termsAccepted ? date('Y-m-d H:i:sP') : null);
         $statement->execute();
 
         $userId = (int) $statement->fetchColumn();
