@@ -1,6 +1,5 @@
 (() => {
   const view = document.querySelector("[data-grocery-view]");
-  const groceryUrl = "/public/features/grocery-list/grocery_list_mock.json";
 
   if (!view) {
     return;
@@ -177,18 +176,17 @@
   function updateSummary() {
     const items = getAllItems();
     const boughtItems = items.filter((item) => item.isBought);
-    const spent = items.reduce((sum, item) => sum + Number(item.estimatedPrice), 0);
     const budget = groceryData.budget;
-    const progress = Math.min(100, Math.round((budget.spent / budget.limit) * 100));
+    const progress = budget.limit > 0 ? Math.min(100, Math.round((budget.spent / budget.limit) * 100)) : 0;
     const remaining = Math.max(0, budget.limit - budget.spent);
 
     budgetLabel.textContent = `${formatMoney(budget.spent)} / ${formatMoney(budget.limit)}`;
-    budgetStatus.textContent = remaining > 0 ? "W limicie" : "Poza limitem";
+    budgetStatus.textContent = budget.limit === 0 || remaining > 0 ? "W limicie" : "Poza limitem";
     budgetProgress.style.width = `${progress}%`;
     budgetRemaining.textContent = `Pozostało ${formatMoney(remaining)}`;
-    budgetPercent.textContent = `${progress}% budżetu`;
+    budgetPercent.textContent = budget.limit > 0 ? `${progress}% budżetu` : "Brak budżetu";
     boughtSummary.textContent = `${boughtItems.length} z ${items.length} produktów kupionych`;
-    totalCost.textContent = formatMoney(spent);
+    totalCost.textContent = formatMoney(budget.spent);
     savedCost.textContent = formatMoney(budget.saved);
   }
 
@@ -209,7 +207,7 @@
 
   async function loadGroceryList() {
     try {
-      const response = await fetch(groceryUrl);
+      const response = await fetch("/api/grocery-lists");
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -237,7 +235,7 @@
 
   searchInput?.addEventListener("input", render);
 
-  list.addEventListener("change", (event) => {
+  list.addEventListener("change", async (event) => {
     const checkbox = event.target.closest('input[type="checkbox"]');
 
     if (!checkbox) {
@@ -247,9 +245,21 @@
     const itemId = Number(checkbox.closest("[data-grocery-item]")?.dataset.groceryItem);
     const item = findItemById(itemId);
 
-    if (item) {
-      item.isBought = checkbox.checked;
-      render();
+    if (!item) {
+      return;
+    }
+
+    item.isBought = checkbox.checked;
+    render();
+
+    try {
+      await fetch(`/api/grocery-lists/${groceryData.listId}/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isChecked: checkbox.checked }),
+      });
+    } catch {
+      // Toggle failed silently — local state remains updated
     }
   });
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\DashboardController;
+use App\Controllers\GroceryListController;
 use App\Controllers\MealPlanController;
 use App\Controllers\ProfileController;
 use App\Controllers\RecipeController;
@@ -135,6 +136,18 @@ final class Routing
         "api/recipe-reviews/{reviewId}/reject" => [
             "controller" => ReviewController::class,
             "action" => "reject",
+        ],
+        "api/grocery-lists" => [
+            "controller" => GroceryListController::class,
+            "action" => "active",
+        ],
+        "api/grocery-lists/{listId}/items" => [
+            "controller" => GroceryListController::class,
+            "action" => "addItem",
+        ],
+        "api/grocery-lists/{listId}/items/{itemId}" => [
+            "controller" => GroceryListController::class,
+            "action" => "itemAction",
         ],
         "api/meal-plans" => [
             "controller" => MealPlanController::class,
