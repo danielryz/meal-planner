@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Controllers\DashboardController;
 use App\Controllers\GroceryListController;
 use App\Controllers\MealPlanController;
+use App\Controllers\MediaController;
 use App\Controllers\ProfileController;
 use App\Controllers\RecipeController;
 use App\Controllers\ReviewController;
@@ -164,6 +165,14 @@ final class Routing
         "api/meal-plans/{planId}/slots/{slotId}/recipes/{recipeId}" => [
             "controller" => MealPlanController::class,
             "action" => "removeRecipe",
+        ],
+        "api/media/avatars" => [
+            "controller" => MediaController::class,
+            "action"     => "uploadAvatar",
+        ],
+        "api/media/recipe-photos" => [
+            "controller" => MediaController::class,
+            "action"     => "uploadRecipePhoto",
         ],
         "api/profile" => [
             "controller" => ProfileController::class,

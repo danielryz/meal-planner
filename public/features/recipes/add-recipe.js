@@ -173,6 +173,7 @@
       return;
     }
 
+    const mediaWidget = view.querySelector('[data-media-upload]');
     const payload = {
       title: titleInput.value.trim(),
       description: descriptionInput.value.trim(),
@@ -182,6 +183,7 @@
       servings: parseInt(servingsInput.value, 10) || 2,
       ingredients: collectIngredients(),
       steps: collectSteps(),
+      mediaId: mediaWidget?._mediaId ?? null,
     };
 
     try {

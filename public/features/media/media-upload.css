@@ -126,6 +126,32 @@
   border-color: var(--color-danger);
 }
 
+.media-upload__uploading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.media-upload__uploading::before {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: media-spin 600ms linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes media-spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 480px) {
   .media-upload__preview {
     grid-template-columns: 64px 1fr;

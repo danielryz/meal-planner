@@ -5,6 +5,7 @@ config.php
 .env
 
 local
+public/media
 vendor
 composer.lock
 composer.phar

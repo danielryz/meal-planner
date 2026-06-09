@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Database\Database;
 use App\Http\Response;
+use App\Repositories\MediaRepository;
 use App\Repositories\RecipeRepository;
 
 final class RecipeController extends AppController
@@ -233,6 +234,17 @@ final class RecipeController extends AppController
             'tags'            => (array) $this->request->input('tags', []),
             'nutrition'       => $this->request->input('nutrition'),
         ]);
+
+        $mediaId = $this->request->input('mediaId');
+
+        if ($mediaId !== null) {
+            $mediaId   = (int) $mediaId;
+            $mediaRepo = new MediaRepository($db->connection());
+
+            if ($mediaRepo->belongsToUser($mediaId, $userId)) {
+                $mediaRepo->addRecipeMainPhoto($recipeId, $mediaId);
+            }
+        }
 
         return Response::json(['recipeId' => $recipeId], 201);
     }

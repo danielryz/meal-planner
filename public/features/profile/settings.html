@@ -60,7 +60,7 @@
                   <span class="settings-kicker">Zdjęcie</span>
                   <h2>Zdjęcie profilowe</h2>
                 </header>
-                <div class="media-upload" data-media-upload>
+                <div class="media-upload" data-media-upload data-media-endpoint="/api/media/avatars">
                   <input class="media-upload__input" type="file" accept="image/jpeg,image/png,image/webp" data-media-input />
                   <div class="media-upload__zone" data-media-zone>
                     <img class="media-upload__zone-icon" src="/public/assets/icons/profile.svg" alt="" aria-hidden="true" />
@@ -70,6 +70,7 @@
                     </p>
                     <small class="media-upload__formats">JPG, PNG lub WebP · maks. 10 MB</small>
                   </div>
+                  <div class="media-upload__uploading" data-media-uploading hidden>Wysyłanie zdjęcia...</div>
                   <div class="media-upload__preview" data-media-preview hidden>
                     <img class="media-upload__preview-img" data-media-preview-img alt="Podgląd zdjęcia profilowego" />
                     <div class="media-upload__preview-meta">
