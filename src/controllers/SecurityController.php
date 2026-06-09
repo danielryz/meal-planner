@@ -47,6 +47,11 @@ final class SecurityController extends AppController
         }
 
         $this->clearRateLimit();
+
+        if ($this->request->input('rememberMe') === '1') {
+            $this->sessions->extendSession(30 * 24 * 3600);
+        }
+
         return Response::json(['success' => true]);
     }
 
@@ -158,6 +163,102 @@ final class SecurityController extends AppController
         } catch (\Throwable) {
             return Response::json(['error' => 'Nie udało się wysłać e-maila. Spróbuj ponownie później.'], 500);
         }
+
+        return Response::json(['success' => true]);
+    }
+
+    public function forgotPassword(): Response
+    {
+        if ($this->sessions->isLoggedIn()) {
+            return $this->redirect('/dashboard');
+        }
+
+        return $this->render('forgot-password', [
+            'csrfToken' => $this->csrfTokens->token('forgot-password'),
+        ]);
+    }
+
+    public function forgotPasswordApi(): Response
+    {
+        if (!$this->isPost()) {
+            return $this->jsonError('Method not allowed.', 405);
+        }
+
+        $csrfToken = $this->request->input('csrfToken');
+        if (!$this->csrfTokens->isValid('forgot-password', $csrfToken)) {
+            return Response::json(['error' => 'Sesja formularza wygasła. Odśwież stronę i spróbuj ponownie.'], 400);
+        }
+
+        $email = trim((string) $this->request->input('email', ''));
+
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return Response::json(['error' => 'Podaj poprawny adres e-mail.'], 400);
+        }
+
+        $users = $this->userRepository();
+        $user  = $users->findAuthUserByEmail($email);
+
+        if ($user !== null) {
+            $rawToken    = $users->createEmailToken($user->id(), 'password_reset', 3600);
+            $displayName = $user->displayName();
+            try {
+                (new MailService())->sendPasswordResetEmail($email, $displayName, $rawToken);
+            } catch (\Throwable) {
+            }
+        }
+
+        return Response::json(['success' => true]);
+    }
+
+    public function resetPassword(): Response
+    {
+        $token = trim((string) ($this->request->query('token') ?? ''));
+
+        if ($token === '') {
+            return $this->redirect('/forgot-password');
+        }
+
+        return $this->render('reset-password', [
+            'token'     => $token,
+            'csrfToken' => $this->csrfTokens->token('reset-password'),
+        ]);
+    }
+
+    public function resetPasswordApi(): Response
+    {
+        if (!$this->isPost()) {
+            return $this->jsonError('Method not allowed.', 405);
+        }
+
+        $csrfToken = $this->request->input('csrfToken');
+        if (!$this->csrfTokens->isValid('reset-password', $csrfToken)) {
+            return Response::json(['error' => 'Sesja formularza wygasła. Odśwież stronę i spróbuj ponownie.'], 400);
+        }
+
+        $token    = trim((string) $this->request->input('token', ''));
+        $password = (string) $this->request->input('password', '');
+        $confirm  = (string) $this->request->input('passwordConfirm', '');
+
+        if ($token === '') {
+            return Response::json(['error' => 'Brakuje tokenu resetowania.'], 400);
+        }
+
+        if (strlen($password) < 8) {
+            return Response::json(['error' => 'Hasło musi mieć co najmniej 8 znaków.'], 400);
+        }
+
+        if ($password !== $confirm) {
+            return Response::json(['error' => 'Hasła nie są zgodne.'], 400);
+        }
+
+        $users  = $this->userRepository();
+        $userId = $users->findAndConsumeEmailToken($token, 'password_reset');
+
+        if ($userId === null) {
+            return Response::json(['error' => 'Link resetowania jest nieważny lub wygasł.', 'code' => 'TOKEN_INVALID'], 400);
+        }
+
+        $users->setPassword($userId, password_hash($password, PASSWORD_BCRYPT));
 
         return Response::json(['success' => true]);
     }

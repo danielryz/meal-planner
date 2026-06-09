@@ -114,6 +114,22 @@ final class Routing
             "controller" => SecurityController::class,
             "action" => "resendActivationPage",
         ],
+        "forgot-password" => [
+            "controller" => SecurityController::class,
+            "action" => "forgotPassword",
+        ],
+        "reset-password" => [
+            "controller" => SecurityController::class,
+            "action" => "resetPassword",
+        ],
+        "api/auth/forgot-password" => [
+            "controller" => SecurityController::class,
+            "action" => "forgotPasswordApi",
+        ],
+        "api/auth/reset-password" => [
+            "controller" => SecurityController::class,
+            "action" => "resetPasswordApi",
+        ],
         "api/users" => [
             "controller" => UserController::class,
             "action" => "listUsers",

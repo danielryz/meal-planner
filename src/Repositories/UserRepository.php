@@ -95,6 +95,14 @@ final class UserRepository extends AbstractRepository
         $statement->execute();
     }
 
+    public function setPassword(int $userId, string $passwordHash): void
+    {
+        $stmt = $this->connection->prepare('UPDATE users SET password_hash = :hash WHERE id = :id');
+        $stmt->bindValue(':hash', $passwordHash);
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
     public function findEmailById(int $userId): ?string
     {
         $statement = $this->connection->prepare('SELECT email FROM users WHERE id = :id');

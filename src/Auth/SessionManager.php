@@ -73,6 +73,25 @@ final class SessionManager
         return $this->currentUser() instanceof AuthenticatedUser;
     }
 
+    public function extendSession(int $lifetimeSeconds): void
+    {
+        ini_set('session.gc_maxlifetime', (string) $lifetimeSeconds);
+
+        $params = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            session_id(),
+            [
+                'expires'  => time() + $lifetimeSeconds,
+                'path'     => $params['path'],
+                'domain'   => $params['domain'],
+                'secure'   => $params['secure'],
+                'httponly' => $params['httponly'],
+                'samesite' => 'Lax',
+            ]
+        );
+    }
+
     public function logout(): void
     {
         $_SESSION = [];
