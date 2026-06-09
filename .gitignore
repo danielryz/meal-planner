@@ -5,3 +5,8 @@ config.php
 .env
 
 local
+vendor
+composer.lock
+composer.phar
+phpunit.phar
+composer-setup.php
