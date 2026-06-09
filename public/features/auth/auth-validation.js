@@ -164,7 +164,7 @@
 
         if (res.ok) {
           window.toast?.success(successMsg);
-          setTimeout(() => { window.location.href = "/dashboard"; }, 800);
+          setTimeout(() => { window.location.href = "/dashboard"; }, 1500);
         } else {
           const data = await res.json().catch(() => ({}));
           window.toast?.error(data.error ?? "Wystąpił błąd. Spróbuj ponownie.");
