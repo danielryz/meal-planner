@@ -79,6 +79,7 @@ final class DashboardController extends AppController
             return $response;
         }
 
+
         return $this->renderAppView("profile", "profile");
     }
 
@@ -116,10 +117,6 @@ final class DashboardController extends AppController
 
     public function recipes(): Response
     {
-        if ($response = $this->requireLogin()) {
-            return $response;
-        }
-
         return $this->renderAppView("recipes", "recipes");
     }
 

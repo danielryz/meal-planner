@@ -13,11 +13,7 @@ final class RecipeController extends AppController
 {
     public function list(): Response
     {
-        if ($response = $this->requireLogin()) {
-            return $response;
-        }
-
-        $userId  = $this->sessions->currentUser()->id();
+        $userId = $this->sessions->currentUser()?->id();
         $page    = max(1, (int) $this->request->query('page', 1));
         $perPage = 12;
 

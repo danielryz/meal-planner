@@ -86,9 +86,11 @@
             <p class="recipe-empty" data-recipe-empty hidden>Nie znaleziono przepisów dla wybranych filtrów.</p>
 
             <div class="recipe-library__actions">
-              <a class="button" href="/add-recipe">Dodaj przepis</a>
-              <a class="button button-secondary" href="/recipe-management">Moje przepisy</a>
-              <?php if (in_array($currentUserRole ?? 'user', ['owner', 'employee', 'admin'], true)): ?>
+              <?php if (($currentUserRole ?? 'guest') !== 'guest'): ?>
+                <a class="button" href="/add-recipe">Dodaj przepis</a>
+                <a class="button button-secondary" href="/recipe-management">Moje przepisy</a>
+              <?php endif; ?>
+              <?php if (in_array($currentUserRole ?? 'guest', ['owner', 'employee', 'admin'], true)): ?>
                 <a class="button button-secondary" href="/recipe-reviews">Weryfikuj publikacje</a>
               <?php endif; ?>
               <button class="button button-secondary" type="button" data-load-more hidden>Załaduj więcej</button>
