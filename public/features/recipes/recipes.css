@@ -576,3 +576,36 @@
     width: 100%;
   }
 }
+
+/* Login-required modal */
+.recipes-auth-dialog {
+  border: none;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: calc(100% - 32px);
+  box-shadow: 0 8px 40px rgba(0,0,0,.18);
+}
+
+.recipes-auth-dialog::backdrop {
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+}
+
+.recipes-auth-dialog h3 {
+  margin: 0 0 8px;
+  font-size: 1.125rem;
+}
+
+.recipes-auth-dialog p {
+  margin: 0 0 24px;
+  color: #475569;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.recipes-auth-dialog__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}

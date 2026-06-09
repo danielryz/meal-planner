@@ -16,6 +16,12 @@
   const timeContainer    = view.querySelector("[data-filter-items='time']");
   const diffContainer    = view.querySelector("[data-filter-items='difficulty']");
   const favoritesControl = view.querySelector("[data-favorites-control]");
+  const loginModal       = document.querySelector("[data-login-modal]");
+  const isAuthenticated  = view.dataset.authenticated === 'true';
+
+  loginModal?.addEventListener("click", (e) => {
+    if (e.target === loginModal) loginModal.close();
+  });
 
   let filterControls  = [];
   let categoryButtons = [];
@@ -263,6 +269,11 @@
 
     const recipeId = button.closest("[data-recipe-card]")?.dataset.recipeId;
     if (!recipeId) return;
+
+    if (!isAuthenticated) {
+      loginModal?.showModal();
+      return;
+    }
 
     const isNowFavorite = !button.classList.contains("is-active");
     button.classList.toggle("is-active", isNowFavorite);

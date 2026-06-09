@@ -13,7 +13,7 @@
       <?php include $partialsPath . '/app-nav.html'; ?>
 
       <main class="recipes-main">
-        <section class="recipes-layout" data-recipes-view>
+        <section class="recipes-layout" data-recipes-view data-authenticated="<?= ($currentUserRole ?? 'guest') !== 'guest' ? 'true' : 'false' ?>">
           <aside class="recipe-filters" aria-label="Filtry przepisów">
             <div class="recipe-filters__header">
               <div>
@@ -99,5 +99,17 @@
         </section>
       </main>
     </div>
+
+    <dialog class="recipes-auth-dialog" data-login-modal>
+      <form method="dialog">
+        <h3>Wymagane logowanie</h3>
+        <p>Dodawanie przepisów do ulubionych jest dostępne tylko dla zalogowanych użytkowników.</p>
+        <div class="recipes-auth-dialog__actions">
+          <a class="button" href="/login">Zaloguj się</a>
+          <a class="button button-secondary" href="/register">Utwórz konto</a>
+          <button class="button button-secondary" type="submit">Anuluj</button>
+        </div>
+      </form>
+    </dialog>
   </body>
 </html>
