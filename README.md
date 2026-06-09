@@ -118,21 +118,57 @@ POSTGRES_PASSWORD=mealplanner_dev_password
 POSTGRES_PORT=5433
 ```
 
-Schemat bazy danych jest na wczesnym etapie i będzie rozwijany podczas prac backendowych.
+Schemat bazy danych jest zarządzany przez migracje w `docker/db/migrations/`.
+
+## Migracje i Dane Testowe
+
+Migracje uruchamiane są automatycznie przy starcie kontenera `db` (przez `docker/db/init.sql`).
+
+Aby załadować dane testowe (demo użytkownicy, przepisy, kategorie):
+
+```bash
+docker compose exec php php scripts/run-migrations.php
+docker compose exec php php scripts/seed.php
+```
+
+Demo konta:
+
+| E-mail | Hasło | Rola |
+|---|---|---|
+| `owner@example.com` | `password` | owner |
+| `employee@example.com` | `password` | employee |
+| `user@example.com` | `password` | user |
 
 ## Struktura Projektu
 
 ```text
 docker/
   db/
+    migrations/     # pliki SQL migracji (001–007)
   nginx/
   php/
 public/
-  styles/
-  views/
-    partials/
+  features/         # widoki i JS per feature
+  assets/
+scripts/
+  run-migrations.php
+  seed.php
+  smoke.sh          # smoke testy (bash)
+  smoke.ps1         # smoke testy (PowerShell)
 src/
-  controllers/
+  Auth/
+  Config/
+  Controllers/
+  Database/
+  Entities/
+  Http/
+  Repositories/
+tests/
+  Unit/
+    Http/           # testy PHPUnit (Request, Router, Response)
+  bootstrap.php
+composer.json
+phpunit.xml
 index.php
 Routing.php
 docker-compose.yaml
@@ -141,60 +177,75 @@ docker-compose.yaml
 
 Lokalne pliki planowania znajdują się w `local/`. Ten katalog jest ignorowany przez Git.
 
-## Aktualne Route'y
+## API — Główne Endpointy
 
-- `/` - startowy widok aplikacji
-- `/login` - widok logowania
-- `/dashboard` - startowy route dashboard/index
+Wszystkie endpointy API wymagają zalogowania (sesja PHP). Brak sesji → przekierowanie 302 na `/login`.
 
-Route'y będą aktualizowane podczas implementacji widoków frontendowych.
+| Metoda | URL | Opis |
+|---|---|---|
+| GET | `/api/recipes` | Lista publicznych przepisów |
+| GET | `/api/recipes/{id}` | Szczegóły przepisu |
+| POST | `/api/recipes/drafts` | Utwórz szkic przepisu |
+| POST | `/api/recipes/{id}/submit-for-review` | Wyślij do weryfikacji |
+| GET | `/api/my-recipes` | Własne przepisy autora |
+| DELETE | `/api/recipes/{id}` | Usuń szkic |
+| GET | `/api/recipe-reviews` | Kolejka recenzji (owner/employee) |
+| POST | `/api/recipe-reviews/{id}/approve` | Zatwierdź przepis |
+| POST | `/api/recipe-reviews/{id}/request-changes` | Poproś o poprawki |
+| POST | `/api/recipe-reviews/{id}/reject` | Odrzuć przepis |
+| GET/POST | `/api/meal-plans` | Lista planów / utwórz nowy |
+| GET | `/api/meal-plans/{id}` | Szczegóły planu |
+| POST | `/api/meal-plans/{id}/slots/{slotId}/recipes` | Dodaj przepis do slotu |
+| DELETE | `/api/meal-plans/{id}/slots/{slotId}/recipes/{recipeId}` | Usuń przepis ze slotu |
+| GET | `/api/grocery-lists` | Aktywna lista zakupów |
+| POST | `/api/grocery-lists/{id}/items` | Dodaj produkt |
+| PATCH | `/api/grocery-lists/{id}/items/{itemId}` | Zaktualizuj produkt |
+| DELETE | `/api/grocery-lists/{id}/items/{itemId}` | Usuń produkt |
+| GET | `/api/users` | Lista użytkowników (owner) |
+| GET | `/api/profile` | Profil zalogowanego użytkownika |
 
 ## Zasady Developmentu
 
-- Nie używamy frameworków PHP.
-- Nie używamy frameworków frontendowych ani gotowych szablonów.
-- PHP piszemy obiektowo.
+- Nie używamy frameworków PHP ani frontendowych.
+- PHP piszemy obiektowo, `declare(strict_types=1)` w każdym pliku.
 - Nazwy techniczne zapisujemy po angielsku.
 - Teksty widoczne w UI zapisujemy po polsku.
 - Lokalne dane dostępowe trzymamy w `.env`.
 - Przy dodaniu nowych zmiennych środowiskowych aktualizujemy `.env.example`.
 
-## Planowane Widoki Frontendowe
-
-Frontend jest planowany na podstawie projektu w Figmie:
-
-- Strona główna
-- Logowanie
-- Rejestracja
-- Plan posiłków
-- Lista przepisów
-- Szczegóły przepisu
-- Lista zakupów
-- O nas
-- Zarządzanie użytkownikami dostępne tylko dla właściciela
-
-Po każdym frontendowym issue dodajemy plik kontraktu backendowego w:
-
-```text
-local/contracts/frontend/
-```
-
-Te kontrakty zostaną później użyte do zaplanowania backendu.
-
 ## Testy
 
-Testy nie są jeszcze skonfigurowane.
+### Testy jednostkowe (PHPUnit)
 
-Planowane sprawdzenia:
+Testy obejmują klasy HTTP (`Request`, `Router`, `Response`) bez zależności od bazy danych.
 
-- testy PHPUnit dla wybranych usług/repozytoriów
-- proste testy integracyjne endpointów
-- ręczny scenariusz testowy obejmujący logowanie, role, CRUD, 401/403, widoki i wyzwalacze bazy danych
+Uruchomienie w Docker:
 
-## Dokumentacja Do Uzupełnienia
+```bash
+docker compose exec php composer install
+docker compose exec php vendor/bin/phpunit
+```
 
-- diagram ERD
-- diagram architektury
-- screeny wersji webowej i mobilnej
-- pełny scenariusz testowy
-- finalna checklista ukończenia projektu
+Uruchomienie lokalnie (wymaga PHP z rozszerzeniami `mbstring`, `dom`, `xml`):
+
+```bash
+composer install
+vendor/bin/phpunit
+```
+
+### Smoke testy (curl)
+
+Smoke testy sprawdzają kluczowe endpointy przeciwko działającej instancji aplikacji.
+
+Bash (Linux / Docker):
+
+```bash
+BASE_URL=http://localhost:8080 bash scripts/smoke.sh
+```
+
+PowerShell (Windows):
+
+```powershell
+$env:BASE_URL = "http://localhost:8080"
+.\scripts\smoke.ps1
+```
