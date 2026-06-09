@@ -55,7 +55,7 @@
             <p>Zacznij korzystać z MealPlanner już dziś.</p>
           </header>
 
-          <form class="auth-form" novalidate data-auth-form="register">
+          <form class="auth-form" novalidate method="post" data-auth-form="register">
             <input type="hidden" name="csrfToken" value="<?= htmlspecialchars($csrfToken ?? '') ?>" />
             <div class="form-field">
               <label class="form-label" for="register-name">Imię i nazwisko</label>

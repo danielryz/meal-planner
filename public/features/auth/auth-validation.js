@@ -160,17 +160,16 @@
           body: new URLSearchParams(new FormData(form)).toString(),
         });
 
-        const data = await res.json();
-
         if (res.ok) {
-          window.toast.success(successMsg);
+          window.toast?.success(successMsg);
           setTimeout(() => { window.location.href = "/dashboard"; }, 800);
         } else {
-          window.toast.error(data.error ?? "Wystąpił błąd. Spróbuj ponownie.");
+          const data = await res.json().catch(() => ({}));
+          window.toast?.error(data.error ?? "Wystąpił błąd. Spróbuj ponownie.");
           submitBtn.disabled = false;
         }
       } catch {
-        window.toast.error("Brak połączenia z serwerem. Spróbuj ponownie.");
+        window.toast?.error("Brak połączenia z serwerem. Spróbuj ponownie.");
         submitBtn.disabled = false;
       }
     });
