@@ -3,10 +3,10 @@
   <head>
     <?php
       $pageTitle = $pageTitle ?? 'Powiadomienia - MealPlanner';
+      $pageScripts = ['public/features/profile/notification-settings.js'];
       include $partialsPath . '/head.html';
     ?>
     <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
-    <script defer src="/public/features/profile/notification-settings.js"></script>
   </head>
   <body>
     <div class="app-page notification-page">

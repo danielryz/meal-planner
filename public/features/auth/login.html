@@ -3,10 +3,10 @@
   <head>
     <?php
       $pageTitle = $pageTitle ?? 'Logowanie - MealPlanner';
+      $pageScripts = ['public/features/auth/auth-validation.js'];
       include $partialsPath . '/head.html';
     ?>
     <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
-    <script defer src="/public/features/auth/auth-validation.js"></script>
   </head>
   <body>
     <div class="auth-page auth-page--login">

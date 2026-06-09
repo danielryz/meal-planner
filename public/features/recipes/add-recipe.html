@@ -3,11 +3,13 @@
   <head>
     <?php
       $pageTitle = $pageTitle ?? 'Dodaj przepis - MealPlanner';
+      $pageScripts = [
+        'public/features/recipes/add-recipe.js',
+        'public/features/media/media-upload.js',
+      ];
       include $partialsPath . '/head.html';
     ?>
     <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
-    <script defer src="/public/features/recipes/add-recipe.js"></script>
-    <script defer src="/public/features/media/media-upload.js"></script>
   </head>
   <body>
     <div class="app-page add-recipe-page">

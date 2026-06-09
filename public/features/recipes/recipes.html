@@ -3,10 +3,10 @@
   <head>
     <?php
       $pageTitle = $pageTitle ?? 'Przepisy - MealPlanner';
+      $pageScripts = ['public/features/recipes/recipes.js'];
       include $partialsPath . '/head.html';
     ?>
     <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
-    <script defer src="/public/features/recipes/recipes.js"></script>
   </head>
   <body>
     <div class="app-page recipes-page">

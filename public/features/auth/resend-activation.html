@@ -3,10 +3,10 @@
   <head>
     <?php
       $pageTitle = 'Wyślij ponownie link aktywacyjny - MealPlanner';
+      $pageScripts = ['public/features/auth/resend-activation.js'];
       include $partialsPath . '/head.html';
     ?>
     <title><?= htmlspecialchars($pageTitle) ?></title>
-    <script defer src="/public/features/auth/resend-activation.js"></script>
   </head>
   <body>
     <div class="auth-page">

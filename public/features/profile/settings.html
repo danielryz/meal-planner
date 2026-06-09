@@ -3,11 +3,13 @@
   <head>
     <?php
       $pageTitle = $pageTitle ?? 'Ustawienia konta - MealPlanner';
+      $pageScripts = [
+        'public/features/profile/settings.js',
+        'public/features/media/media-upload.js',
+      ];
       include $partialsPath . '/head.html';
     ?>
     <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
-    <script defer src="/public/features/profile/settings.js"></script>
-    <script defer src="/public/features/media/media-upload.js"></script>
   </head>
   <body>
     <div class="app-page settings-page">

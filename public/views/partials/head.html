@@ -41,4 +41,10 @@
       echo '<script defer src="/' . htmlspecialchars($script) . '?v=' . filemtime($script) . '"></script>' . PHP_EOL;
     }
   }
+
+  foreach ($pageScripts ?? [] as $script) {
+    if (file_exists($script)) {
+      echo '<script defer src="/' . htmlspecialchars($script) . '?v=' . filemtime($script) . '"></script>' . PHP_EOL;
+    }
+  }
 ?>
