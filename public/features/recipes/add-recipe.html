@@ -7,6 +7,7 @@
     ?>
     <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
     <script defer src="/public/features/recipes/add-recipe.js"></script>
+    <script defer src="/public/features/media/media-upload.js"></script>
   </head>
   <body>
     <div class="app-page add-recipe-page">
@@ -86,6 +87,33 @@
                     <span>Porcje</span>
                     <input name="servings" type="number" min="1" max="12" data-servings />
                   </label>
+                </div>
+              </section>
+
+              <section class="add-recipe-card">
+                <header>
+                  <span class="add-recipe-kicker">Multimedia</span>
+                  <h2>Zdjęcie przepisu</h2>
+                </header>
+                <div class="media-upload" data-media-upload>
+                  <input class="media-upload__input" type="file" accept="image/jpeg,image/png,image/webp" data-media-input />
+                  <div class="media-upload__zone" data-media-zone>
+                    <img class="media-upload__zone-icon" src="/public/assets/icons/recipes.svg" alt="" aria-hidden="true" />
+                    <p class="media-upload__hint">
+                      Przeciągnij zdjęcie tutaj lub
+                      <button class="media-upload__browse" type="button" data-media-browse>wybierz plik</button>
+                    </p>
+                    <small class="media-upload__formats">JPG, PNG lub WebP · maks. 10 MB</small>
+                  </div>
+                  <div class="media-upload__preview" data-media-preview hidden>
+                    <img class="media-upload__preview-img" data-media-preview-img alt="Podgląd zdjęcia przepisu" />
+                    <div class="media-upload__preview-meta">
+                      <span class="media-upload__preview-name" data-media-preview-name></span>
+                      <span class="media-upload__preview-size" data-media-preview-size></span>
+                      <button class="media-upload__remove" type="button" data-media-remove>Usuń zdjęcie</button>
+                    </div>
+                  </div>
+                  <p class="media-upload__error" data-media-error hidden></p>
                 </div>
               </section>
 
