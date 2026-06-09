@@ -5,19 +5,22 @@
       $pageTitle = $pageTitle ?? 'Błąd serwera - MealPlanner';
       include __DIR__ . '/partials/head.html';
     ?>
-    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
   </head>
   <body>
     <div class="page-shell">
       <?php include __DIR__ . '/partials/public-nav.html'; ?>
 
       <main class="page-main">
-        <section class="section">
-          <div class="container stack">
-            <span class="badge">500</span>
-            <h1 class="page-title">Coś poszło nie tak</h1>
-            <p>Spróbuj ponownie za chwilę.</p>
-            <a class="button" href="/">Wróć na stronę główną</a>
+        <section class="error-section">
+          <div class="error-body">
+            <p class="error-code">500</p>
+            <h1 class="error-title">Coś poszło nie tak</h1>
+            <p class="error-description">Wystąpił nieoczekiwany błąd po stronie serwera. Spróbuj ponownie za chwilę — jeśli problem się utrzymuje, skontaktuj się z administratorem.</p>
+            <div class="error-actions">
+              <a class="button" href="javascript:location.reload()">Odśwież stronę</a>
+              <a class="button button-secondary" href="/">Strona główna</a>
+            </div>
           </div>
         </section>
       </main>

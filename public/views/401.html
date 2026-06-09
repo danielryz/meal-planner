@@ -5,19 +5,22 @@
       $pageTitle = $pageTitle ?? 'Wymagane logowanie - MealPlanner';
       include __DIR__ . '/partials/head.html';
     ?>
-    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
   </head>
   <body>
     <div class="page-shell">
       <?php include __DIR__ . '/partials/public-nav.html'; ?>
 
       <main class="page-main">
-        <section class="section">
-          <div class="container stack">
-            <span class="badge">401</span>
-            <h1 class="page-title">Zaloguj się, aby kontynuować</h1>
-            <p>Ta część aplikacji wymaga aktywnej sesji użytkownika.</p>
-            <a class="button" href="/login">Przejdź do logowania</a>
+        <section class="error-section">
+          <div class="error-body">
+            <p class="error-code">401</p>
+            <h1 class="error-title">Wymagane logowanie</h1>
+            <p class="error-description">Aby wyświetlić tę stronę, musisz być zalogowany. Zaloguj się na swoje konto lub utwórz nowe.</p>
+            <div class="error-actions">
+              <a class="button" href="/login">Zaloguj się</a>
+              <a class="button button-secondary" href="/register">Zarejestruj się</a>
+            </div>
           </div>
         </section>
       </main>

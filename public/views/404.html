@@ -5,19 +5,37 @@
       $pageTitle = $pageTitle ?? 'Nie znaleziono strony - MealPlanner';
       include __DIR__ . '/partials/head.html';
     ?>
-    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
   </head>
   <body>
+    <?php
+      $authUser = $_SESSION['auth_user'] ?? null;
+      $isLoggedIn = is_array($authUser) && ($authUser['is_logged_in'] ?? false) === true;
+      $currentUserRole = $authUser['role'] ?? 'user';
+      $currentUserName = $authUser['display_name'] ?? 'Użytkownik';
+    ?>
     <div class="page-shell">
-      <?php include __DIR__ . '/partials/public-nav.html'; ?>
+      <?php if ($isLoggedIn): ?>
+        <?php include __DIR__ . '/partials/app-nav.html'; ?>
+      <?php else: ?>
+        <?php include __DIR__ . '/partials/public-nav.html'; ?>
+      <?php endif; ?>
 
       <main class="page-main">
-        <section class="section">
-          <div class="container stack">
-            <span class="badge">404</span>
-            <h1 class="page-title">Nie znaleziono strony</h1>
-            <p>Adres, którego szukasz, nie istnieje albo został przeniesiony.</p>
-            <a class="button" href="/">Wróć na stronę główną</a>
+        <section class="error-section">
+          <div class="error-body">
+            <p class="error-code">404</p>
+            <h1 class="error-title">Nie znaleziono strony</h1>
+            <p class="error-description">Strona, której szukasz, nie istnieje lub została przeniesiona pod inny adres.</p>
+            <div class="error-actions">
+              <?php if ($isLoggedIn): ?>
+                <a class="button" href="/dashboard">Wróć do aplikacji</a>
+                <a class="button button-secondary" href="/recipes">Przeglądaj przepisy</a>
+              <?php else: ?>
+                <a class="button" href="/">Wróć na stronę główną</a>
+                <a class="button button-secondary" href="/recipes">Przeglądaj przepisy</a>
+              <?php endif; ?>
+            </div>
           </div>
         </section>
       </main>

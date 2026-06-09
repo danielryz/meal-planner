@@ -5,19 +5,36 @@
       $pageTitle = $pageTitle ?? 'Brak dostępu - MealPlanner';
       include __DIR__ . '/partials/head.html';
     ?>
-    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
   </head>
   <body>
+    <?php
+      $authUser = $_SESSION['auth_user'] ?? null;
+      $isLoggedIn = is_array($authUser) && ($authUser['is_logged_in'] ?? false) === true;
+      $currentUserRole = $authUser['role'] ?? 'user';
+      $currentUserName = $authUser['display_name'] ?? 'Użytkownik';
+    ?>
     <div class="page-shell">
-      <?php include __DIR__ . '/partials/public-nav.html'; ?>
+      <?php if ($isLoggedIn): ?>
+        <?php include __DIR__ . '/partials/app-nav.html'; ?>
+      <?php else: ?>
+        <?php include __DIR__ . '/partials/public-nav.html'; ?>
+      <?php endif; ?>
 
       <main class="page-main">
-        <section class="section">
-          <div class="container stack">
-            <span class="badge">403</span>
-            <h1 class="page-title">Brak dostępu</h1>
-            <p>Nie masz uprawnień do wykonania tej akcji.</p>
-            <a class="button" href="/dashboard">Wróć do aplikacji</a>
+        <section class="error-section">
+          <div class="error-body">
+            <p class="error-code">403</p>
+            <h1 class="error-title">Brak dostępu</h1>
+            <p class="error-description">Nie masz uprawnień do wyświetlenia tej strony. Jeśli uważasz, że to błąd, skontaktuj się z administratorem.</p>
+            <div class="error-actions">
+              <?php if ($isLoggedIn): ?>
+                <a class="button" href="/dashboard">Wróć do aplikacji</a>
+              <?php else: ?>
+                <a class="button" href="/login">Zaloguj się</a>
+                <a class="button button-secondary" href="/">Strona główna</a>
+              <?php endif; ?>
+            </div>
           </div>
         </section>
       </main>
