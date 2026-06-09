@@ -34,7 +34,10 @@
   }
 
   $scripts = array_merge(
-    ['public/features/notifications/toast.js'],
+    [
+      'public/features/notifications/toast.js',
+      'public/features/auth/email-guard.js',
+    ],
     $pageScripts ?? []
   );
   foreach ($scripts as $script) {

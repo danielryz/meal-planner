@@ -148,7 +148,9 @@
 
       const type = form.dataset.authForm;
       const endpoint = `/api/auth/${type}`;
-      const successMsg = type === "login" ? "Zalogowano pomyślnie." : "Konto zostało utworzone.";
+      const successMsg = type === "login"
+        ? "Zalogowano pomyślnie."
+        : "Konto utworzone! Sprawdź e-mail i potwierdź rejestrację.";
       const submitBtn = form.querySelector('[type="submit"]');
 
       submitBtn.disabled = true;
