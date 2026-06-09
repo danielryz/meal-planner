@@ -34,7 +34,7 @@
                   <span>Wegańskie</span>
                 </label>
                 <label class="recipe-check">
-                  <input type="checkbox" name="diet[]" value="vegetarian" checked data-filter-control />
+                  <input type="checkbox" name="diet[]" value="vegetarian" data-filter-control />
                   <span>Wegetariańskie</span>
                 </label>
                 <label class="recipe-check">
@@ -50,7 +50,7 @@
               <fieldset class="recipe-filter-group">
                 <legend>Czas gotowania</legend>
                 <label class="recipe-radio">
-                  <input type="radio" name="time" value="30" checked data-filter-control />
+                  <input type="radio" name="time" value="30" data-filter-control />
                   <img src="/public/assets/icons/clock.svg" alt="" />
                   <span>Do 30 minut</span>
                 </label>
@@ -64,7 +64,7 @@
               <fieldset class="recipe-filter-group">
                 <legend>Poziom</legend>
                 <label class="recipe-radio">
-                  <input type="radio" name="difficulty" value="easy" checked data-filter-control />
+                  <input type="radio" name="difficulty" value="easy" data-filter-control />
                   <span>Łatwe</span>
                 </label>
                 <label class="recipe-radio">
@@ -99,12 +99,12 @@
             </form>
 
             <div class="recipe-category-row" aria-label="Kategorie przepisów">
-              <button class="recipe-category is-active" type="button" data-category-filter="all">Wszystkie</button>
-              <button class="recipe-category" type="button" data-category-filter="quick">Szybkie</button>
-              <button class="recipe-category" type="button" data-category-filter="budget">Budżetowe</button>
-              <button class="recipe-category" type="button" data-category-filter="vegan">Wegańskie</button>
-              <button class="recipe-category" type="button" data-category-filter="protein">Białkowe</button>
-              <button class="recipe-category" type="button" data-category-filter="dessert">Desery</button>
+              <button class="recipe-category is-active" type="button" data-category-filter="all" aria-pressed="true">Wszystkie</button>
+              <button class="recipe-category" type="button" data-category-filter="breakfast" aria-pressed="false">Śniadania</button>
+              <button class="recipe-category" type="button" data-category-filter="lunch" aria-pressed="false">Lunch</button>
+              <button class="recipe-category" type="button" data-category-filter="dinner" aria-pressed="false">Obiady</button>
+              <button class="recipe-category" type="button" data-category-filter="soup" aria-pressed="false">Zupy</button>
+              <button class="recipe-category" type="button" data-category-filter="dessert" aria-pressed="false">Desery</button>
             </div>
 
             <div class="recipe-status" aria-live="polite">

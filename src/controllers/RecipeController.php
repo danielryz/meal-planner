@@ -23,6 +23,7 @@ final class RecipeController extends AppController
             'difficulty' => (string) $this->request->query('difficulty', ''),
             'category'   => (string) $this->request->query('category', ''),
             'time'       => (string) $this->request->query('time', ''),
+            'diet'       => (array) $this->request->query('diet', []),
         ];
 
         $db   = new Database();

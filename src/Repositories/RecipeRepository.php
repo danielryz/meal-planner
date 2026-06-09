@@ -33,6 +33,20 @@ final class RecipeRepository extends AbstractRepository
             $params[':time'] = (int) $filters['time'];
         }
 
+        if (!empty($filters['diet']) && is_array($filters['diet'])) {
+            $diets = array_values(array_filter($filters['diet']));
+            if (!empty($diets)) {
+                $placeholders = [];
+                foreach ($diets as $i => $d) {
+                    $key = ':diet_' . $i;
+                    $placeholders[] = $key;
+                    $params[$key] = (string) $d;
+                }
+                $inList = implode(',', $placeholders);
+                $conditions[] = "EXISTS (SELECT 1 FROM recipe_diet_types rdt JOIN diet_types dt ON dt.id = rdt.diet_type_id WHERE rdt.recipe_id = r.id AND dt.code IN ({$inList}))";
+            }
+        }
+
         $where = implode(' AND ', $conditions);
 
         $favoriteJoin = $userId !== null
