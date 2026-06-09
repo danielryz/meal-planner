@@ -18,17 +18,21 @@ final class RecipeController extends AppController
         }
 
         $userId  = $this->sessions->currentUser()->id();
+        $page    = max(1, (int) $this->request->query('page', 1));
+        $perPage = 12;
+
         $filters = [
             'q'          => (string) $this->request->query('q', ''),
             'difficulty' => (string) $this->request->query('difficulty', ''),
             'category'   => (string) $this->request->query('category', ''),
             'time'       => (string) $this->request->query('time', ''),
             'diet'       => (array) $this->request->query('diet', []),
+            'favorites'  => (string) $this->request->query('favorites', ''),
         ];
 
-        $db   = new Database();
-        $repo = new RecipeRepository($db->connection());
-        $rows = $repo->listPublic($filters, $userId);
+        $db     = new Database();
+        $repo   = new RecipeRepository($db->connection());
+        $result = $repo->listPublic($filters, $userId, $page, $perPage);
 
         $recipes = array_map(fn(array $row) => [
             'id'                  => (int) $row['id'],
@@ -41,10 +45,17 @@ final class RecipeController extends AppController
             'servings'            => (int) $row['servings'],
             'dietTags'            => $row['diet_tags'],
             'isFavorite'          => (bool) $row['is_favorite'],
-        ], $rows);
+        ], $result['rows']);
+
+        $total = $result['total'];
+        $pages = max(1, (int) ceil($total / $perPage));
 
         return Response::json([
             'recipes' => $recipes,
+            'total'   => $total,
+            'page'    => $page,
+            'perPage' => $perPage,
+            'pages'   => $pages,
             'filters' => $repo->listFilterOptions(),
         ]);
     }

@@ -28,53 +28,26 @@
 
             <form class="recipe-filter-form" action="/recipes" method="get">
               <fieldset class="recipe-filter-group">
+                <legend>Ulubione</legend>
+                <label class="recipe-check">
+                  <input type="checkbox" data-favorites-control />
+                  <span>Tylko ulubione</span>
+                </label>
+              </fieldset>
+
+              <fieldset class="recipe-filter-group">
                 <legend>Dieta</legend>
-                <label class="recipe-check">
-                  <input type="checkbox" name="diet[]" value="vegan" data-filter-control />
-                  <span>Wegańskie</span>
-                </label>
-                <label class="recipe-check">
-                  <input type="checkbox" name="diet[]" value="vegetarian" data-filter-control />
-                  <span>Wegetariańskie</span>
-                </label>
-                <label class="recipe-check">
-                  <input type="checkbox" name="diet[]" value="gluten_free" data-filter-control />
-                  <span>Bez glutenu</span>
-                </label>
-                <label class="recipe-check">
-                  <input type="checkbox" name="diet[]" value="keto" data-filter-control />
-                  <span>Keto</span>
-                </label>
+                <div data-filter-items="diet"></div>
               </fieldset>
 
               <fieldset class="recipe-filter-group">
                 <legend>Czas gotowania</legend>
-                <label class="recipe-radio">
-                  <input type="radio" name="time" value="30" data-filter-control />
-                  <img src="/public/assets/icons/clock.svg" alt="" />
-                  <span>Do 30 minut</span>
-                </label>
-                <label class="recipe-radio">
-                  <input type="radio" name="time" value="60" data-filter-control />
-                  <img src="/public/assets/icons/clock.svg" alt="" />
-                  <span>Do 60 minut</span>
-                </label>
+                <div data-filter-items="time"></div>
               </fieldset>
 
               <fieldset class="recipe-filter-group">
                 <legend>Poziom</legend>
-                <label class="recipe-radio">
-                  <input type="radio" name="difficulty" value="easy" data-filter-control />
-                  <span>Łatwe</span>
-                </label>
-                <label class="recipe-radio">
-                  <input type="radio" name="difficulty" value="medium" data-filter-control />
-                  <span>Średnie</span>
-                </label>
-                <label class="recipe-radio">
-                  <input type="radio" name="difficulty" value="advanced" data-filter-control />
-                  <span>Zaawansowane</span>
-                </label>
+                <div data-filter-items="difficulty"></div>
               </fieldset>
             </form>
           </aside>
@@ -98,18 +71,12 @@
               <input id="recipe-search" name="query" type="search" placeholder="Szukaj przepisów, składników..." data-recipe-search />
             </form>
 
-            <div class="recipe-category-row" aria-label="Kategorie przepisów">
-              <button class="recipe-category is-active" type="button" data-category-filter="all" aria-pressed="true">Wszystkie</button>
-              <button class="recipe-category" type="button" data-category-filter="breakfast" aria-pressed="false">Śniadania</button>
-              <button class="recipe-category" type="button" data-category-filter="lunch" aria-pressed="false">Lunch</button>
-              <button class="recipe-category" type="button" data-category-filter="dinner" aria-pressed="false">Obiady</button>
-              <button class="recipe-category" type="button" data-category-filter="soup" aria-pressed="false">Zupy</button>
-              <button class="recipe-category" type="button" data-category-filter="dessert" aria-pressed="false">Desery</button>
+            <div class="recipe-category-row" aria-label="Kategorie przepisów" data-category-buttons>
             </div>
 
             <div class="recipe-status" aria-live="polite">
-              <strong data-result-count>8 przepisów</strong>
-              <span data-filter-summary>Wegetariańskie, do 30 minut, łatwe</span>
+              <strong data-result-count></strong>
+              <span data-filter-summary></span>
             </div>
 
             <div class="recipe-grid" data-recipe-grid>
@@ -124,7 +91,7 @@
               <?php if (in_array($currentUserRole ?? 'user', ['owner', 'employee', 'admin'], true)): ?>
                 <a class="button button-secondary" href="/recipe-reviews">Weryfikuj publikacje</a>
               <?php endif; ?>
-              <button class="button button-secondary" type="button">Załaduj więcej</button>
+              <button class="button button-secondary" type="button" data-load-more hidden>Załaduj więcej</button>
             </div>
           </section>
         </section>

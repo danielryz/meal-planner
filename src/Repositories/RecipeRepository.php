@@ -8,7 +8,7 @@ use PDO;
 
 final class RecipeRepository extends AbstractRepository
 {
-    public function listPublic(array $filters, ?int $userId): array
+    public function listPublic(array $filters, ?int $userId, int $page = 1, int $perPage = 12): array
     {
         $conditions = ["r.visibility = 'public'", "r.status = 'approved'"];
         $params = [];
@@ -47,13 +47,35 @@ final class RecipeRepository extends AbstractRepository
             }
         }
 
-        $where = implode(' AND ', $conditions);
-
         $favoriteJoin = $userId !== null
             ? 'LEFT JOIN favorite_recipes fr ON fr.recipe_id = r.id AND fr.user_id = :user_id'
             : '';
 
         $favoriteSelect = $userId !== null ? ', (fr.user_id IS NOT NULL) AS is_favorite' : ', FALSE AS is_favorite';
+
+        if (!empty($filters['favorites']) && $filters['favorites'] === '1' && $userId !== null) {
+            $conditions[] = 'fr.user_id IS NOT NULL';
+        }
+
+        $where = implode(' AND ', $conditions);
+
+        $countSql = "SELECT COUNT(*)
+                     FROM recipes r
+                     LEFT JOIN recipe_categories rc ON rc.id = r.category_id
+                     {$favoriteJoin}
+                     WHERE {$where}";
+
+        $countStmt = $this->connection->prepare($countSql);
+        if ($userId !== null) {
+            $countStmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        }
+        foreach ($params as $key => $value) {
+            $countStmt->bindValue($key, $value);
+        }
+        $countStmt->execute();
+        $total = (int) $countStmt->fetchColumn();
+
+        $offset = ($page - 1) * $perPage;
 
         $sql = "SELECT r.id, r.title, r.difficulty, r.prep_time_minutes, r.servings,
                     rc.code AS category_code, rc.label AS category_label
@@ -62,18 +84,19 @@ final class RecipeRepository extends AbstractRepository
                 LEFT JOIN recipe_categories rc ON rc.id = r.category_id
                 {$favoriteJoin}
                 WHERE {$where}
-                ORDER BY r.published_at DESC";
+                ORDER BY r.published_at DESC
+                LIMIT :limit OFFSET :offset";
 
         $stmt = $this->connection->prepare($sql);
 
         if ($userId !== null) {
             $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
         }
-
         foreach ($params as $key => $value) {
             $stmt->bindValue($key, $value);
         }
-
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -81,7 +104,7 @@ final class RecipeRepository extends AbstractRepository
             $row['diet_tags'] = $this->dietTagsForRecipe((int) $row['id']);
         }
 
-        return $rows;
+        return ['rows' => $rows, 'total' => $total];
     }
 
     public function findById(int $recipeId, ?int $userId): ?array
