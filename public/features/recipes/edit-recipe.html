@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = $pageTitle ?? 'Edytuj przepis - MealPlanner';
+      $pageScripts = [
+        'public/features/recipes/edit-recipe.js',
+        'public/features/media/media-upload.js',
+      ];
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle ?? 'MealPlanner') ?></title>
+  </head>
+  <body>
+    <div class="app-page add-recipe-page">
+      <?php include $partialsPath . '/app-nav.html'; ?>
+
+      <main class="add-recipe-main" data-edit-recipe-view data-recipe-id="<?= (int) ($recipeId ?? 0) ?>">
+        <section class="add-recipe-shell">
+          <header class="add-recipe-header">
+            <div>
+              <span class="add-recipe-kicker">Edycja przepisu</span>
+              <h1>Edytuj przepis</h1>
+              <p>Zaktualizuj treść przepisu. Możesz zapisać zmiany jako szkic lub od razu wysłać do weryfikacji.</p>
+            </div>
+            <a class="button button-secondary add-recipe-header__button" href="/recipe-management">
+              <img src="/public/assets/icons/recipes.svg" alt="" />
+              <span>Wróć do przepisów</span>
+            </a>
+          </header>
+
+          <p class="add-recipe-state" data-recipe-form-loading>Ładowanie przepisu...</p>
+          <p class="add-recipe-state add-recipe-state--error" data-recipe-form-error hidden>Nie udało się załadować przepisu.</p>
+
+          <form class="add-recipe-form" action="#" method="post" data-recipe-form hidden novalidate>
+            <aside class="add-recipe-summary" aria-label="Status przepisu">
+              <div class="add-recipe-summary__icon" aria-hidden="true">
+                <img src="/public/assets/icons/recipes.svg" alt="" />
+              </div>
+              <div>
+                <span class="add-recipe-kicker">Status</span>
+                <h2 data-edit-status-label>Szkic prywatny</h2>
+                <p>Zmiany zostaną zapisane. Publiczna publikacja wymaga weryfikacji.</p>
+              </div>
+              <dl>
+                <div>
+                  <dt>Składniki</dt>
+                  <dd data-ingredients-count>0</dd>
+                </div>
+                <div>
+                  <dt>Kroki</dt>
+                  <dd data-steps-count>0</dd>
+                </div>
+              </dl>
+            </aside>
+
+            <section class="add-recipe-panels">
+              <section class="add-recipe-card">
+                <header>
+                  <span class="add-recipe-kicker">Podstawy</span>
+                  <h2>Informacje o przepisie</h2>
+                </header>
+                <div class="add-recipe-fields add-recipe-fields--two">
+                  <label>
+                    <span>Nazwa przepisu</span>
+                    <input name="title" type="text" required data-title />
+                    <small data-title-error hidden>Podaj nazwę przepisu.</small>
+                  </label>
+                  <label>
+                    <span>Kategoria</span>
+                    <select name="category" required data-category></select>
+                  </label>
+                </div>
+                <label class="add-recipe-field">
+                  <span>Opis</span>
+                  <textarea name="description" rows="4" required data-description></textarea>
+                  <small data-description-error hidden>Opis musi mieć co najmniej 20 znaków.</small>
+                </label>
+                <div class="add-recipe-fields add-recipe-fields--three">
+                  <label>
+                    <span>Poziom</span>
+                    <select name="difficulty" data-difficulty></select>
+                  </label>
+                  <label>
+                    <span>Czas przygotowania</span>
+                    <input name="prepTimeMinutes" type="number" min="1" data-prep-time />
+                  </label>
+                  <label>
+                    <span>Porcje</span>
+                    <input name="servings" type="number" min="1" max="12" data-servings />
+                  </label>
+                </div>
+              </section>
+
+              <section class="add-recipe-card">
+                <header>
+                  <span class="add-recipe-kicker">Multimedia</span>
+                  <h2>Zdjęcie przepisu</h2>
+                </header>
+                <div class="media-upload" data-media-upload data-media-endpoint="/api/media/recipe-photos">
+                  <input class="media-upload__input" type="file" accept="image/jpeg,image/png,image/webp" data-media-input />
+                  <div class="media-upload__zone" data-media-zone>
+                    <img class="media-upload__zone-icon" src="/public/assets/icons/recipes.svg" alt="" aria-hidden="true" />
+                    <p class="media-upload__hint">
+                      Przeciągnij zdjęcie tutaj lub
+                      <button class="media-upload__browse" type="button" data-media-browse>wybierz plik</button>
+                    </p>
+                    <small class="media-upload__formats">JPG, PNG lub WebP · maks. 10 MB</small>
+                  </div>
+                  <div class="media-upload__uploading" data-media-uploading hidden>Wysyłanie zdjęcia...</div>
+                  <div class="media-upload__preview" data-media-preview hidden>
+                    <img class="media-upload__preview-img" data-media-preview-img alt="Podgląd zdjęcia przepisu" />
+                    <div class="media-upload__preview-meta">
+                      <span class="media-upload__preview-name" data-media-preview-name></span>
+                      <span class="media-upload__preview-size" data-media-preview-size></span>
+                      <button class="media-upload__remove" type="button" data-media-remove>Usuń zdjęcie</button>
+                    </div>
+                  </div>
+                  <p class="media-upload__error" data-media-error hidden></p>
+                </div>
+              </section>
+
+              <section class="add-recipe-card">
+                <header>
+                  <span class="add-recipe-kicker">Opcjonalne</span>
+                  <h2>Wideo przepisu</h2>
+                </header>
+                <div class="add-recipe-video-tabs" data-video-tabs>
+                  <button class="add-recipe-video-tab is-active" type="button" data-video-tab="url" aria-selected="true">Link (YouTube / Vimeo)</button>
+                  <button class="add-recipe-video-tab" type="button" data-video-tab="file" aria-selected="false">Prześlij plik wideo</button>
+                </div>
+                <div data-video-pane="url">
+                  <label class="add-recipe-field">
+                    <span>URL wideo</span>
+                    <input type="url" placeholder="https://www.youtube.com/watch?v=..." data-video-url-input />
+                  </label>
+                  <div class="add-recipe-video-embed" data-video-embed hidden>
+                    <div class="add-recipe-video-embed__ratio">
+                      <iframe data-video-iframe frameborder="0" allowfullscreen loading="lazy" title="Podgląd wideo"></iframe>
+                    </div>
+                    <button class="add-recipe-video-embed__clear" type="button" data-video-url-clear>Usuń wideo</button>
+                  </div>
+                  <p class="add-recipe-video-hint">Wspierane: YouTube, Vimeo · wideo jest opcjonalne</p>
+                </div>
+                <div data-video-pane="file" hidden>
+                  <input class="media-upload__input" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" data-video-file-input />
+                  <div class="media-upload__zone add-recipe-video-zone" data-video-zone>
+                    <p class="media-upload__hint">
+                      Przeciągnij plik wideo tutaj lub
+                      <button class="media-upload__browse" type="button" data-video-browse>wybierz plik</button>
+                    </p>
+                    <small class="media-upload__formats">MP4, MOV lub WebM · maks. 500 MB</small>
+                  </div>
+                  <div class="media-upload__uploading" data-video-uploading hidden>Wysyłanie wideo...</div>
+                  <div class="add-recipe-video-file-preview" data-video-preview hidden>
+                    <video class="add-recipe-video-player" controls data-video-player></video>
+                    <div class="add-recipe-video-preview-meta">
+                      <span class="add-recipe-video-preview-name" data-video-preview-name></span>
+                      <button class="add-recipe-video-preview-clear" type="button" data-video-file-clear>Usuń wideo</button>
+                    </div>
+                  </div>
+                  <p class="add-recipe-video-error" data-video-error hidden></p>
+                  <p class="add-recipe-video-hint">MP4, MOV lub WebM · maks. 500 MB · wideo jest opcjonalne</p>
+                </div>
+              </section>
+
+              <section class="add-recipe-card">
+                <header class="add-recipe-card__header">
+                  <div>
+                    <span class="add-recipe-kicker">Lista</span>
+                    <h2>Składniki</h2>
+                  </div>
+                  <button class="button button-secondary" type="button" data-add-ingredient>
+                    <img src="/public/assets/icons/plus.svg" alt="" />
+                    Dodaj
+                  </button>
+                </header>
+                <div class="add-recipe-repeat-list" data-ingredients-list></div>
+              </section>
+
+              <section class="add-recipe-card">
+                <header class="add-recipe-card__header">
+                  <div>
+                    <span class="add-recipe-kicker">Instrukcja</span>
+                    <h2>Kroki przygotowania</h2>
+                  </div>
+                  <button class="button button-secondary" type="button" data-add-step>
+                    <img src="/public/assets/icons/plus.svg" alt="" />
+                    Dodaj
+                  </button>
+                </header>
+                <div class="add-recipe-repeat-list" data-steps-list></div>
+              </section>
+
+              <footer class="add-recipe-footer">
+                <p data-recipe-form-message hidden></p>
+                <div>
+                  <button class="button button-secondary" type="submit" data-submit-mode="draft">Zapisz zmiany</button>
+                  <button class="button" type="submit" data-submit-mode="review" data-submit-review hidden>Wyślij do weryfikacji</button>
+                </div>
+              </footer>
+            </section>
+          </form>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

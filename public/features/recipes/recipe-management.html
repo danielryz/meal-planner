@@ -96,5 +96,26 @@
         </section>
       </main>
     </div>
+
+    <dialog class="rm-dialog" data-delete-dialog>
+      <div class="rm-dialog__body">
+        <p class="rm-dialog__title">Usuń przepis</p>
+        <p class="rm-dialog__text">Czy na pewno chcesz usunąć ten przepis? Tej operacji nie można cofnąć.</p>
+        <div class="rm-dialog__actions">
+          <button class="button button-secondary" type="button" data-delete-cancel>Anuluj</button>
+          <button class="button rm-dialog__btn-danger" type="button" data-delete-confirm>Usuń</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="rm-dialog" data-comment-dialog>
+      <div class="rm-dialog__body">
+        <p class="rm-dialog__title">Komentarz recenzenta</p>
+        <p class="rm-dialog__comment" data-comment-text></p>
+        <div class="rm-dialog__actions">
+          <button class="button" type="button" data-comment-close>Zamknij</button>
+        </div>
+      </div>
+    </dialog>
   </body>
 </html>
