@@ -185,9 +185,24 @@ final class DashboardController extends AppController
         return $this->renderAppView("add-recipe", "recipes");
     }
 
-    public function recipeReviews(): Response
+    public function editRecipe(): Response
     {
         if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        $recipeId = (int) $this->request->routeParam('recipeId');
+
+        return $this->render('edit-recipe', array_merge(
+            ['currentRoute' => 'recipes'],
+            $this->currentUserViewData(),
+            ['recipeId' => $recipeId]
+        ));
+    }
+
+    public function recipeReviews(): Response
+    {
+        if ($response = $this->requireRole('owner', 'employee')) {
             return $response;
         }
 

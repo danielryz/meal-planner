@@ -245,17 +245,11 @@
 
       renderList();
 
-      const updatedMessage = detail.querySelector("[data-review-message]");
-      if (updatedMessage) {
-        updatedMessage.textContent = action === "approved" ? "Przepis zaakceptowany." : "Decyzja zapisana.";
-        updatedMessage.hidden = false;
-      }
+      const successMsg = action === "approved" ? "Przepis zaakceptowany." : "Decyzja zapisana.";
+      if (window.toast) window.toast.success(successMsg);
     } catch (error) {
       actionButton.disabled = false;
-      if (messageEl) {
-        messageEl.textContent = error.message ?? "Wystąpił błąd.";
-        messageEl.hidden = false;
-      }
+      if (window.toast) window.toast.error(error.message ?? "Wystąpił błąd.");
     }
   });
 
