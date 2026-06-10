@@ -35,10 +35,10 @@ final class MealPlanRepository
 
         try {
             $stmt = $this->connection->prepare(
-                "INSERT INTO meal_plans (user_id, name, week_start_date, status)
-                 VALUES (?, ?, ?, 'active') RETURNING id"
+                "INSERT INTO meal_plans (user_id, name, week_start_date, status, weekly_budget)
+                 VALUES (?, ?, ?, 'active', ?) RETURNING id"
             );
-            $stmt->execute([$userId, $data['name'], $data['weekStartDate']]);
+            $stmt->execute([$userId, $data['name'], $data['weekStartDate'], (int) ($data['weeklyBudget'] ?? 0)]);
             $planId = (int) $stmt->fetchColumn();
 
             $position = 0;

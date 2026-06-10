@@ -494,6 +494,7 @@
             weekStartDate: getMondayStr(),
             planningDays:  getChecked('planningDays[]'),
             mealTypes:     getChecked('mealTypes[]'),
+            weeklyBudget:  Math.max(0, parseInt(getInput('weekly-budget'), 10) || 0),
           }),
         });
         const data = await res.json();

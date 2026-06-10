@@ -24,11 +24,17 @@ final class GroceryListController extends AppController
         $list       = $repo->findOrCreateActive($userId);
         $categories = $repo->getItemsGroupedByCategory((int) $list['id']);
 
+        $stmt = $db->connection()->prepare(
+            "SELECT weekly_budget FROM meal_plans WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1"
+        );
+        $stmt->execute([$userId]);
+        $weeklyBudget = (int) ($stmt->fetchColumn() ?: 0);
+
         return Response::json([
             'listId'     => (int) $list['id'],
             'weekLabel'  => $list['title'],
             'currency'   => 'PLN',
-            'budget'     => ['limit' => 0, 'spent' => 0, 'saved' => 0],
+            'budget'     => ['limit' => $weeklyBudget, 'spent' => 0, 'saved' => 0],
             'categories' => $categories,
         ]);
     }

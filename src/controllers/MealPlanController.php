@@ -41,6 +41,7 @@ final class MealPlanController extends AppController
         $planningDays  = (array) $this->request->input('planningDays', []);
         $mealTypes     = (array) $this->request->input('mealTypes', []);
         $weekStartDate = trim((string) $this->request->input('weekStartDate', ''));
+        $weeklyBudget  = max(0, (int) $this->request->input('weeklyBudget', 0));
 
         if (empty($planningDays)) {
             return $this->jsonError('Wybierz co najmniej jeden dzień planowania.');
@@ -70,6 +71,7 @@ final class MealPlanController extends AppController
                 'weekStartDate' => $weekStartDate,
                 'planningDays'  => $planningDays,
                 'mealTypes'     => $mealTypes,
+                'weeklyBudget'  => $weeklyBudget,
             ]);
         } catch (\Exception $e) {
             if (str_contains(strtolower($e->getMessage()), 'unique') ||
