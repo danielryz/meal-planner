@@ -1,47 +1,42 @@
 (() => {
   const view = document.querySelector("[data-profile-view]");
-  const profileUrl = "/public/features/profile/profile_mock.json";
 
   if (!view) {
     return;
   }
 
   const loadingState = view.querySelector("[data-profile-loading]");
-  const errorState = view.querySelector("[data-profile-error]");
-  const content = view.querySelector("[data-profile-content]");
-  const initials = view.querySelector("[data-profile-initials]");
-  const role = view.querySelector("[data-profile-role]");
-  const name = view.querySelector("[data-profile-name]");
-  const summary = view.querySelector("[data-profile-summary]");
-  const username = view.querySelector("[data-profile-username]");
-  const email = view.querySelector("[data-profile-email]");
-  const status = view.querySelector("[data-profile-status]");
-  const plans = view.querySelector("[data-profile-plans]");
-  const favorites = view.querySelector("[data-profile-favorites]");
-  const recipes = view.querySelector("[data-profile-recipes]");
-  const details = view.querySelector("[data-profile-details]");
-  const activity = view.querySelector("[data-profile-activity]");
+  const errorState   = view.querySelector("[data-profile-error]");
+  const content      = view.querySelector("[data-profile-content]");
+  const initialsEl   = view.querySelector("[data-profile-initials]");
+  const avatarImg    = view.querySelector("[data-profile-avatar-img]");
+  const roleEl       = view.querySelector("[data-profile-role]");
+  const nameEl       = view.querySelector("[data-profile-name]");
+  const summaryEl    = view.querySelector("[data-profile-summary]");
+  const usernameEl   = view.querySelector("[data-profile-username]");
+  const emailEl      = view.querySelector("[data-profile-email]");
+  const statusEl     = view.querySelector("[data-profile-status]");
+  const plansEl      = view.querySelector("[data-profile-plans]");
+  const favoritesEl  = view.querySelector("[data-profile-favorites]");
+  const recipesEl    = view.querySelector("[data-profile-recipes]");
+  const detailsEl    = view.querySelector("[data-profile-details]");
+  const activityEl   = view.querySelector("[data-profile-activity]");
 
   const roleLabels = {
-    admin: "Admin",
-    owner: "Właściciel",
+    admin:    "Admin",
+    owner:    "Właściciel",
     employee: "Pracownik",
-    user: "Użytkownik",
+    user:     "Użytkownik",
   };
 
   const statusLabels = {
-    active: "Aktywne konto",
-    pending: "Konto oczekuje",
+    active:   "Aktywne konto",
+    pending:  "Konto oczekuje",
     inactive: "Konto nieaktywne",
   };
 
-  const visibilityLabels = {
-    private: "Prywatny",
-    public: "Publiczny",
-  };
-
   function escapeHtml(value) {
-    return String(value)
+    return String(value ?? "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
@@ -50,79 +45,86 @@
   }
 
   function createDetail(label, value) {
-    return `
-      <div>
-        <dt>${escapeHtml(label)}</dt>
-        <dd>${escapeHtml(value)}</dd>
-      </div>
-    `;
+    return `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`;
   }
 
   function renderDetails(profile) {
     const rows = [
       ["Nazwa użytkownika", `@${profile.username}`],
       ["E-mail", profile.email],
-      ["Widoczność profilu", visibilityLabels[profile.visibility] ?? profile.visibility],
-      ["Data dołączenia", profile.joinedAt],
-      ["Ostatnie logowanie", profile.lastLogin],
-      ["Dieta", profile.preferences.diet],
-      ["Domyślne porcje", profile.preferences.servings],
-      ["Alergie", profile.preferences.allergies],
-      ["Powiadomienia", profile.preferences.notificationSummary],
+      ["Widoczność profilu", profile.isPublic ? "Publiczny" : "Prywatny"],
+      ["Data dołączenia", profile.joinedAt ?? "—"],
+      ["Ostatnie logowanie", profile.lastLogin ?? "—"],
     ];
 
-    details.innerHTML = rows.map(([label, value]) => createDetail(label, value)).join("");
+    if (profile.bio) {
+      rows.push(["Bio", profile.bio]);
+    }
+
+    if (detailsEl) detailsEl.innerHTML = rows.map(([l, v]) => createDetail(l, v)).join("");
   }
 
   function renderActivity(items) {
-    activity.innerHTML = items
-      .map(
-        (item) => `
-          <li>
-            <span aria-hidden="true"></span>
-            <div>
-              <strong>${escapeHtml(item.title)}</strong>
-              <p>${escapeHtml(item.description)}</p>
-              <small>${escapeHtml(item.time)}</small>
-            </div>
-          </li>
-        `
-      )
-      .join("");
+    if (!activityEl) return;
+    if (!items || items.length === 0) {
+      activityEl.innerHTML = `<li class="profile-activity-empty">Brak zarejestrowanej aktywności.</li>`;
+      return;
+    }
+    activityEl.innerHTML = items.map((item) => `
+      <li>
+        <span aria-hidden="true"></span>
+        <div>
+          <strong>${escapeHtml(item.title)}</strong>
+          <p>${escapeHtml(item.description ?? "")}</p>
+          <small>${escapeHtml(item.time ?? "")}</small>
+        </div>
+      </li>
+    `).join("");
   }
 
   function render(profile) {
-    initials.textContent = profile.initials;
-    role.textContent = roleLabels[profile.role] ?? profile.role;
-    name.textContent = profile.name;
-    summary.textContent = profile.summary;
-    username.textContent = `@${profile.username}`;
-    email.textContent = profile.email;
-    status.textContent = statusLabels[profile.status] ?? profile.status;
-    plans.textContent = profile.stats.plannedMeals;
-    favorites.textContent = profile.stats.favoriteRecipes;
-    recipes.textContent = profile.stats.ownRecipes;
+    if (profile.avatarUrl && avatarImg) {
+      avatarImg.src    = profile.avatarUrl;
+      avatarImg.hidden = false;
+      if (initialsEl) initialsEl.hidden = true;
+    } else {
+      if (initialsEl) { initialsEl.textContent = profile.initials ?? ""; initialsEl.hidden = false; }
+      if (avatarImg) avatarImg.hidden = true;
+    }
+
+    if (roleEl)     roleEl.textContent     = roleLabels[profile.role] ?? profile.role;
+    if (nameEl)     nameEl.textContent     = profile.name ?? "";
+    if (summaryEl)  summaryEl.textContent  = profile.bio ?? "";
+    if (usernameEl) usernameEl.textContent = `@${profile.username}`;
+    if (emailEl)    emailEl.textContent    = profile.email ?? "";
+    if (statusEl)   statusEl.textContent   = statusLabels[profile.status] ?? profile.status;
+
+    const stats = profile.stats ?? {};
+    if (plansEl)     plansEl.textContent     = stats.plannedMeals    ?? 0;
+    if (favoritesEl) favoritesEl.textContent = stats.favoriteRecipes ?? 0;
+    if (recipesEl)   recipesEl.textContent   = stats.ownRecipes      ?? 0;
+
     renderDetails(profile);
-    renderActivity(profile.activity);
+    renderActivity(profile.activity ?? []);
   }
 
   async function loadProfile() {
     try {
-      const response = await fetch(profileUrl);
+      const response = await fetch("/api/profile");
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const data = await response.json();
-      render(data.profile);
+      const profile = await response.json();
+      render(profile);
       loadingState.hidden = true;
-      errorState.hidden = true;
-      content.hidden = false;
-    } catch (error) {
+      errorState.hidden   = true;
+      content.hidden      = false;
+    } catch {
       loadingState.hidden = true;
-      errorState.hidden = false;
-      content.hidden = true;
+      errorState.hidden   = false;
+      content.hidden      = true;
     }
   }
 

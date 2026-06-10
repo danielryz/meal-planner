@@ -81,7 +81,14 @@
   color: #ffffff;
   font-size: 2rem;
   font-weight: 900;
+  overflow: hidden;
   box-shadow: 0 16px 28px rgba(60, 190, 64, 0.22);
+}
+
+.profile-hero__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .profile-hero__body {
@@ -298,6 +305,15 @@
 .profile-activity small {
   color: #94a3b8;
   font-weight: 800;
+}
+
+.profile-activity-empty {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 700;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 @media (max-width: 1040px) {
