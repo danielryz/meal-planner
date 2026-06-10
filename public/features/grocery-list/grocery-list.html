@@ -25,10 +25,16 @@
                 <img src="/public/assets/icons/plus.svg" alt="" />
                 <span>Dodaj produkt</span>
               </button>
-              <button class="button grocery-export" type="button" data-export-list>
-                <img src="/public/assets/icons/download.svg" alt="" />
-                <span>Eksportuj</span>
-              </button>
+              <div class="grocery-export-wrap">
+                <button class="button grocery-export" type="button" data-export-list aria-haspopup="true" aria-expanded="false">
+                  <img src="/public/assets/icons/download.svg" alt="" />
+                  <span>Eksportuj</span>
+                </button>
+                <div class="grocery-export-dropdown" data-export-dropdown hidden>
+                  <button type="button" data-export-print>Drukuj / PDF</button>
+                  <button type="button" data-export-share>Udostępnij</button>
+                </div>
+              </div>
             </div>
           </header>
 
@@ -86,5 +92,43 @@
         </section>
       </main>
     </div>
+    <!-- Add item dialog -->
+    <dialog class="add-item-dialog" data-add-item-dialog>
+      <div class="add-item-dialog__inner">
+        <header class="add-item-dialog__header">
+          <h2>Dodaj produkt</h2>
+          <button type="button" class="add-item-dialog__close" data-close-add-item aria-label="Zamknij">×</button>
+        </header>
+        <form class="add-item-dialog__form" data-add-item-form novalidate>
+          <div class="add-item-dialog__fields">
+            <label class="add-item-dialog__label" for="add-item-name">Nazwa produktu</label>
+            <input class="add-item-dialog__input" id="add-item-name" type="text" name="name" required
+              placeholder="np. Marchew, Mleko, Chleb…" autocomplete="off" data-item-name />
+
+            <label class="add-item-dialog__label" for="add-item-qty">Ilość</label>
+            <input class="add-item-dialog__input" id="add-item-qty" type="text" name="quantity"
+              placeholder="np. 500 g, 1 szt., 2 l" autocomplete="off" data-item-qty />
+
+            <label class="add-item-dialog__label" for="add-item-cat">Kategoria</label>
+            <select class="add-item-dialog__select" id="add-item-cat" name="categoryCode" data-item-cat>
+              <option value="vegetables">Warzywa i przetwory</option>
+              <option value="fruit">Owoce</option>
+              <option value="meat_fish">Mięso i ryby</option>
+              <option value="dairy">Nabiał</option>
+              <option value="grains">Pieczywo i zboża</option>
+              <option value="spices">Przyprawy i sosy</option>
+              <option value="other" selected>Inne</option>
+            </select>
+
+            <p class="add-item-dialog__error" data-add-error hidden></p>
+          </div>
+          <footer class="add-item-dialog__footer">
+            <button class="button button-secondary" type="button" data-close-add-item>Anuluj</button>
+            <button class="button" type="submit" data-add-submit>Dodaj produkt</button>
+          </footer>
+        </form>
+      </div>
+    </dialog>
+
   </body>
 </html>
