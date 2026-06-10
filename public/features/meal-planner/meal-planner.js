@@ -41,25 +41,37 @@
   const prevWeekBtn   = document.querySelector('[data-prev-week]');
   const nextWeekBtn   = document.querySelector('[data-next-week]');
   const noWeekMsg     = document.querySelector('[data-no-plan-week]');
+  const setupBanner   = document.querySelector('[data-setup-banner]');
+  const todayPanel    = document.querySelector('[data-today-panel]');
   const generateBtn   = document.querySelector('[data-generate-grocery]');
   const editPlanBtn   = document.querySelector('[data-edit-plan]');
   const createWeekBtn = document.querySelector('[data-create-week-plan]');
+  const startSetupBtn = document.querySelector('[data-start-setup]');
 
   const recipePicker  = document.querySelector('[data-recipe-picker]');
+  const pickerTitle   = recipePicker?.querySelector('h2');
   const pickerSearch  = recipePicker?.querySelector('[data-picker-search]');
   const pickerResults = recipePicker?.querySelector('[data-picker-results]');
   const closePicker   = recipePicker?.querySelector('[data-close-picker]');
 
   const wizardView    = document.querySelector('[data-wizard-view]');
 
-  let currentPlanId   = null;
-  let currentPlan     = null;
-  let currentWeek     = getMondayOf(new Date());
-  let pendingSlotId   = null;
-  let pickerTimer     = null;
+  let currentPlanId          = null;
+  let currentPlan            = null;
+  let currentWeek            = getMondayOf(new Date());
+  let pendingSlotId          = null;
+  let pendingReplaceRecipeId = null;
+  let pickerTimer            = null;
 
-  if (calendarView && !calendarView.hidden) {
+  const activePlanId = Number(calendarView?.dataset.activePlanId) || null;
+
+  if (activePlanId) {
     loadWeek(currentWeek);
+  } else {
+    if (weekLabel)    weekLabel.textContent = formatWeekLabel(currentWeek);
+    if (setupBanner)  setupBanner.hidden    = false;
+    if (generateBtn)  generateBtn.hidden    = true;
+    if (editPlanBtn)  editPlanBtn.hidden    = true;
   }
 
   async function loadWeek(monday) {
@@ -78,6 +90,7 @@
       currentPlan   = null;
       if (calendarGrid)  calendarGrid.innerHTML = '';
       if (noWeekMsg)     noWeekMsg.hidden       = false;
+      if (todayPanel)    todayPanel.hidden      = true;
       if (generateBtn)   generateBtn.disabled   = true;
       return;
     }
@@ -91,6 +104,7 @@
     currentPlan   = await detailRes.json();
     currentPlanId = currentPlan.id;
     renderCalendar(currentPlan);
+    renderTodayPanel(currentPlan);
   }
 
   function renderCalendar(plan) {
@@ -136,10 +150,16 @@
           (slot.recipes ?? []).forEach(r => {
             html += `<div class="planner-slot-recipe">
               <a class="planner-slot-recipe__title" href="/recipe/${escapeHtml(r.id)}">${escapeHtml(r.title)}</a>
-              <button class="planner-slot-recipe__remove" type="button"
-                data-remove-recipe="${escapeHtml(r.id)}"
-                data-slot-id="${escapeHtml(slot.id)}"
-                aria-label="Usuń ${escapeHtml(r.title)} z planu">×</button>
+              <div class="planner-slot-recipe__actions">
+                <button class="planner-slot-recipe__replace" type="button"
+                  data-replace-recipe="${escapeHtml(r.id)}"
+                  data-slot-id="${escapeHtml(slot.id)}"
+                  aria-label="Zamień ${escapeHtml(r.title)}">↩</button>
+                <button class="planner-slot-recipe__remove" type="button"
+                  data-remove-recipe="${escapeHtml(r.id)}"
+                  data-slot-id="${escapeHtml(slot.id)}"
+                  aria-label="Usuń ${escapeHtml(r.title)} z planu">×</button>
+              </div>
             </div>`;
           });
           html += `<button class="planner-cell-add" type="button" data-add-to-slot="${escapeHtml(slot.id)}" aria-label="Dodaj przepis do slotu">+</button>`;
@@ -154,6 +174,45 @@
     });
 
     calendarGrid.innerHTML = html;
+  }
+
+  function renderTodayPanel(plan) {
+    if (!todayPanel) return;
+
+    const today    = toDateStr(new Date());
+    const todayDay = (plan.days ?? []).find(d => d.date === today);
+
+    if (!todayDay) {
+      todayPanel.hidden = true;
+      return;
+    }
+
+    const meals = [];
+    SLOT_ORDER.forEach(type => {
+      const slot = (todayDay.slots ?? []).find(s => s.type === type);
+      if (slot) {
+        (slot.recipes ?? []).forEach(r => meals.push({ type, ...r }));
+      }
+    });
+
+    if (!meals.length) {
+      todayPanel.hidden = true;
+      return;
+    }
+
+    const list = todayPanel.querySelector('[data-today-list]');
+    if (list) {
+      list.innerHTML = meals.map(m => `
+        <li class="planner-today-meal">
+          <span class="planner-today-meal__type">${escapeHtml(SLOT_LABELS[m.type] ?? m.type)}</span>
+          <a class="planner-today-meal__name" href="/recipe/${escapeHtml(m.id)}">${escapeHtml(m.title)}</a>
+          ${m.prepTimeMinutes ? `<span class="planner-today-meal__time">${escapeHtml(String(m.prepTimeMinutes))} min</span>` : ''}
+          <a class="button button-secondary planner-today-meal__btn" href="/recipe/${escapeHtml(m.id)}">Przejdź do przepisu</a>
+        </li>
+      `).join('');
+    }
+
+    todayPanel.hidden = false;
   }
 
   calendarGrid?.addEventListener('click', async (e) => {
@@ -174,15 +233,29 @@
       return;
     }
 
+    const replaceBtn = e.target.closest('[data-replace-recipe]');
+    if (replaceBtn) {
+      pendingSlotId          = replaceBtn.dataset.slotId;
+      pendingReplaceRecipeId = replaceBtn.dataset.replaceRecipe;
+      openPicker('Zamień przepis');
+      return;
+    }
+
     const addBtn = e.target.closest('[data-add-to-slot]');
     if (addBtn) {
-      pendingSlotId = addBtn.dataset.addToSlot;
-      if (pickerSearch) pickerSearch.value = '';
-      if (pickerResults) pickerResults.innerHTML = '<li class="recipe-picker-empty">Zacznij pisać, aby wyszukać przepis.</li>';
-      recipePicker?.showModal();
-      pickerSearch?.focus();
+      pendingSlotId          = addBtn.dataset.addToSlot;
+      pendingReplaceRecipeId = null;
+      openPicker('Wybierz przepis');
     }
   });
+
+  function openPicker(title = 'Wybierz przepis') {
+    if (pickerTitle)   pickerTitle.textContent = title;
+    if (pickerSearch)  pickerSearch.value = '';
+    if (pickerResults) pickerResults.innerHTML = '<li class="recipe-picker-empty">Zacznij pisać, aby wyszukać przepis.</li>';
+    recipePicker?.showModal();
+    pickerSearch?.focus();
+  }
 
   prevWeekBtn?.addEventListener('click', () => {
     const d = new Date(currentWeek);
@@ -225,6 +298,7 @@
   }
 
   editPlanBtn?.addEventListener('click', showWizard);
+  startSetupBtn?.addEventListener('click', showWizard);
 
   createWeekBtn?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -235,8 +309,16 @@
   // RECIPE PICKER
   // ================================================================
 
-  closePicker?.addEventListener('click', () => recipePicker?.close());
-  recipePicker?.addEventListener('click', e => { if (e.target === recipePicker) recipePicker.close(); });
+  closePicker?.addEventListener('click', () => {
+    recipePicker?.close();
+    pendingReplaceRecipeId = null;
+  });
+  recipePicker?.addEventListener('click', e => {
+    if (e.target === recipePicker) {
+      recipePicker.close();
+      pendingReplaceRecipeId = null;
+    }
+  });
 
   pickerSearch?.addEventListener('input', () => {
     clearTimeout(pickerTimer);
@@ -269,22 +351,30 @@
     const btn = e.target.closest('[data-pick-recipe]');
     if (!btn || !pendingSlotId || !currentPlanId) return;
 
-    const recipeId = btn.dataset.pickRecipe;
-    btn.disabled   = true;
+    const recipeId    = btn.dataset.pickRecipe;
+    const replaceId   = pendingReplaceRecipeId;
+    btn.disabled      = true;
 
     try {
+      if (replaceId) {
+        const delRes = await fetch(`/api/meal-plans/${currentPlanId}/slots/${pendingSlotId}/recipes/${replaceId}`, { method: 'DELETE' });
+        if (!delRes.ok) throw new Error();
+      }
+
       const res = await fetch(`/api/meal-plans/${currentPlanId}/slots/${pendingSlotId}/recipes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recipeId: Number(recipeId), servings: 1 }),
       });
       if (!res.ok) throw new Error();
+
+      pendingReplaceRecipeId = null;
       recipePicker?.close();
       await loadWeek(currentWeek);
-      window.toast?.success('Przepis dodany do planu.');
+      window.toast?.success(replaceId ? 'Przepis zamieniony.' : 'Przepis dodany do planu.');
     } catch {
       btn.disabled = false;
-      window.toast?.error('Nie udało się dodać przepisu.');
+      window.toast?.error(replaceId ? 'Nie udało się zamienić przepisu.' : 'Nie udało się dodać przepisu.');
     }
   });
 

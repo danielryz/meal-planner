@@ -15,7 +15,7 @@
       <main class="meal-planner-main">
 
         <!-- ===== CALENDAR VIEW ===== -->
-        <div class="planner-calendar-wrapper" data-calendar-view <?= $activePlanId ? '' : 'hidden' ?>>
+        <div class="planner-calendar-wrapper" data-calendar-view data-active-plan-id="<?= (int) ($activePlanId ?? 0) ?>">
 
           <header class="planner-cal-header">
             <div class="planner-cal-header__left">
@@ -44,10 +44,25 @@
             <a href="#" data-create-week-plan>Utwórz plan dla tego tygodnia</a>
           </p>
 
+          <!-- Setup banner (shown when user has no active plan at all) -->
+          <div class="planner-setup-banner" data-setup-banner hidden>
+            <div class="planner-setup-banner__content">
+              <h2>Nie masz jeszcze skonfigurowanego planu</h2>
+              <p>Stwórz swój tygodniowy harmonogram posiłków w kilku prostych krokach.</p>
+              <button class="button" type="button" data-start-setup>Zacznij konfigurację →</button>
+            </div>
+          </div>
+
+          <!-- Today panel (shown when current week contains today) -->
+          <section class="planner-today-panel" data-today-panel hidden aria-label="Dziś">
+            <h2 class="planner-today-panel__title">Dziś</h2>
+            <ul class="planner-today-list" data-today-list></ul>
+          </section>
+
         </div>
 
         <!-- ===== WIZARD VIEW ===== -->
-        <div data-wizard-view <?= $activePlanId ? 'hidden' : '' ?>>
+        <div data-wizard-view hidden>
           <form class="meal-planner" action="/meal-planner" method="post" data-step-form>
             <header class="meal-planner__header">
               <div>
