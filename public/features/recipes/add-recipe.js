@@ -5,23 +5,47 @@
     return;
   }
 
-  const loadingState = view.querySelector("[data-recipe-form-loading]");
-  const errorState = view.querySelector("[data-recipe-form-error]");
-  const form = view.querySelector("[data-recipe-form]");
-  const titleInput = view.querySelector("[data-title]");
+  const loadingState     = view.querySelector("[data-recipe-form-loading]");
+  const errorState       = view.querySelector("[data-recipe-form-error]");
+  const form             = view.querySelector("[data-recipe-form]");
+  const titleInput       = view.querySelector("[data-title]");
   const descriptionInput = view.querySelector("[data-description]");
-  const categorySelect = view.querySelector("[data-category]");
+  const categorySelect   = view.querySelector("[data-category]");
   const difficultySelect = view.querySelector("[data-difficulty]");
-  const prepTimeInput = view.querySelector("[data-prep-time]");
-  const servingsInput = view.querySelector("[data-servings]");
-  const ingredientsList = view.querySelector("[data-ingredients-list]");
-  const stepsList = view.querySelector("[data-steps-list]");
+  const prepTimeInput    = view.querySelector("[data-prep-time]");
+  const servingsInput    = view.querySelector("[data-servings]");
+  const ingredientsList  = view.querySelector("[data-ingredients-list]");
+  const stepsList        = view.querySelector("[data-steps-list]");
   const ingredientsCount = view.querySelector("[data-ingredients-count]");
-  const stepsCount = view.querySelector("[data-steps-count]");
-  const message = view.querySelector("[data-recipe-form-message]");
-  const titleError = view.querySelector("[data-title-error]");
+  const stepsCount       = view.querySelector("[data-steps-count]");
+  const message          = view.querySelector("[data-recipe-form-message]");
+  const titleError       = view.querySelector("[data-title-error]");
   const descriptionError = view.querySelector("[data-description-error]");
-  let submitMode = "draft";
+
+  const videoTabs        = view.querySelectorAll("[data-video-tab]");
+  const videoUrlPane     = view.querySelector('[data-video-pane="url"]');
+  const videoFilePane    = view.querySelector('[data-video-pane="file"]');
+  const videoUrlInput    = view.querySelector("[data-video-url-input]");
+  const videoEmbed       = view.querySelector("[data-video-embed]");
+  const videoIframe      = view.querySelector("[data-video-iframe]");
+  const videoUrlClear    = view.querySelector("[data-video-url-clear]");
+  const videoFileInput   = view.querySelector("[data-video-file-input]");
+  const videoBrowse      = view.querySelector("[data-video-browse]");
+  const videoZone        = view.querySelector("[data-video-zone]");
+  const videoUploading   = view.querySelector("[data-video-uploading]");
+  const videoPreview     = view.querySelector("[data-video-preview]");
+  const videoPlayer      = view.querySelector("[data-video-player]");
+  const videoPreviewName = view.querySelector("[data-video-preview-name]");
+  const videoFileClear   = view.querySelector("[data-video-file-clear]");
+  const videoError       = view.querySelector("[data-video-error]");
+
+  let submitMode    = "draft";
+  let videoUrl      = null;
+  let videoMediaId  = null;
+  let videoDebounce = null;
+
+  const VIDEO_ALLOWED_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
+  const VIDEO_MAX_MB = 500;
 
   function escapeHtml(value) {
     return String(value)
@@ -89,9 +113,7 @@
   function showMessage(text) {
     message.textContent = text;
     message.hidden = false;
-    window.setTimeout(() => {
-      message.hidden = true;
-    }, 2400);
+    window.setTimeout(() => { message.hidden = true; }, 2400);
   }
 
   function collectIngredients() {
@@ -110,6 +132,155 @@
       }))
       .filter((s) => s.instruction);
   }
+
+  // --- Video section ---
+
+  function parseVideoUrl(raw) {
+    const ytMatch = raw.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+    const vimeoMatch = raw.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    return null;
+  }
+
+  function switchVideoTab(mode) {
+    videoTabs.forEach((tab) => {
+      const active = tab.dataset.videoTab === mode;
+      tab.classList.toggle("is-active", active);
+      tab.setAttribute("aria-selected", String(active));
+    });
+    if (videoUrlPane) videoUrlPane.hidden = mode !== "url";
+    if (videoFilePane) videoFilePane.hidden = mode !== "file";
+    if (mode === "url") {
+      clearVideoFile();
+    } else {
+      clearVideoUrl();
+    }
+  }
+
+  function clearVideoUrl() {
+    videoUrl = null;
+    if (videoUrlInput) videoUrlInput.value = "";
+    if (videoEmbed) videoEmbed.hidden = true;
+    if (videoIframe) videoIframe.src = "";
+  }
+
+  function clearVideoFile() {
+    videoMediaId = null;
+    if (videoFileInput) videoFileInput.value = "";
+    if (videoZone) videoZone.hidden = false;
+    if (videoPreview) videoPreview.hidden = true;
+    if (videoPlayer) videoPlayer.src = "";
+    if (videoUploading) videoUploading.hidden = true;
+    hideVideoError();
+  }
+
+  function showVideoError(msg) {
+    if (!videoError) return;
+    videoError.textContent = msg;
+    videoError.hidden = false;
+  }
+
+  function hideVideoError() {
+    if (videoError) videoError.hidden = true;
+  }
+
+  async function handleVideoFile(file) {
+    hideVideoError();
+
+    if (!VIDEO_ALLOWED_TYPES.includes(file.type)) {
+      showVideoError("Nieobsługiwany format pliku. Wybierz MP4, MOV lub WebM.");
+      return;
+    }
+    if (file.size > VIDEO_MAX_MB * 1024 * 1024) {
+      showVideoError(`Plik jest za duży. Maksymalny rozmiar to ${VIDEO_MAX_MB} MB.`);
+      return;
+    }
+
+    if (videoUploading) videoUploading.hidden = false;
+    if (videoZone) videoZone.hidden = true;
+
+    try {
+      const fd  = new FormData();
+      fd.append("video", file);
+      const res  = await fetch("/api/media/recipe-videos", { method: "POST", body: fd });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error || "Nie udało się przesłać wideo.");
+      }
+
+      videoMediaId = data.mediaId ?? null;
+      if (videoUploading) videoUploading.hidden = true;
+      if (videoPlayer) videoPlayer.src = data.url;
+      if (videoPreviewName) videoPreviewName.textContent = file.name;
+      if (videoPreview) videoPreview.hidden = false;
+      if (window.toast) window.toast.success("Wideo przesłane pomyślnie.");
+    } catch (err) {
+      if (videoUploading) videoUploading.hidden = true;
+      if (videoZone) videoZone.hidden = false;
+      showVideoError(err.message || "Nie udało się przesłać wideo. Sprawdź format i rozmiar pliku.");
+    }
+  }
+
+  videoTabs.forEach((tab) => {
+    tab.addEventListener("click", () => switchVideoTab(tab.dataset.videoTab));
+  });
+
+  videoUrlInput?.addEventListener("input", () => {
+    clearTimeout(videoDebounce);
+    videoDebounce = setTimeout(() => {
+      const raw = videoUrlInput.value.trim();
+      if (!raw) {
+        videoUrl = null;
+        if (videoEmbed) videoEmbed.hidden = true;
+        if (videoIframe) videoIframe.src = "";
+        return;
+      }
+      const embedSrc = parseVideoUrl(raw);
+      if (embedSrc) {
+        videoUrl = raw;
+        if (videoIframe) videoIframe.src = embedSrc;
+        if (videoEmbed) videoEmbed.hidden = false;
+      } else {
+        videoUrl = null;
+        if (videoEmbed) videoEmbed.hidden = true;
+        if (videoIframe) videoIframe.src = "";
+      }
+    }, 500);
+  });
+
+  videoUrlClear?.addEventListener("click", clearVideoUrl);
+
+  videoBrowse?.addEventListener("click", () => videoFileInput?.click());
+
+  videoZone?.addEventListener("click", (e) => {
+    if (e.target !== videoBrowse) videoFileInput?.click();
+  });
+
+  videoZone?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    videoZone.classList.add("media-upload__zone--dragover");
+  });
+
+  videoZone?.addEventListener("dragleave", () => {
+    videoZone.classList.remove("media-upload__zone--dragover");
+  });
+
+  videoZone?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    videoZone.classList.remove("media-upload__zone--dragover");
+    const file = e.dataTransfer.files[0];
+    if (file) handleVideoFile(file);
+  });
+
+  videoFileInput?.addEventListener("change", () => {
+    if (videoFileInput.files[0]) handleVideoFile(videoFileInput.files[0]);
+  });
+
+  videoFileClear?.addEventListener("click", clearVideoFile);
+
+  // --- Form ---
 
   async function loadForm() {
     try {
@@ -164,7 +335,7 @@
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const validTitle = titleInput.value.trim().length > 0;
+    const validTitle       = titleInput.value.trim().length > 0;
     const validDescription = descriptionInput.value.trim().length >= 20;
     setFieldState(titleInput, titleError, validTitle);
     setFieldState(descriptionInput, descriptionError, validDescription);
@@ -173,24 +344,26 @@
       return;
     }
 
-    const mediaWidget = view.querySelector('[data-media-upload]');
+    const mediaWidget = view.querySelector("[data-media-upload]");
     const payload = {
-      title: titleInput.value.trim(),
-      description: descriptionInput.value.trim(),
-      categoryCode: categorySelect.value,
-      difficulty: difficultySelect.value,
+      title:           titleInput.value.trim(),
+      description:     descriptionInput.value.trim(),
+      categoryCode:    categorySelect.value,
+      difficulty:      difficultySelect.value,
       prepTimeMinutes: parseInt(prepTimeInput.value, 10) || 30,
-      servings: parseInt(servingsInput.value, 10) || 2,
-      ingredients: collectIngredients(),
-      steps: collectSteps(),
-      mediaId: mediaWidget?._mediaId ?? null,
+      servings:        parseInt(servingsInput.value, 10) || 2,
+      ingredients:     collectIngredients(),
+      steps:           collectSteps(),
+      mediaId:         mediaWidget?._mediaId ?? null,
+      videoUrl:        videoUrl || null,
+      videoMediaId:    videoMediaId || null,
     };
 
     try {
-      const draftRes = await fetch("/api/recipes/drafts", {
-        method: "POST",
+      const draftRes  = await fetch("/api/recipes/drafts", {
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body:    JSON.stringify(payload),
       });
 
       const draftData = await draftRes.json();
@@ -201,14 +374,22 @@
       }
 
       if (submitMode === "review") {
-        await fetch(`/api/recipes/${draftData.recipeId}/submit-for-review`, {
-          method: "POST",
+        const reviewRes = await fetch(`/api/recipes/${draftData.recipeId}/submit-for-review`, {
+          method:  "POST",
           headers: { "Content-Type": "application/json" },
         });
-        showMessage("Przepis wysłany do weryfikacji.");
+
+        if (!reviewRes.ok) {
+          showMessage("Przepis zapisany, ale nie udało się wysłać do weryfikacji.");
+          return;
+        }
+
+        sessionStorage.setItem("flash", JSON.stringify({ type: "success", message: "Przepis wysłany do weryfikacji." }));
       } else {
-        showMessage("Szkic przepisu zapisany.");
+        sessionStorage.setItem("flash", JSON.stringify({ type: "success", message: "Szkic przepisu zapisany." }));
       }
+
+      window.location.href = "/recipe-management";
     } catch {
       showMessage("Błąd połączenia z serwerem.");
     }

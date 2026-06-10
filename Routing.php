@@ -234,6 +234,10 @@ final class Routing
             "controller" => MediaController::class,
             "action"     => "uploadRecipePhoto",
         ],
+        "api/media/recipe-videos" => [
+            "controller" => MediaController::class,
+            "action"     => "uploadRecipeVideo",
+        ],
         "api/profile" => [
             "controller" => ProfileController::class,
             "action" => "getProfile",

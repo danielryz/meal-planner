@@ -13,3 +13,4 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 \i /docker-entrypoint-initdb.d/migrations/007_terms_accepted.sql
 \i /docker-entrypoint-initdb.d/migrations/008_grocery_categories_seed.sql
 \i /docker-entrypoint-initdb.d/migrations/009_meal_plan_budget.sql
+\i /docker-entrypoint-initdb.d/migrations/010_recipe_video_url.sql

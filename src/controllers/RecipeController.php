@@ -237,6 +237,13 @@ final class RecipeController extends AppController
             $slug .= '-' . time();
         }
 
+        $rawVideoUrl = $this->request->input('videoUrl');
+        $videoUrl    = null;
+        if ($rawVideoUrl !== null) {
+            $trimmed  = trim((string) $rawVideoUrl);
+            $videoUrl = filter_var($trimmed, FILTER_VALIDATE_URL) !== false ? $trimmed : null;
+        }
+
         $recipeId = $repo->createDraft($userId, [
             'title'           => $title,
             'slug'            => $slug,
@@ -250,16 +257,24 @@ final class RecipeController extends AppController
             'dietTypes'       => (array) $this->request->input('dietTypes', []),
             'tags'            => (array) $this->request->input('tags', []),
             'nutrition'       => $this->request->input('nutrition'),
+            'videoUrl'        => $videoUrl,
         ]);
 
+        $mediaRepo = new MediaRepository($db->connection());
+
         $mediaId = $this->request->input('mediaId');
-
         if ($mediaId !== null) {
-            $mediaId   = (int) $mediaId;
-            $mediaRepo = new MediaRepository($db->connection());
-
+            $mediaId = (int) $mediaId;
             if ($mediaRepo->belongsToUser($mediaId, $userId)) {
                 $mediaRepo->addRecipeMainPhoto($recipeId, $mediaId);
+            }
+        }
+
+        $videoMediaId = $this->request->input('videoMediaId');
+        if ($videoMediaId !== null) {
+            $videoMediaId = (int) $videoMediaId;
+            if ($mediaRepo->belongsToUser($videoMediaId, $userId)) {
+                $mediaRepo->addRecipeMainVideo($recipeId, $videoMediaId);
             }
         }
 

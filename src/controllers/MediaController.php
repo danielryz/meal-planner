@@ -10,10 +10,13 @@ use App\Repositories\MediaRepository;
 
 final class MediaController extends AppController
 {
-    private const MAX_SIZE    = 10 * 1024 * 1024;
-    private const ALLOWED     = ['image/jpeg', 'image/png', 'image/webp'];
-    private const EXTENSIONS  = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
-    private const SUBDIRS     = ['profile_avatar' => 'avatars', 'recipe_photo' => 'recipes'];
+    private const MAX_SIZE         = 10 * 1024 * 1024;
+    private const ALLOWED          = ['image/jpeg', 'image/png', 'image/webp'];
+    private const EXTENSIONS       = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+    private const SUBDIRS          = ['profile_avatar' => 'avatars', 'recipe_photo' => 'recipes'];
+    private const VIDEO_MAX_SIZE   = 500 * 1024 * 1024;
+    private const VIDEO_ALLOWED    = ['video/mp4', 'video/quicktime', 'video/webm'];
+    private const VIDEO_EXTENSIONS = ['video/mp4' => 'mp4', 'video/quicktime' => 'mov', 'video/webm' => 'webm'];
 
     public function uploadAvatar(): Response
     {
@@ -66,6 +69,71 @@ final class MediaController extends AppController
             'mediaId'  => $mediaFileId,
             'publicId' => $upload['publicId'],
             'url'      => $this->publicUrl($upload),
+        ], 201);
+    }
+
+    public function uploadRecipeVideo(): Response
+    {
+        if ($guard = $this->requireLogin()) {
+            return $guard;
+        }
+
+        $file = $_FILES['video'] ?? null;
+
+        if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            $code = is_array($file) ? ($file['error'] ?? UPLOAD_ERR_NO_FILE) : UPLOAD_ERR_NO_FILE;
+            return $this->jsonError($this->uploadError($code));
+        }
+
+        $finfo    = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mimeType, self::VIDEO_ALLOWED, true)) {
+            return $this->jsonError('Nieobsługiwany format pliku. Wybierz MP4, MOV lub WebM.');
+        }
+
+        if ($file['size'] > self::VIDEO_MAX_SIZE) {
+            return $this->jsonError('Plik jest za duży. Maksymalny rozmiar to 500 MB.');
+        }
+
+        $publicId   = $this->uuid();
+        $ext        = self::VIDEO_EXTENSIONS[$mimeType];
+        $storedPath = 'public/media/videos/' . $publicId . '.' . $ext;
+        $absPath    = $this->root() . '/' . $storedPath;
+
+        if (!is_dir(dirname($absPath))) {
+            mkdir(dirname($absPath), 0755, true);
+        }
+
+        if (!move_uploaded_file($file['tmp_name'], $absPath)) {
+            return $this->jsonError('Nie udało się zapisać pliku.', 500);
+        }
+
+        $checksum = hash_file('sha256', $absPath);
+        $userId   = $this->sessions->currentUser()->id();
+        $db       = new Database();
+        $repo     = new MediaRepository($db->connection());
+
+        $mediaFileId = $repo->storeFileRecord([
+            'public_id'         => $publicId,
+            'owner_user_id'     => $userId,
+            'original_filename' => basename($file['name']),
+            'stored_path'       => $storedPath,
+            'mime_type'         => $mimeType,
+            'media_type'        => 'video',
+            'purpose'           => 'recipe_video',
+            'size_bytes'        => $file['size'],
+            'width'             => null,
+            'height'            => null,
+            'checksum_sha256'   => $checksum,
+            'is_public'         => false,
+        ]);
+
+        return Response::json([
+            'mediaId'  => $mediaFileId,
+            'publicId' => $publicId,
+            'url'      => '/public/media/videos/' . $publicId . '.' . $ext,
         ], 201);
     }
 

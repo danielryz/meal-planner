@@ -76,6 +76,18 @@ final class MediaRepository
         $stmt->execute([':recipe_id' => $recipeId, ':media_file_id' => $mediaFileId]);
     }
 
+    public function addRecipeMainVideo(int $recipeId, int $mediaFileId): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO recipe_media (recipe_id, media_file_id, media_role, position)
+             VALUES (:recipe_id, :media_file_id, \'main_video\', 1)
+             ON CONFLICT (recipe_id, media_role, position) DO UPDATE SET
+                media_file_id = EXCLUDED.media_file_id,
+                updated_at    = CURRENT_TIMESTAMP'
+        );
+        $stmt->execute([':recipe_id' => $recipeId, ':media_file_id' => $mediaFileId]);
+    }
+
     public function softDelete(int $mediaFileId): void
     {
         $stmt = $this->db->prepare(

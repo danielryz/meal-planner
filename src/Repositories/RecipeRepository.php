@@ -517,11 +517,11 @@ final class RecipeRepository extends AbstractRepository
         $stmt = $this->connection->prepare(
             "INSERT INTO recipes
                 (author_user_id, category_id, title, slug, description, difficulty,
-                 prep_time_minutes, servings, status, visibility,
+                 prep_time_minutes, servings, status, visibility, video_url,
                  submitted_at, approved_at, published_at)
             VALUES
                 (:author_id, :category_id, :title, :slug, :description, :difficulty,
-                 :prep_time, :servings, :status, :visibility,
+                 :prep_time, :servings, :status, :visibility, :video_url,
                  :submitted_at, :approved_at, :published_at)
             RETURNING id"
         );
@@ -539,6 +539,7 @@ final class RecipeRepository extends AbstractRepository
         $stmt->bindValue(':servings', (int) ($data['servings'] ?? 2), PDO::PARAM_INT);
         $stmt->bindValue(':status', $status);
         $stmt->bindValue(':visibility', $visibility);
+        $stmt->bindValue(':video_url', $data['videoUrl'] ?? null);
         $stmt->bindValue(':submitted_at', $isApproved ? date('Y-m-d H:i:sP') : null);
         $stmt->bindValue(':approved_at', $isApproved ? date('Y-m-d H:i:sP') : null);
         $stmt->bindValue(':published_at', $isApproved ? date('Y-m-d H:i:sP') : null);

@@ -121,6 +121,50 @@
               </section>
 
               <section class="add-recipe-card">
+                <header>
+                  <span class="add-recipe-kicker">Opcjonalne</span>
+                  <h2>Wideo przepisu</h2>
+                </header>
+                <div class="add-recipe-video-tabs" data-video-tabs>
+                  <button class="add-recipe-video-tab is-active" type="button" data-video-tab="url" aria-selected="true">Link (YouTube / Vimeo)</button>
+                  <button class="add-recipe-video-tab" type="button" data-video-tab="file" aria-selected="false">Prześlij plik wideo</button>
+                </div>
+                <div data-video-pane="url">
+                  <label class="add-recipe-field">
+                    <span>URL wideo</span>
+                    <input type="url" placeholder="https://www.youtube.com/watch?v=..." data-video-url-input />
+                  </label>
+                  <div class="add-recipe-video-embed" data-video-embed hidden>
+                    <div class="add-recipe-video-embed__ratio">
+                      <iframe data-video-iframe frameborder="0" allowfullscreen loading="lazy" title="Podgląd wideo"></iframe>
+                    </div>
+                    <button class="add-recipe-video-embed__clear" type="button" data-video-url-clear>Usuń wideo</button>
+                  </div>
+                  <p class="add-recipe-video-hint">Wspierane: YouTube, Vimeo · wideo jest opcjonalne</p>
+                </div>
+                <div data-video-pane="file" hidden>
+                  <input class="media-upload__input" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" data-video-file-input />
+                  <div class="media-upload__zone add-recipe-video-zone" data-video-zone>
+                    <p class="media-upload__hint">
+                      Przeciągnij plik wideo tutaj lub
+                      <button class="media-upload__browse" type="button" data-video-browse>wybierz plik</button>
+                    </p>
+                    <small class="media-upload__formats">MP4, MOV lub WebM · maks. 500 MB</small>
+                  </div>
+                  <div class="media-upload__uploading" data-video-uploading hidden>Wysyłanie wideo...</div>
+                  <div class="add-recipe-video-file-preview" data-video-preview hidden>
+                    <video class="add-recipe-video-player" controls data-video-player></video>
+                    <div class="add-recipe-video-preview-meta">
+                      <span class="add-recipe-video-preview-name" data-video-preview-name></span>
+                      <button class="add-recipe-video-preview-clear" type="button" data-video-file-clear>Usuń wideo</button>
+                    </div>
+                  </div>
+                  <p class="add-recipe-video-error" data-video-error hidden></p>
+                  <p class="add-recipe-video-hint">MP4, MOV lub WebM · maks. 500 MB · wideo jest opcjonalne</p>
+                </div>
+              </section>
+
+              <section class="add-recipe-card">
                 <header class="add-recipe-card__header">
                   <div>
                     <span class="add-recipe-kicker">Lista</span>
