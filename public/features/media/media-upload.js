@@ -99,6 +99,7 @@
 
         setUploading(false);
         showPreview(data.url, file.name, file.size);
+        root.dispatchEvent(new CustomEvent('media-upload:complete', { bubbles: true, detail: { mediaId: root._mediaId, url: root._mediaUrl } }));
 
         if (window.toast) window.toast.success('Plik przesłany pomyślnie.');
       } catch (err) {
