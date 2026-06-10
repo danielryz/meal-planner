@@ -104,7 +104,7 @@ final class DashboardController extends AppController
 
     public function users(): Response
     {
-        if ($response = $this->requireLogin()) {
+        if ($response = $this->requireRole('owner', 'admin')) {
             return $response;
         }
 
