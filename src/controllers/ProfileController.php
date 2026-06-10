@@ -218,9 +218,26 @@ final class ProfileController extends AppController
             ];
             $repo->saveFoodPreferences($userId, $data);
 
+            $allergies = $this->request->input('allergies', []);
+            if (is_array($allergies)) {
+                $repo->saveAllergyPreferences($userId, $allergies);
+            }
+
             return Response::json(['success' => true]);
         }
 
         return $this->jsonError('Metoda niedozwolona.', 405);
+    }
+
+    public function preferenceOptions(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        $db = new Database();
+        $repo = new SettingsRepository($db->connection());
+
+        return Response::json($repo->getPreferenceOptions());
     }
 }

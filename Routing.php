@@ -62,6 +62,10 @@ final class Routing
             "controller" => DashboardController::class,
             "action" => "addRecipe",
         ],
+        "edit-recipe/{recipeId}" => [
+            "controller" => DashboardController::class,
+            "action" => "editRecipe",
+        ],
         "recipe-reviews" => [
             "controller" => DashboardController::class,
             "action" => "recipeReviews",
@@ -261,6 +265,10 @@ final class Routing
         "api/settings/preferences" => [
             "controller" => ProfileController::class,
             "action" => "preferences",
+        ],
+        "api/settings/preference-options" => [
+            "controller" => ProfileController::class,
+            "action" => "preferenceOptions",
         ],
         "logout" => [
             "controller" => SecurityController::class,

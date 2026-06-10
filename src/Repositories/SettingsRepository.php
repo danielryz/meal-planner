@@ -55,6 +55,41 @@ final class SettingsRepository extends AbstractRepository
         $stmt->execute();
     }
 
+    public function saveAllergyPreferences(int $userId, array $codes): void
+    {
+        $delete = $this->connection->prepare(
+            'DELETE FROM user_allergy_preferences WHERE user_id = :user_id'
+        );
+        $delete->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $delete->execute();
+
+        foreach ($codes as $code) {
+            $code = trim((string) $code);
+            if ($code === '') {
+                continue;
+            }
+            $stmt = $this->connection->prepare(
+                'INSERT INTO user_allergy_preferences (user_id, allergy_type_id)
+                 SELECT :user_id, id FROM allergy_types WHERE code = :code
+                 ON CONFLICT DO NOTHING'
+            );
+            $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindValue(':code', $code);
+            $stmt->execute();
+        }
+    }
+
+    public function getPreferenceOptions(): array
+    {
+        $dietStmt = $this->connection->query('SELECT code, label FROM diet_types ORDER BY id');
+        $allergyStmt = $this->connection->query('SELECT code, label FROM allergy_types ORDER BY id');
+
+        return [
+            'diets'    => $dietStmt->fetchAll(PDO::FETCH_ASSOC),
+            'allergies' => $allergyStmt->fetchAll(PDO::FETCH_ASSOC),
+        ];
+    }
+
     public function getFoodPreferences(int $userId): ?array
     {
         $stmt = $this->connection->prepare(
