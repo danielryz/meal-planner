@@ -13,228 +13,185 @@
       <?php include $partialsPath . '/app-nav.html'; ?>
 
       <main class="meal-planner-main">
-        <form class="meal-planner" action="/meal-planner" method="post" data-step-form>
-          <header class="meal-planner__header">
-            <div>
-              <span class="meal-planner__kicker">Konfiguracja planu</span>
-              <h1>Personalizuj swój plan</h1>
-            </div>
-            <div class="meal-planner__progress" aria-live="polite">
-              <span data-step-label>Krok 1 z 5</span>
-              <strong data-progress-label>20% ukończone</strong>
-              <div class="meal-planner__progress-track">
-                <span data-progress-bar></span>
+
+        <!-- ===== CALENDAR VIEW ===== -->
+        <div class="planner-calendar-wrapper" data-calendar-view <?= $activePlanId ? '' : 'hidden' ?>>
+
+          <header class="planner-cal-header">
+            <div class="planner-cal-header__left">
+              <h1>Plan posiłków</h1>
+              <div class="planner-cal-nav">
+                <button type="button" class="planner-cal-nav__btn" data-prev-week aria-label="Poprzedni tydzień">‹</button>
+                <span class="planner-cal-week-label" data-week-label>Ładowanie…</span>
+                <button type="button" class="planner-cal-nav__btn" data-next-week aria-label="Następny tydzień">›</button>
               </div>
+            </div>
+            <div class="planner-cal-header__right">
+              <button class="button button-secondary" type="button" data-edit-plan>Edytuj preferencje</button>
+              <button class="button" type="button" data-generate-grocery>
+                <img src="/public/assets/icons/grocery.svg" alt="" />
+                Generuj listę zakupów
+              </button>
             </div>
           </header>
 
-          <nav class="planner-steps" aria-label="Kroki konfiguracji">
-            <button class="planner-step is-active" type="button" data-step-nav="0">
-              <span>1</span>
-              Cele
-            </button>
-            <button class="planner-step" type="button" data-step-nav="1">
-              <span>2</span>
-              Dieta
-            </button>
-            <button class="planner-step" type="button" data-step-nav="2">
-              <span>3</span>
-              Dom
-            </button>
-            <button class="planner-step" type="button" data-step-nav="3">
-              <span>4</span>
-              Harmonogram
-            </button>
-            <button class="planner-step" type="button" data-step-nav="4">
-              <span>5</span>
-              Podsumowanie
-            </button>
-          </nav>
+          <div class="planner-cal-grid-wrap">
+            <div class="planner-cal-grid" data-calendar-grid></div>
+          </div>
 
-          <section class="planner-card is-active" aria-labelledby="goals-title" data-step-panel>
-            <div class="planner-card__header">
-              <h2 id="goals-title">Jakie masz cele?</h2>
-              <p>Wybierz wszystkie opcje, które pomogą dopasować plan posiłków.</p>
-            </div>
+          <p class="planner-empty-week" data-no-plan-week hidden>
+            Brak planu na ten tydzień.
+            <a href="#" data-create-week-plan>Utwórz plan dla tego tygodnia</a>
+          </p>
 
-            <div class="goal-grid">
-              <label class="select-tile">
-                <input type="checkbox" name="goals[]" value="save_money" checked />
-                <span>Oszczędzać pieniądze</span>
-              </label>
-              <label class="select-tile">
-                <input type="checkbox" name="goals[]" value="eat_healthier" />
-                <span>Jeść zdrowiej</span>
-              </label>
-              <label class="select-tile">
-                <input type="checkbox" name="goals[]" value="reduce_waste" />
-                <span>Ograniczyć marnowanie</span>
-              </label>
-              <label class="select-tile">
-                <input type="checkbox" name="goals[]" value="meal_prep" checked />
-                <span>Planować z wyprzedzeniem</span>
-              </label>
-            </div>
-          </section>
+        </div>
 
-          <section class="planner-card" aria-labelledby="diet-title" data-step-panel hidden>
-            <div class="planner-section-title">
-              <h2 id="diet-title">Preferencje żywieniowe</h2>
-              <p>Zaznacz dietę i składniki, których plan powinien unikać.</p>
-            </div>
-
-            <div class="chip-group" role="group" aria-label="Preferencje żywieniowe">
-              <label class="choice-chip">
-                <input type="radio" name="dietPreference" value="none" />
-                <span>Bez preferencji</span>
-              </label>
-              <label class="choice-chip">
-                <input type="radio" name="dietPreference" value="vegetarian" />
-                <span>Wegetariańska</span>
-              </label>
-              <label class="choice-chip">
-                <input type="radio" name="dietPreference" value="vegan" checked />
-                <span>Wegańska</span>
-              </label>
-              <label class="choice-chip">
-                <input type="radio" name="dietPreference" value="gluten_free" />
-                <span>Bez glutenu</span>
-              </label>
-              <label class="choice-chip">
-                <input type="radio" name="dietPreference" value="lactose_free" />
-                <span>Bez laktozy</span>
-              </label>
-            </div>
-
-            <div class="allergy-grid">
-              <label class="allergy-tile allergy-tile--nuts">
-                <input type="checkbox" name="allergies[]" value="nuts" checked />
-                <img src="/public/assets/icons/nuts.svg" alt="" />
-                <span>Orzechy</span>
-              </label>
-              <label class="allergy-tile">
-                <input type="checkbox" name="allergies[]" value="eggs" />
-                <img src="/public/assets/icons/egg.svg" alt="" />
-                <span>Jajka</span>
-              </label>
-              <label class="allergy-tile">
-                <input type="checkbox" name="allergies[]" value="dairy" />
-                <img src="/public/assets/icons/dairy.svg" alt="" />
-                <span>Nabiał</span>
-              </label>
-              <label class="allergy-tile">
-                <input type="checkbox" name="allergies[]" value="gluten" />
-                <img src="/public/assets/icons/gluten.svg" alt="" />
-                <span>Gluten</span>
-              </label>
-            </div>
-          </section>
-
-          <section class="planner-card" aria-labelledby="household-title" data-step-panel hidden>
-            <div class="planner-range-row">
+        <!-- ===== WIZARD VIEW ===== -->
+        <div data-wizard-view <?= $activePlanId ? 'hidden' : '' ?>>
+          <form class="meal-planner" action="/meal-planner" method="post" data-step-form>
+            <header class="meal-planner__header">
               <div>
-                <h2 id="household-title">Liczba domowników</h2>
-                <p>Użyj wartości, dla której planujesz posiłki.</p>
+                <span class="meal-planner__kicker">Konfiguracja planu</span>
+                <h1>Personalizuj swój plan</h1>
               </div>
-              <output for="household-size">3 osoby</output>
-            </div>
-            <input class="planner-range" id="household-size" name="householdSize" type="range" min="1" max="10" value="3" />
-            <div class="planner-scale" aria-hidden="true">
-              <span>1</span>
-              <span>2</span>
-              <span>3</span>
-              <span>4</span>
-              <span>5</span>
-              <span>6</span>
-              <span>7</span>
-              <span>8</span>
-              <span>9</span>
-              <span>10+</span>
-            </div>
+              <div class="meal-planner__progress" aria-live="polite">
+                <span data-step-label>Krok 1 z 5</span>
+                <strong data-progress-label>20% ukończone</strong>
+                <div class="meal-planner__progress-track">
+                  <span data-progress-bar></span>
+                </div>
+              </div>
+            </header>
 
-            <div class="planner-budget" aria-labelledby="budget-title">
+            <nav class="planner-steps" aria-label="Kroki konfiguracji">
+              <button class="planner-step is-active" type="button" data-step-nav="0"><span>1</span>Cele</button>
+              <button class="planner-step" type="button" data-step-nav="1"><span>2</span>Dieta</button>
+              <button class="planner-step" type="button" data-step-nav="2"><span>3</span>Dom</button>
+              <button class="planner-step" type="button" data-step-nav="3"><span>4</span>Harmonogram</button>
+              <button class="planner-step" type="button" data-step-nav="4"><span>5</span>Podsumowanie</button>
+            </nav>
+
+            <section class="planner-card is-active" aria-labelledby="goals-title" data-step-panel>
+              <div class="planner-card__header">
+                <h2 id="goals-title">Jakie masz cele?</h2>
+                <p>Wybierz wszystkie opcje, które pomogą dopasować plan posiłków.</p>
+              </div>
+              <div class="goal-grid">
+                <label class="select-tile"><input type="checkbox" name="goals[]" value="save_money" checked /><span>Oszczędzać pieniądze</span></label>
+                <label class="select-tile"><input type="checkbox" name="goals[]" value="eat_healthier" /><span>Jeść zdrowiej</span></label>
+                <label class="select-tile"><input type="checkbox" name="goals[]" value="reduce_waste" /><span>Ograniczyć marnowanie</span></label>
+                <label class="select-tile"><input type="checkbox" name="goals[]" value="meal_prep" checked /><span>Planować z wyprzedzeniem</span></label>
+              </div>
+            </section>
+
+            <section class="planner-card" aria-labelledby="diet-title" data-step-panel hidden>
               <div class="planner-section-title">
-                <h2 id="budget-title">Tygodniowy budżet zakupów</h2>
+                <h2 id="diet-title">Preferencje żywieniowe</h2>
+                <p>Zaznacz dietę i składniki, których plan powinien unikać.</p>
               </div>
-              <label class="budget-field" for="weekly-budget">
-                <span>zł</span>
-                <input id="weekly-budget" name="weeklyBudget" type="number" min="0" step="10" value="400" />
-                <small>PLN</small>
-              </label>
-              <p class="planner-help">Pomoże to później dobrać składniki do Twojego budżetu.</p>
-            </div>
-          </section>
-
-          <section class="planner-card" aria-labelledby="schedule-title" data-step-panel hidden>
-            <div class="planner-card__header">
-              <h2 id="schedule-title">Jak planujesz tydzień?</h2>
-              <p>Wybierz dni i typy posiłków, które MealPlanner ma uwzględnić.</p>
-            </div>
-
-            <div class="day-grid" role="group" aria-label="Dni planowania">
-              <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="monday" checked /><span>Pon</span></label>
-              <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="tuesday" checked /><span>Wt</span></label>
-              <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="wednesday" checked /><span>Śr</span></label>
-              <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="thursday" checked /><span>Czw</span></label>
-              <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="friday" checked /><span>Pt</span></label>
-              <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="saturday" /><span>Sob</span></label>
-              <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="sunday" /><span>Nd</span></label>
-            </div>
-
-            <div class="meal-type-grid" role="group" aria-label="Typy posiłków">
-              <label class="select-tile">
-                <input type="checkbox" name="mealTypes[]" value="breakfast" checked />
-                <span>Śniadania</span>
-              </label>
-              <label class="select-tile">
-                <input type="checkbox" name="mealTypes[]" value="lunch" checked />
-                <span>Obiady</span>
-              </label>
-              <label class="select-tile">
-                <input type="checkbox" name="mealTypes[]" value="dinner" checked />
-                <span>Kolacje</span>
-              </label>
-              <label class="select-tile">
-                <input type="checkbox" name="mealTypes[]" value="snacks" />
-                <span>Przekąski</span>
-              </label>
-            </div>
-          </section>
-
-          <section class="planner-card" aria-labelledby="summary-title" data-step-panel hidden>
-            <div class="planner-card__header">
-              <h2 id="summary-title">Sprawdź ustawienia</h2>
-              <p>To podsumowanie zapisze backend i wykorzysta do generowania planu.</p>
-            </div>
-
-            <div class="planner-summary-grid">
-              <div>
-                <span>Cele</span>
-                <strong data-summary-goals>—</strong>
+              <div class="chip-group" role="group" aria-label="Preferencje żywieniowe">
+                <label class="choice-chip"><input type="radio" name="dietPreference" value="none" /><span>Bez preferencji</span></label>
+                <label class="choice-chip"><input type="radio" name="dietPreference" value="vegetarian" /><span>Wegetariańska</span></label>
+                <label class="choice-chip"><input type="radio" name="dietPreference" value="vegan" checked /><span>Wegańska</span></label>
+                <label class="choice-chip"><input type="radio" name="dietPreference" value="gluten_free" /><span>Bez glutenu</span></label>
+                <label class="choice-chip"><input type="radio" name="dietPreference" value="lactose_free" /><span>Bez laktozy</span></label>
               </div>
-              <div>
-                <span>Dieta</span>
-                <strong data-summary-diet>—</strong>
+              <div class="allergy-grid">
+                <label class="allergy-tile allergy-tile--nuts"><input type="checkbox" name="allergies[]" value="nuts" checked /><img src="/public/assets/icons/nuts.svg" alt="" /><span>Orzechy</span></label>
+                <label class="allergy-tile"><input type="checkbox" name="allergies[]" value="eggs" /><img src="/public/assets/icons/egg.svg" alt="" /><span>Jajka</span></label>
+                <label class="allergy-tile"><input type="checkbox" name="allergies[]" value="dairy" /><img src="/public/assets/icons/dairy.svg" alt="" /><span>Nabiał</span></label>
+                <label class="allergy-tile"><input type="checkbox" name="allergies[]" value="gluten" /><img src="/public/assets/icons/gluten.svg" alt="" /><span>Gluten</span></label>
               </div>
-              <div>
-                <span>Dom</span>
-                <strong data-summary-household>—</strong>
-              </div>
-              <div>
-                <span>Harmonogram</span>
-                <strong data-summary-schedule>—</strong>
-              </div>
-            </div>
+            </section>
 
-            <p class="planner-message" data-planner-message hidden></p>
-          </section>
+            <section class="planner-card" aria-labelledby="household-title" data-step-panel hidden>
+              <div class="planner-range-row">
+                <div>
+                  <h2 id="household-title">Liczba domowników</h2>
+                  <p>Użyj wartości, dla której planujesz posiłki.</p>
+                </div>
+                <output for="household-size">3 osoby</output>
+              </div>
+              <input class="planner-range" id="household-size" name="householdSize" type="range" min="1" max="10" value="3" />
+              <div class="planner-scale" aria-hidden="true">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                <span>6</span><span>7</span><span>8</span><span>9</span><span>10+</span>
+              </div>
+              <div class="planner-budget" aria-labelledby="budget-title">
+                <div class="planner-section-title">
+                  <h2 id="budget-title">Tygodniowy budżet zakupów</h2>
+                </div>
+                <label class="budget-field" for="weekly-budget">
+                  <span>zł</span>
+                  <input id="weekly-budget" name="weeklyBudget" type="number" min="0" step="10" value="400" />
+                  <small>PLN</small>
+                </label>
+                <p class="planner-help">Pomoże to później dobrać składniki do Twojego budżetu.</p>
+              </div>
+            </section>
 
-          <footer class="meal-planner__actions">
-            <button class="button button-secondary" type="button" data-step-prev>Wstecz</button>
-            <button class="button meal-planner__submit" type="button" data-step-next>Kontynuuj</button>
-          </footer>
-        </form>
+            <section class="planner-card" aria-labelledby="schedule-title" data-step-panel hidden>
+              <div class="planner-card__header">
+                <h2 id="schedule-title">Jak planujesz tydzień?</h2>
+                <p>Wybierz dni i typy posiłków, które MealPlanner ma uwzględnić.</p>
+              </div>
+              <div class="day-grid" role="group" aria-label="Dni planowania">
+                <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="monday" checked /><span>Pon</span></label>
+                <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="tuesday" checked /><span>Wt</span></label>
+                <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="wednesday" checked /><span>Śr</span></label>
+                <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="thursday" checked /><span>Czw</span></label>
+                <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="friday" checked /><span>Pt</span></label>
+                <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="saturday" /><span>Sob</span></label>
+                <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="sunday" /><span>Nd</span></label>
+              </div>
+              <div class="meal-type-grid" role="group" aria-label="Typy posiłków">
+                <label class="select-tile"><input type="checkbox" name="mealTypes[]" value="breakfast" checked /><span>Śniadania</span></label>
+                <label class="select-tile"><input type="checkbox" name="mealTypes[]" value="lunch" checked /><span>Obiady</span></label>
+                <label class="select-tile"><input type="checkbox" name="mealTypes[]" value="dinner" checked /><span>Kolacje</span></label>
+                <label class="select-tile"><input type="checkbox" name="mealTypes[]" value="snacks" /><span>Przekąski</span></label>
+              </div>
+            </section>
+
+            <section class="planner-card" aria-labelledby="summary-title" data-step-panel hidden>
+              <div class="planner-card__header">
+                <h2 id="summary-title">Sprawdź ustawienia</h2>
+                <p>To podsumowanie zapisze backend i wykorzysta do generowania planu.</p>
+              </div>
+              <div class="planner-summary-grid">
+                <div><span>Cele</span><strong data-summary-goals>—</strong></div>
+                <div><span>Dieta</span><strong data-summary-diet>—</strong></div>
+                <div><span>Dom</span><strong data-summary-household>—</strong></div>
+                <div><span>Harmonogram</span><strong data-summary-schedule>—</strong></div>
+              </div>
+              <p class="planner-message" data-planner-message hidden></p>
+            </section>
+
+            <footer class="meal-planner__actions">
+              <button class="button button-secondary" type="button" data-step-prev>Wstecz</button>
+              <button class="button meal-planner__submit" type="button" data-step-next>Kontynuuj</button>
+            </footer>
+          </form>
+        </div>
+
       </main>
     </div>
+
+    <!-- Recipe picker dialog -->
+    <dialog class="recipe-picker-dialog" data-recipe-picker>
+      <div class="recipe-picker-dialog__inner">
+        <header>
+          <h2>Wybierz przepis</h2>
+          <button type="button" data-close-picker aria-label="Zamknij">×</button>
+        </header>
+        <label class="recipe-picker-search">
+          <img src="/public/assets/icons/recipes.svg" alt="" />
+          <input type="search" placeholder="Szukaj przepisu…" data-picker-search autocomplete="off" />
+        </label>
+        <ul class="recipe-picker-list" data-picker-results>
+          <li class="recipe-picker-empty">Zacznij pisać, aby wyszukać przepis.</li>
+        </ul>
+      </div>
+    </dialog>
+
   </body>
 </html>

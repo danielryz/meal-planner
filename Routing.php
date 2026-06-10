@@ -198,6 +198,10 @@ final class Routing
             "controller" => GroceryListController::class,
             "action" => "active",
         ],
+        "api/grocery-lists/generate" => [
+            "controller" => GroceryListController::class,
+            "action" => "generate",
+        ],
         "api/grocery-lists/{listId}/items" => [
             "controller" => GroceryListController::class,
             "action" => "addItem",

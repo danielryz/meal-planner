@@ -5,7 +5,6 @@
   const loadingState     = view.querySelector("[data-recipe-loading]");
   const errorState       = view.querySelector("[data-recipe-error]");
   const content          = view.querySelector("[data-recipe-content]");
-  const heroEl           = view.querySelector("[data-recipe-hero]");
   const labelEl          = view.querySelector("[data-recipe-label]");
   const titleEl          = view.querySelector("[data-recipe-title]");
   const descriptionEl    = view.querySelector("[data-recipe-description]");
@@ -19,6 +18,8 @@
   const chefTip          = view.querySelector("[data-chef-tip]");
   const tipSection       = view.querySelector("[data-tip-section]");
   const stepsList        = view.querySelector("[data-steps-list]");
+  const relatedSection   = view.querySelector("[data-related-section]");
+  const relatedList      = view.querySelector("[data-related-list]");
   const decreaseBtn      = view.querySelector("[data-servings-decrease]");
   const increaseBtn      = view.querySelector("[data-servings-increase]");
   const favoriteBtn      = view.querySelector("[data-favorite-btn]");
@@ -32,11 +33,11 @@
 
   const isAuthenticated  = view.dataset.authenticated === 'true';
 
-  let recipeId      = null;
-  let recipe        = null;
-  let baseServings  = 1;
+  let recipeId        = null;
+  let recipe          = null;
+  let baseServings    = 1;
   let currentServings = 1;
-  let groceryListId = null;
+  let groceryListId   = null;
 
   const NUTRITION_LABELS = {
     calories: 'Kalorie', protein: 'Białko', fat: 'Tłuszcz',
@@ -45,6 +46,8 @@
   const NUTRITION_UNITS = {
     calories: 'kcal', protein: 'g', fat: 'g', carbohydrates: 'g', fiber: 'g',
   };
+
+  const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
   function escapeHtml(value) {
     return String(value)
@@ -130,9 +133,36 @@
       .join('');
   }
 
+  function renderRelated(related) {
+    if (!relatedSection || !relatedList || !related?.length) return;
+
+    relatedList.innerHTML = related.map(r => `
+      <article class="recipe-card">
+        <div class="recipe-card__media recipe-card__media--green">
+          <a class="recipe-card__image-link" href="/recipe/${escapeHtml(r.id)}" aria-label="${escapeHtml(r.title)}"></a>
+          <span class="recipe-card__label">${escapeHtml(r.category ?? '')}</span>
+        </div>
+        <div class="recipe-card__body">
+          <h3><a href="/recipe/${escapeHtml(r.id)}">${escapeHtml(r.title)}</a></h3>
+          <div class="recipe-meta">
+            <span class="recipe-meta__item">
+              <img src="/public/assets/icons/clock.svg" alt="" />
+              ${escapeHtml(String(r.prepTimeMinutes))} min
+            </span>
+            <span class="recipe-meta__item">
+              <img src="/public/assets/icons/cutlery.svg" alt="" />
+              ${escapeHtml(getServingLabel(r.servings))}
+            </span>
+          </div>
+        </div>
+      </article>`).join('');
+
+    relatedSection.hidden = false;
+  }
+
   function renderRecipe(data) {
-    recipe        = data;
-    baseServings  = data.servings || 1;
+    recipe          = data;
+    baseServings    = data.servings || 1;
     currentServings = baseServings;
 
     if (labelEl)       labelEl.textContent       = data.category ?? '';
@@ -152,6 +182,12 @@
     renderIngredients();
     renderNutrition(data.nutrition);
     renderSteps(data.steps);
+    renderRelated(data.related);
+
+    if (data.tip && chefTip && tipSection) {
+      chefTip.textContent = data.tip;
+      tipSection.hidden = false;
+    }
 
     if (loadingState) loadingState.hidden = true;
     if (errorState)   errorState.hidden   = true;
@@ -281,9 +317,64 @@
   });
 
   planConfirmBtn?.addEventListener('click', async () => {
-    if (!recipe) return;
-    planDialog?.close();
-    window.toast?.info('Dodawanie do planu posiłków dostępne na stronie planera.');
+    if (!recipe || !planDay || !planMealType) return;
+
+    const selectedDay      = planDay.value;
+    const selectedMealType = planMealType.value;
+
+    planConfirmBtn.disabled = true;
+
+    try {
+      const plansRes = await fetch('/api/meal-plans');
+      if (!plansRes.ok) throw new Error('plans_fetch');
+      const plansData = await plansRes.json();
+
+      const activePlan = (plansData.plans ?? []).find(p => p.status === 'active');
+      if (!activePlan) {
+        planDialog?.close();
+        window.toast?.warning('Brak aktywnego planu posiłków. Utwórz plan na stronie planera.');
+        return;
+      }
+
+      const planRes = await fetch(`/api/meal-plans/${activePlan.id}`);
+      if (!planRes.ok) throw new Error('plan_fetch');
+      const planData = await planRes.json();
+
+      const matchingDay = (planData.days ?? []).find(day => {
+        const weekday = DAY_NAMES[new Date(day.date + 'T12:00:00').getDay()];
+        return weekday === selectedDay;
+      });
+
+      if (!matchingDay) {
+        planDialog?.close();
+        window.toast?.warning('Wybrany dzień nie istnieje w aktywnym planie.');
+        return;
+      }
+
+      const matchingSlot = (matchingDay.slots ?? []).find(s => s.type === selectedMealType);
+
+      if (!matchingSlot) {
+        planDialog?.close();
+        window.toast?.warning('Wybrany typ posiłku nie istnieje w planie. Edytuj plan i dodaj odpowiednią porę.');
+        return;
+      }
+
+      const addRes = await fetch(`/api/meal-plans/${activePlan.id}/slots/${matchingSlot.id}/recipes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipeId, servings: currentServings }),
+      });
+
+      if (!addRes.ok) throw new Error('add_failed');
+
+      planDialog?.close();
+      window.toast?.success('Przepis dodany do planu posiłków.');
+    } catch {
+      planDialog?.close();
+      window.toast?.error('Nie udało się dodać przepisu do planu.');
+    } finally {
+      if (planConfirmBtn) planConfirmBtn.disabled = false;
+    }
   });
 
   planDialog?.addEventListener('click', (e) => {

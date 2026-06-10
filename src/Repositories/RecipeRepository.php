@@ -115,7 +115,7 @@ final class RecipeRepository extends AbstractRepository
             : '';
 
         $stmt = $this->connection->prepare(
-            "SELECT r.id, r.author_user_id, r.title, r.description, r.difficulty, r.prep_time_minutes, r.servings,
+            "SELECT r.id, r.author_user_id, r.category_id, r.title, r.description, r.difficulty, r.prep_time_minutes, r.servings,
                 r.status, r.visibility,
                 rc.code AS category_code, rc.label AS category_label,
                 up.display_name AS author_name,
@@ -148,6 +148,30 @@ final class RecipeRepository extends AbstractRepository
         $row['diet_tags']   = $this->dietTagsForRecipe($recipeId);
 
         return $row;
+    }
+
+    public function findRelated(int $recipeId, ?int $categoryId, int $limit = 3): array
+    {
+        if ($categoryId === null) {
+            return [];
+        }
+        $stmt = $this->connection->prepare(
+            "SELECT r.id, r.title, r.prep_time_minutes, r.servings,
+                    rc.label AS category_label
+             FROM recipes r
+             LEFT JOIN recipe_categories rc ON rc.id = r.category_id
+             WHERE r.category_id = :cat_id
+               AND r.id <> :recipe_id
+               AND r.visibility = 'public'
+               AND r.status = 'approved'
+             ORDER BY RANDOM()
+             LIMIT :limit"
+        );
+        $stmt->bindValue(':cat_id', $categoryId, PDO::PARAM_INT);
+        $stmt->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function toggleFavorite(int $recipeId, int $userId): bool

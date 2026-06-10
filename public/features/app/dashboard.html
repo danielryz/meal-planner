@@ -32,7 +32,16 @@
               </span>
               <div>
                 <h2>Plan posiłków</h2>
-                <p>Widok planowania tygodnia zostanie wdrożony w FE-05.</p>
+                <p>
+                  <?php if ($activePlanName): ?>
+                    Aktywny plan: <?= htmlspecialchars($activePlanName) ?>
+                  <?php else: ?>
+                    Skonfiguruj tygodniowy harmonogram posiłków dla siebie i rodziny.
+                  <?php endif; ?>
+                </p>
+                <a class="app-overview-card__cta" href="/meal-planner">
+                  <?= $activePlanName ? 'Otwórz planer' : 'Zacznij konfigurację' ?> →
+                </a>
               </div>
             </article>
 
@@ -42,7 +51,11 @@
               </span>
               <div>
                 <h2>Biblioteka przepisów</h2>
-                <p>Wyszukiwanie i filtry przepisów pojawią się w FE-06.</p>
+                <p>Przeglądaj, filtruj i dodawaj przepisy do ulubionych.</p>
+                <?php if ($recipesCount > 0): ?>
+                  <span class="app-overview-card__stat"><?= $recipesCount ?> przepisów dostępnych</span>
+                <?php endif; ?>
+                <a class="app-overview-card__cta" href="/recipes">Przeglądaj przepisy →</a>
               </div>
             </article>
 
@@ -52,7 +65,14 @@
               </span>
               <div>
                 <h2>Lista zakupów</h2>
-                <p>Interaktywna lista zakupów zostanie przygotowana w FE-08.</p>
+                <p>
+                  <?php if ($groceryItemsCount > 0): ?>
+                    <?= $groceryItemsCount ?> <?= $groceryItemsCount === 1 ? 'produkt' : ($groceryItemsCount < 5 ? 'produkty' : 'produktów') ?> do zakupu na tej liście.
+                  <?php else: ?>
+                    Twoja lista zakupów jest pusta. Dodaj składniki z przepisów.
+                  <?php endif; ?>
+                </p>
+                <a class="app-overview-card__cta" href="/grocery-list">Otwórz listę →</a>
               </div>
             </article>
           </section>

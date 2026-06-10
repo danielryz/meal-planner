@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Database\Database;
 use App\Http\Response;
 
 final class DashboardController extends AppController
@@ -43,7 +44,33 @@ final class DashboardController extends AppController
             return $response;
         }
 
-        return $this->renderAppView("dashboard", "dashboard");
+        $userId = $this->sessions->currentUser()->id();
+        $pdo    = (new Database())->connection();
+
+        $stmt = $pdo->query("SELECT COUNT(*) FROM recipes WHERE visibility = 'public' AND status = 'approved'");
+        $recipesCount = (int) $stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("SELECT name FROM meal_plans WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1");
+        $stmt->execute([$userId]);
+        $activePlanName = $stmt->fetchColumn() ?: null;
+
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM grocery_items gi
+             JOIN grocery_lists gl ON gl.id = gi.grocery_list_id
+             WHERE gl.user_id = ? AND gl.status = 'active' AND gi.is_checked = FALSE"
+        );
+        $stmt->execute([$userId]);
+        $groceryItemsCount = (int) $stmt->fetchColumn();
+
+        return $this->render('dashboard', array_merge(
+            ['currentRoute' => 'dashboard'],
+            $this->currentUserViewData(),
+            [
+                'recipesCount'      => $recipesCount,
+                'activePlanName'    => $activePlanName,
+                'groceryItemsCount' => $groceryItemsCount,
+            ]
+        ));
     }
 
     public function mealPlanner(): Response
@@ -52,7 +79,18 @@ final class DashboardController extends AppController
             return $response;
         }
 
-        return $this->renderAppView("meal-planner", "meal-planner");
+        $userId = $this->sessions->currentUser()->id();
+        $pdo    = (new Database())->connection();
+
+        $stmt = $pdo->prepare("SELECT id FROM meal_plans WHERE user_id = ? AND status = 'active' ORDER BY week_start_date DESC LIMIT 1");
+        $stmt->execute([$userId]);
+        $activePlanId = $stmt->fetchColumn() ?: null;
+
+        return $this->render('meal-planner', array_merge(
+            ['currentRoute' => 'meal-planner'],
+            $this->currentUserViewData(),
+            ['activePlanId' => $activePlanId]
+        ));
     }
 
     public function groceryList(): Response

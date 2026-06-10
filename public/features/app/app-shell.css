@@ -228,6 +228,7 @@
 }
 
 .app-overview-card {
+  position: relative;
   min-height: 180px;
   display: grid;
   gap: 18px;
@@ -236,6 +237,38 @@
   border-radius: 32px;
   background: #ffffff;
   padding: 24px;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.app-overview-card:has(.app-overview-card__cta:hover),
+.app-overview-card:has(.app-overview-card__cta:focus-visible) {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.app-overview-card__stat {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #3cbe40;
+  letter-spacing: 0.02em;
+}
+
+.app-overview-card__cta {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3cbe40;
+  text-decoration: none;
+}
+
+.app-overview-card__cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 32px;
 }
 
 .app-overview-card__icon {

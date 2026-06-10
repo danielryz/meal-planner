@@ -105,6 +105,25 @@ final class GroceryListRepository
 
     public function addItem(int $listId, string $name, ?string $quantity, ?int $categoryId, ?string $note): int
     {
+        if ($quantity !== null) {
+            $parsed = $this->parseQuantity($quantity);
+            if ($parsed !== null) {
+                $existing = $this->findDuplicate($listId, $name, $parsed['unit']);
+                if ($existing !== null) {
+                    $existingParsed = $this->parseQuantity($existing['quantity'] ?? '');
+                    if ($existingParsed !== null) {
+                        $newValue  = $existingParsed['value'] + $parsed['value'];
+                        $formatted = $this->formatQuantity($newValue, $parsed['unit']);
+                        $stmt = $this->connection->prepare(
+                            'UPDATE grocery_items SET quantity = ?, updated_at = NOW() WHERE id = ? AND grocery_list_id = ?'
+                        );
+                        $stmt->execute([$formatted, $existing['id'], $listId]);
+                        return (int) $existing['id'];
+                    }
+                }
+            }
+        }
+
         $stmt = $this->connection->prepare(
             'SELECT COALESCE(MAX(position), 0) + 1 FROM grocery_items WHERE grocery_list_id = ?'
         );
@@ -118,6 +137,40 @@ final class GroceryListRepository
         $stmt->execute([$listId, $name, $quantity, $categoryId, $note, $position]);
 
         return (int) $stmt->fetchColumn();
+    }
+
+    private function parseQuantity(string $quantity): ?array
+    {
+        if (!preg_match('/^(\d+(?:[.,]\d+)?)\s*(.*)$/u', trim($quantity), $m)) {
+            return null;
+        }
+        return [
+            'value' => (float) str_replace(',', '.', $m[1]),
+            'unit'  => mb_strtolower(trim($m[2])),
+        ];
+    }
+
+    private function findDuplicate(int $listId, string $name, string $unit): ?array
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT id, quantity FROM grocery_items WHERE grocery_list_id = ? AND LOWER(name) = LOWER(?)'
+        );
+        $stmt->execute([$listId, $name]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $p = $this->parseQuantity($row['quantity'] ?? '');
+            if ($p !== null && $p['unit'] === mb_strtolower($unit)) {
+                return $row;
+            }
+        }
+        return null;
+    }
+
+    private function formatQuantity(float $value, string $unit): string
+    {
+        $formatted = ($value == floor($value))
+            ? (string) (int) $value
+            : number_format($value, 1, ',', '');
+        return $unit !== '' ? "{$formatted} {$unit}" : $formatted;
     }
 
     public function updateItem(int $listId, int $itemId, array $data): bool

@@ -81,6 +81,8 @@ final class RecipeController extends AppController
             return $this->jsonError('Brak dostępu do tego przepisu.', 403);
         }
 
+        $related = $repo->findRelated((int) $row['id'], $row['category_id'] ? (int) $row['category_id'] : null);
+
         return Response::json([
             'id'                 => (int) $row['id'],
             'title'              => $row['title'],
@@ -102,6 +104,13 @@ final class RecipeController extends AppController
                 'carbohydrates' => $row['carbohydrates_grams'],
                 'fiber'         => $row['fiber_grams'],
             ],
+            'related'            => array_map(fn(array $r) => [
+                'id'              => (int) $r['id'],
+                'title'           => $r['title'],
+                'category'        => $r['category_label'],
+                'prepTimeMinutes' => (int) $r['prep_time_minutes'],
+                'servings'        => (int) $r['servings'],
+            ], $related),
         ]);
     }
 

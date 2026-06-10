@@ -1,258 +1,440 @@
 (() => {
-  const householdInput = document.querySelector("#household-size");
-  const householdOutput = document.querySelector('output[for="household-size"]');
-  const stepForm = document.querySelector("[data-step-form]");
+  const SLOT_ORDER  = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const SLOT_LABELS = { breakfast: 'Śniadanie', lunch: 'Obiad', dinner: 'Kolacja', snack: 'Przekąska' };
+  const DAY_SHORT   = ['Nd', 'Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob'];
+  const PL_MONTHS   = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
 
-  const goalLabels = {
-    save_money: "Oszczędzanie",
-    eat_healthier: "Zdrowe jedzenie",
-    reduce_waste: "Ograniczenie marnowania",
-    meal_prep: "Planowanie z wyprzedzeniem",
-  };
-
-  const dietLabels = {
-    none: "Bez preferencji",
-    vegetarian: "Wegetariańska",
-    vegan: "Wegańska",
-    gluten_free: "Bez glutenu",
-    lactose_free: "Bez laktozy",
-  };
-
-  const dayLabels = {
-    monday: "Pon",
-    tuesday: "Wt",
-    wednesday: "Śr",
-    thursday: "Czw",
-    friday: "Pt",
-    saturday: "Sob",
-    sunday: "Nd",
-  };
-
-  const mealLabels = {
-    breakfast: "Śniadania",
-    lunch: "Obiady",
-    dinner: "Kolacje",
-    snacks: "Przekąski",
-  };
-
-  function getPeopleLabel(value) {
-    const count = Number(value);
-
-    if (count === 1) {
-      return "1 osoba";
-    }
-
-    if (count >= 5) {
-      return `${count} osób`;
-    }
-
-    return `${count} osoby`;
+  function escapeHtml(v) {
+    return String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
   }
 
-  if (householdInput && householdOutput) {
-    householdInput.addEventListener("input", () => {
-      householdOutput.textContent = getPeopleLabel(householdInput.value);
-    });
+  function getMondayOf(date) {
+    const d   = new Date(date);
+    const dow = d.getDay();
+    d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+    d.setHours(0, 0, 0, 0);
+    return d;
   }
 
-  if (!stepForm) {
-    return;
+  function toDateStr(date) {
+    return date.toISOString().slice(0, 10);
   }
 
-  const panels = Array.from(stepForm.querySelectorAll("[data-step-panel]"));
-  const navButtons = Array.from(stepForm.querySelectorAll("[data-step-nav]"));
-  const previousButton = stepForm.querySelector("[data-step-prev]");
-  const nextButton = stepForm.querySelector("[data-step-next]");
-  const stepLabel = stepForm.querySelector("[data-step-label]");
-  const progressLabel = stepForm.querySelector("[data-progress-label]");
-  const progressBar = stepForm.querySelector("[data-progress-bar]");
-  const plannerMessage = stepForm.querySelector("[data-planner-message]");
-  let currentStep = 0;
-  let maxAvailableStep = 0;
-
-  function getCheckedValues(name) {
-    return Array.from(stepForm.querySelectorAll(`[name="${name}"]:checked`)).map((el) => el.value);
+  function formatWeekLabel(monday) {
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    const startDay = monday.getDate();
+    const endDay   = sunday.getDate();
+    if (monday.getMonth() === sunday.getMonth()) {
+      return `${startDay}–${endDay} ${PL_MONTHS[sunday.getMonth()]} ${sunday.getFullYear()}`;
+    }
+    return `${startDay} ${PL_MONTHS[monday.getMonth()]} – ${endDay} ${PL_MONTHS[sunday.getMonth()]} ${sunday.getFullYear()}`;
   }
 
-  function getRadioValue(name) {
-    return stepForm.querySelector(`[name="${name}"]:checked`)?.value ?? "";
+  // ================================================================
+  // CALENDAR
+  // ================================================================
+
+  const calendarView  = document.querySelector('[data-calendar-view]');
+  const calendarGrid  = document.querySelector('[data-calendar-grid]');
+  const weekLabel     = document.querySelector('[data-week-label]');
+  const prevWeekBtn   = document.querySelector('[data-prev-week]');
+  const nextWeekBtn   = document.querySelector('[data-next-week]');
+  const noWeekMsg     = document.querySelector('[data-no-plan-week]');
+  const generateBtn   = document.querySelector('[data-generate-grocery]');
+  const editPlanBtn   = document.querySelector('[data-edit-plan]');
+  const createWeekBtn = document.querySelector('[data-create-week-plan]');
+
+  const recipePicker  = document.querySelector('[data-recipe-picker]');
+  const pickerSearch  = recipePicker?.querySelector('[data-picker-search]');
+  const pickerResults = recipePicker?.querySelector('[data-picker-results]');
+  const closePicker   = recipePicker?.querySelector('[data-close-picker]');
+
+  const wizardView    = document.querySelector('[data-wizard-view]');
+
+  let currentPlanId   = null;
+  let currentPlan     = null;
+  let currentWeek     = getMondayOf(new Date());
+  let pendingSlotId   = null;
+  let pickerTimer     = null;
+
+  if (calendarView && !calendarView.hidden) {
+    loadWeek(currentWeek);
   }
 
-  function getInputValue(id) {
-    return stepForm.querySelector(`#${id}`)?.value ?? "";
-  }
+  async function loadWeek(monday) {
+    currentWeek = monday;
+    if (weekLabel) weekLabel.textContent = formatWeekLabel(monday);
 
-  function getCurrentWeekMonday() {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - daysToSubtract);
-    return monday.toISOString().slice(0, 10);
-  }
+    const weekStr   = toDateStr(monday);
+    const plansRes  = await fetch('/api/meal-plans');
+    if (!plansRes.ok) { window.toast?.error('Nie udało się załadować planów.'); return; }
+    const plansData = await plansRes.json();
 
-  function updateSummary() {
-    const goals = getCheckedValues("goals[]").map((v) => goalLabels[v] ?? v);
-    const diet = getRadioValue("dietPreference");
-    const household = getInputValue("household-size");
-    const budget = getInputValue("weekly-budget");
-    const planningDays = getCheckedValues("planningDays[]");
-    const mealTypes = getCheckedValues("mealTypes[]");
+    const plan = (plansData.plans ?? []).find(p => p.weekStartDate === weekStr);
 
-    const summaryGoals = stepForm.querySelector("[data-summary-goals]");
-    const summaryDiet = stepForm.querySelector("[data-summary-diet]");
-    const summaryHousehold = stepForm.querySelector("[data-summary-household]");
-    const summarySchedule = stepForm.querySelector("[data-summary-schedule]");
-
-    if (summaryGoals) {
-      summaryGoals.textContent = goals.length > 0 ? goals.join(", ") : "Brak";
-    }
-
-    if (summaryDiet) {
-      summaryDiet.textContent = dietLabels[diet] ?? "Bez preferencji";
-    }
-
-    if (summaryHousehold) {
-      summaryHousehold.textContent = `${getPeopleLabel(household)}, ${budget} PLN`;
-    }
-
-    if (summarySchedule) {
-      const dayNames = planningDays.map((d) => dayLabels[d] ?? d).join(", ");
-      const mealNames = mealTypes.map((m) => mealLabels[m] ?? m).join(", ");
-      summarySchedule.textContent = `${dayNames} · ${mealNames}`;
-    }
-  }
-
-  function renderStep(nextStep) {
-    currentStep = Math.min(Math.max(nextStep, 0), maxAvailableStep, panels.length - 1);
-    const progress = Math.round(((currentStep + 1) / panels.length) * 100);
-
-    panels.forEach((panel, index) => {
-      panel.hidden = index !== currentStep;
-      panel.classList.toggle("is-active", index === currentStep);
-    });
-
-    navButtons.forEach((button, index) => {
-      const isAvailable = index <= maxAvailableStep;
-      button.classList.toggle("is-active", index === currentStep);
-      button.setAttribute("aria-current", index === currentStep ? "step" : "false");
-      button.disabled = !isAvailable;
-      button.setAttribute("aria-disabled", isAvailable ? "false" : "true");
-    });
-
-    if (stepLabel) {
-      stepLabel.textContent = `Krok ${currentStep + 1} z ${panels.length}`;
-    }
-
-    if (progressLabel) {
-      progressLabel.textContent = `${progress}% ukończone`;
-    }
-
-    if (progressBar) {
-      progressBar.style.width = `${progress}%`;
-    }
-
-    if (previousButton) {
-      previousButton.disabled = currentStep === 0;
-    }
-
-    if (nextButton) {
-      nextButton.type = "button";
-      nextButton.textContent = currentStep === panels.length - 1 ? "Zapisz plan" : "Kontynuuj";
-    }
-
-    if (currentStep === panels.length - 1) {
-      updateSummary();
-    }
-  }
-
-  navButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      renderStep(Number(button.dataset.stepNav));
-    });
-  });
-
-  if (previousButton) {
-    previousButton.addEventListener("click", () => {
-      renderStep(currentStep - 1);
-    });
-  }
-
-  if (nextButton) {
-    nextButton.addEventListener("click", async () => {
-      if (currentStep < panels.length - 1) {
-        const nextStep = currentStep + 1;
-        maxAvailableStep = Math.max(maxAvailableStep, nextStep);
-        renderStep(nextStep);
-        return;
-      }
-
-      await savePlan();
-    });
-  }
-
-  stepForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-  });
-
-  async function savePlan() {
-    if (nextButton) {
-      nextButton.disabled = true;
-      nextButton.textContent = "Zapisuję…";
-    }
-
-    if (plannerMessage) {
-      plannerMessage.hidden = true;
-    }
-
-    const payload = {
-      weekStartDate: getCurrentWeekMonday(),
-      planningDays: getCheckedValues("planningDays[]"),
-      mealTypes: getCheckedValues("mealTypes[]"),
-    };
-
-    try {
-      const res = await fetch("/api/meal-plans", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        showSuccess(data.name ?? "Plan zapisany");
-      } else {
-        showError(data.error ?? "Wystąpił błąd.");
-      }
-    } catch {
-      showError("Błąd połączenia z serwerem.");
-    } finally {
-      if (nextButton) {
-        nextButton.disabled = false;
-        nextButton.textContent = "Zapisz plan";
-      }
-    }
-  }
-
-  function showSuccess(planName) {
-    stepForm.innerHTML = `
-      <div class="planner-card is-active" style="text-align:center; padding: 3rem 2rem;">
-        <h2>Plan gotowy!</h2>
-        <p>${planName} został zapisany.</p>
-        <a class="button" href="/recipes" style="margin-top:1.5rem; display:inline-block;">Przeglądaj przepisy</a>
-      </div>
-    `;
-  }
-
-  function showError(message) {
-    if (!plannerMessage) {
+    if (!plan) {
+      currentPlanId = null;
+      currentPlan   = null;
+      if (calendarGrid)  calendarGrid.innerHTML = '';
+      if (noWeekMsg)     noWeekMsg.hidden       = false;
+      if (generateBtn)   generateBtn.disabled   = true;
       return;
     }
 
-    plannerMessage.textContent = message;
-    plannerMessage.hidden = false;
+    if (noWeekMsg)   noWeekMsg.hidden   = true;
+    if (generateBtn) generateBtn.disabled = false;
+
+    const detailRes = await fetch(`/api/meal-plans/${plan.id}`);
+    if (!detailRes.ok) { window.toast?.error('Nie udało się załadować szczegółów planu.'); return; }
+
+    currentPlan   = await detailRes.json();
+    currentPlanId = currentPlan.id;
+    renderCalendar(currentPlan);
   }
 
-  renderStep(0);
+  function renderCalendar(plan) {
+    if (!calendarGrid) return;
+
+    const days  = plan.days ?? [];
+    const today = toDateStr(new Date());
+
+    const slotTypesSet = new Set();
+    days.forEach(d => d.slots?.forEach(s => slotTypesSet.add(s.type)));
+    const slotTypes = SLOT_ORDER.filter(t => slotTypesSet.has(t));
+
+    const slotMap = {};
+    days.forEach(d => {
+      slotMap[d.date] = {};
+      (d.slots ?? []).forEach(s => { slotMap[d.date][s.type] = s; });
+    });
+
+    const cols = `grid-template-columns: 110px repeat(${days.length}, minmax(0, 1fr))`;
+
+    let html = `<div class="planner-calendar__head" style="${cols}">`;
+    html += '<div class="planner-calendar__corner"></div>';
+    days.forEach(d => {
+      const date    = new Date(d.date + 'T12:00:00');
+      const isToday = d.date === today;
+      html += `<div class="planner-calendar__day-col${isToday ? ' is-today' : ''}">
+        <span class="planner-calendar__day-name">${DAY_SHORT[date.getDay()]}</span>
+        <span class="planner-calendar__day-num">${date.getDate()}</span>
+      </div>`;
+    });
+    html += '</div>';
+
+    slotTypes.forEach(type => {
+      html += `<div class="planner-calendar__row" style="${cols}">`;
+      html += `<div class="planner-calendar__meal-label">${escapeHtml(SLOT_LABELS[type] ?? type)}</div>`;
+
+      days.forEach(d => {
+        const slot    = slotMap[d.date]?.[type];
+        const isToday = d.date === today;
+        html += `<div class="planner-calendar__cell${isToday ? ' is-today' : ''}">`;
+
+        if (slot) {
+          (slot.recipes ?? []).forEach(r => {
+            html += `<div class="planner-slot-recipe">
+              <a class="planner-slot-recipe__title" href="/recipe/${escapeHtml(r.id)}">${escapeHtml(r.title)}</a>
+              <button class="planner-slot-recipe__remove" type="button"
+                data-remove-recipe="${escapeHtml(r.id)}"
+                data-slot-id="${escapeHtml(slot.id)}"
+                aria-label="Usuń ${escapeHtml(r.title)} z planu">×</button>
+            </div>`;
+          });
+          html += `<button class="planner-cell-add" type="button" data-add-to-slot="${escapeHtml(slot.id)}" aria-label="Dodaj przepis do slotu">+</button>`;
+        } else {
+          html += '<span class="planner-cell-empty">—</span>';
+        }
+
+        html += '</div>';
+      });
+
+      html += '</div>';
+    });
+
+    calendarGrid.innerHTML = html;
+  }
+
+  calendarGrid?.addEventListener('click', async (e) => {
+    const removeBtn = e.target.closest('[data-remove-recipe]');
+    if (removeBtn) {
+      const recipeId = removeBtn.dataset.removeRecipe;
+      const slotId   = removeBtn.dataset.slotId;
+      removeBtn.disabled = true;
+      try {
+        const res = await fetch(`/api/meal-plans/${currentPlanId}/slots/${slotId}/recipes/${recipeId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        await loadWeek(currentWeek);
+        window.toast?.success('Przepis usunięty z planu.');
+      } catch {
+        removeBtn.disabled = false;
+        window.toast?.error('Nie udało się usunąć przepisu.');
+      }
+      return;
+    }
+
+    const addBtn = e.target.closest('[data-add-to-slot]');
+    if (addBtn) {
+      pendingSlotId = addBtn.dataset.addToSlot;
+      if (pickerSearch) pickerSearch.value = '';
+      if (pickerResults) pickerResults.innerHTML = '<li class="recipe-picker-empty">Zacznij pisać, aby wyszukać przepis.</li>';
+      recipePicker?.showModal();
+      pickerSearch?.focus();
+    }
+  });
+
+  prevWeekBtn?.addEventListener('click', () => {
+    const d = new Date(currentWeek);
+    d.setDate(d.getDate() - 7);
+    loadWeek(d);
+  });
+
+  nextWeekBtn?.addEventListener('click', () => {
+    const d = new Date(currentWeek);
+    d.setDate(d.getDate() + 7);
+    loadWeek(d);
+  });
+
+  generateBtn?.addEventListener('click', async () => {
+    if (!currentPlanId) return;
+    generateBtn.disabled = true;
+    const orig = generateBtn.textContent;
+    generateBtn.textContent = 'Generuję…';
+    try {
+      const res = await fetch('/api/grocery-lists/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: currentPlanId }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      window.toast?.success(`${data.added} składników dodano do listy zakupów.`);
+      setTimeout(() => { window.location.href = '/grocery-list'; }, 1200);
+    } catch {
+      window.toast?.error('Nie udało się wygenerować listy zakupów.');
+      generateBtn.disabled = false;
+      generateBtn.textContent = orig;
+    }
+  });
+
+  function showWizard() {
+    if (calendarView) calendarView.hidden = true;
+    if (wizardView)   wizardView.hidden   = false;
+    initWizard();
+  }
+
+  editPlanBtn?.addEventListener('click', showWizard);
+
+  createWeekBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showWizard();
+  });
+
+  // ================================================================
+  // RECIPE PICKER
+  // ================================================================
+
+  closePicker?.addEventListener('click', () => recipePicker?.close());
+  recipePicker?.addEventListener('click', e => { if (e.target === recipePicker) recipePicker.close(); });
+
+  pickerSearch?.addEventListener('input', () => {
+    clearTimeout(pickerTimer);
+    pickerTimer = setTimeout(() => searchRecipes(pickerSearch.value.trim()), 300);
+  });
+
+  async function searchRecipes(q) {
+    if (!pickerResults) return;
+    pickerResults.innerHTML = '<li class="recipe-picker-loading">Szukam…</li>';
+    try {
+      const params = new URLSearchParams({ page: '1' });
+      if (q) params.set('q', q);
+      const res  = await fetch(`/api/recipes?${params}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const list = data.recipes ?? [];
+      if (!list.length) {
+        pickerResults.innerHTML = '<li class="recipe-picker-empty">Brak wyników.</li>';
+        return;
+      }
+      pickerResults.innerHTML = list.map(r =>
+        `<li><button type="button" data-pick-recipe="${escapeHtml(r.id)}">${escapeHtml(r.title)}<small>${escapeHtml(String(r.cookingTimeMinutes))} min</small></button></li>`
+      ).join('');
+    } catch {
+      pickerResults.innerHTML = '<li class="recipe-picker-empty">Błąd wyszukiwania.</li>';
+    }
+  }
+
+  pickerResults?.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-pick-recipe]');
+    if (!btn || !pendingSlotId || !currentPlanId) return;
+
+    const recipeId = btn.dataset.pickRecipe;
+    btn.disabled   = true;
+
+    try {
+      const res = await fetch(`/api/meal-plans/${currentPlanId}/slots/${pendingSlotId}/recipes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipeId: Number(recipeId), servings: 1 }),
+      });
+      if (!res.ok) throw new Error();
+      recipePicker?.close();
+      await loadWeek(currentWeek);
+      window.toast?.success('Przepis dodany do planu.');
+    } catch {
+      btn.disabled = false;
+      window.toast?.error('Nie udało się dodać przepisu.');
+    }
+  });
+
+  // ================================================================
+  // WIZARD
+  // ================================================================
+
+  function initWizard() {
+    const stepForm = document.querySelector('[data-step-form]');
+    if (!stepForm || stepForm.__initialized) return;
+    stepForm.__initialized = true;
+
+    const householdInput  = stepForm.querySelector('#household-size');
+    const householdOutput = stepForm.querySelector('output[for="household-size"]');
+
+    householdInput?.addEventListener('input', () => {
+      if (householdOutput) householdOutput.textContent = getPeopleLabel(householdInput.value);
+    });
+
+    const panels         = Array.from(stepForm.querySelectorAll('[data-step-panel]'));
+    const navButtons     = Array.from(stepForm.querySelectorAll('[data-step-nav]'));
+    const prevBtn        = stepForm.querySelector('[data-step-prev]');
+    const nextBtn        = stepForm.querySelector('[data-step-next]');
+    const stepLabel      = stepForm.querySelector('[data-step-label]');
+    const progressLabel  = stepForm.querySelector('[data-progress-label]');
+    const progressBar    = stepForm.querySelector('[data-progress-bar]');
+    const plannerMessage = stepForm.querySelector('[data-planner-message]');
+
+    let currentStep       = 0;
+    let maxAvailableStep  = 0;
+
+    const goalLabels = { save_money: 'Oszczędzanie', eat_healthier: 'Zdrowe jedzenie', reduce_waste: 'Ograniczenie marnowania', meal_prep: 'Planowanie z wyprzedzeniem' };
+    const dietLabels = { none: 'Bez preferencji', vegetarian: 'Wegetariańska', vegan: 'Wegańska', gluten_free: 'Bez glutenu', lactose_free: 'Bez laktozy' };
+    const dayLabels  = { monday: 'Pon', tuesday: 'Wt', wednesday: 'Śr', thursday: 'Czw', friday: 'Pt', saturday: 'Sob', sunday: 'Nd' };
+    const mealLabels = { breakfast: 'Śniadania', lunch: 'Obiady', dinner: 'Kolacje', snacks: 'Przekąski' };
+
+    function getChecked(name) { return Array.from(stepForm.querySelectorAll(`[name="${name}"]:checked`)).map(el => el.value); }
+    function getRadio(name)   { return stepForm.querySelector(`[name="${name}"]:checked`)?.value ?? ''; }
+    function getInput(id)     { return stepForm.querySelector(`#${id}`)?.value ?? ''; }
+
+    function getMondayStr() {
+      const d   = new Date();
+      const dow = d.getDay();
+      d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+      return d.toISOString().slice(0, 10);
+    }
+
+    function updateSummary() {
+      const goals        = getChecked('goals[]').map(v => goalLabels[v] ?? v);
+      const diet         = getRadio('dietPreference');
+      const household    = getInput('household-size');
+      const budget       = getInput('weekly-budget');
+      const planningDays = getChecked('planningDays[]');
+      const mealTypes    = getChecked('mealTypes[]');
+
+      const summaryGoals     = stepForm.querySelector('[data-summary-goals]');
+      const summaryDiet      = stepForm.querySelector('[data-summary-diet]');
+      const summaryHousehold = stepForm.querySelector('[data-summary-household]');
+      const summarySchedule  = stepForm.querySelector('[data-summary-schedule]');
+
+      if (summaryGoals)     summaryGoals.textContent     = goals.length ? goals.join(', ') : 'Brak';
+      if (summaryDiet)      summaryDiet.textContent      = dietLabels[diet] ?? 'Bez preferencji';
+      if (summaryHousehold) summaryHousehold.textContent = `${getPeopleLabel(household)}, ${budget} PLN`;
+      if (summarySchedule)  summarySchedule.textContent  = `${planningDays.map(d => dayLabels[d] ?? d).join(', ')} · ${mealTypes.map(m => mealLabels[m] ?? m).join(', ')}`;
+    }
+
+    function renderStep(next) {
+      currentStep = Math.min(Math.max(next, 0), maxAvailableStep, panels.length - 1);
+      const pct   = Math.round(((currentStep + 1) / panels.length) * 100);
+
+      panels.forEach((p, i) => {
+        p.hidden = i !== currentStep;
+        p.classList.toggle('is-active', i === currentStep);
+      });
+      navButtons.forEach((b, i) => {
+        const ok = i <= maxAvailableStep;
+        b.classList.toggle('is-active', i === currentStep);
+        b.setAttribute('aria-current', i === currentStep ? 'step' : 'false');
+        b.disabled = !ok;
+        b.setAttribute('aria-disabled', ok ? 'false' : 'true');
+      });
+
+      if (stepLabel)     stepLabel.textContent     = `Krok ${currentStep + 1} z ${panels.length}`;
+      if (progressLabel) progressLabel.textContent = `${pct}% ukończone`;
+      if (progressBar)   progressBar.style.width   = `${pct}%`;
+      if (prevBtn)       prevBtn.disabled           = currentStep === 0;
+      if (nextBtn) {
+        nextBtn.type        = 'button';
+        nextBtn.textContent = currentStep === panels.length - 1 ? 'Zapisz plan' : 'Kontynuuj';
+      }
+
+      if (currentStep === panels.length - 1) updateSummary();
+    }
+
+    navButtons.forEach(b => b.addEventListener('click', () => renderStep(Number(b.dataset.stepNav))));
+    prevBtn?.addEventListener('click', () => renderStep(currentStep - 1));
+    nextBtn?.addEventListener('click', async () => {
+      if (currentStep < panels.length - 1) {
+        maxAvailableStep = Math.max(maxAvailableStep, currentStep + 1);
+        renderStep(currentStep + 1);
+        return;
+      }
+      await savePlan();
+    });
+
+    stepForm.addEventListener('submit', e => e.preventDefault());
+
+    async function savePlan() {
+      if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = 'Zapisuję…'; }
+      if (plannerMessage) plannerMessage.hidden = true;
+
+      try {
+        const res = await fetch('/api/meal-plans', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weekStartDate: getMondayStr(),
+            planningDays:  getChecked('planningDays[]'),
+            mealTypes:     getChecked('mealTypes[]'),
+          }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          sessionStorage.setItem('flash', JSON.stringify({ type: 'success', message: `Plan „${data.name}" zapisany!` }));
+          window.location.reload();
+        } else {
+          showError(data.error ?? 'Wystąpił błąd.');
+        }
+      } catch {
+        showError('Błąd połączenia z serwerem.');
+      } finally {
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Zapisz plan'; }
+      }
+    }
+
+    function showError(msg) {
+      if (!plannerMessage) return;
+      plannerMessage.textContent = msg;
+      plannerMessage.hidden      = false;
+    }
+
+    renderStep(0);
+  }
+
+  function getPeopleLabel(value) {
+    const n = Number(value);
+    if (n === 1) return '1 osoba';
+    if (n < 5)   return `${n} osoby`;
+    return `${n} osób`;
+  }
+
+  initWizard();
 })();
