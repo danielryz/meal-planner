@@ -441,9 +441,6 @@
   padding-top: 8px;
 }
 
-.recipe-library__actions .button {
-  border-radius: 999px;
-}
 
 @media (max-width: 1040px) {
   .recipes-layout {

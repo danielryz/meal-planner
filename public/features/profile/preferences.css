@@ -277,9 +277,6 @@
   margin: 0;
 }
 
-.preferences-panel .button {
-  border-radius: 999px;
-}
 
 @media (max-width: 1040px) {
   .preferences-content {

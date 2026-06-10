@@ -151,9 +151,6 @@
   gap: 14px;
 }
 
-.add-recipe-card__header .button {
-  border-radius: 999px;
-}
 
 .add-recipe-card__header img {
   width: 16px;
@@ -284,9 +281,6 @@
   justify-content: flex-end;
 }
 
-.add-recipe-footer .button {
-  border-radius: 999px;
-}
 
 .recipe-library__actions {
   gap: 12px;

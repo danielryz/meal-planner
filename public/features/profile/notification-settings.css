@@ -294,9 +294,6 @@
   margin: 0;
 }
 
-.notification-panel .button {
-  border-radius: 999px;
-}
 
 @media (max-width: 1040px) {
   .notification-content {

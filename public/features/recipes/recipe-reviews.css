@@ -350,9 +350,6 @@
   gap: 10px;
 }
 
-.recipe-reviews-actions .button {
-  border-radius: 999px;
-}
 
 .recipe-reviews-actions__danger:hover:not(:disabled),
 .recipe-reviews-actions__danger:focus-visible:not(:disabled) {

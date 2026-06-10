@@ -184,9 +184,6 @@
   white-space: nowrap;
 }
 
-.recipe-detail-actions .button {
-  border-radius: 999px;
-}
 
 .recipe-detail-actions .button img {
   width: 18px;

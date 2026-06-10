@@ -64,11 +64,6 @@
   justify-content: flex-end;
 }
 
-.grocery-header__actions .button {
-  min-height: 44px;
-  border-radius: 999px;
-  gap: 8px;
-}
 
 .grocery-header__actions img {
   width: 18px;

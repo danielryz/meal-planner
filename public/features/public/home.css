@@ -66,7 +66,6 @@
 
 .home-actions .button {
   min-width: 160px;
-  border-radius: 999px;
 }
 
 .home-proof {
@@ -272,7 +271,6 @@
 
 .support-panel .button {
   min-width: 160px;
-  border-radius: 999px;
 }
 
 .support-panel__button-icon {
@@ -386,7 +384,6 @@
 
 .home-cta .button {
   min-width: 160px;
-  border-radius: 999px;
 }
 
 .home-cta .button-secondary {
