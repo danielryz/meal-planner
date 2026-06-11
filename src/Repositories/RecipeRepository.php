@@ -78,7 +78,9 @@ final class RecipeRepository extends AbstractRepository
         $offset = ($page - 1) * $perPage;
 
         $sql = "SELECT r.id, r.title, r.difficulty, r.prep_time_minutes, r.servings,
-                    rc.code AS category_code, rc.label AS category_label
+                    rc.code AS category_code, rc.label AS category_label,
+                    (SELECT ROUND(AVG(rr.score)::numeric, 1) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS avg_rating,
+                    (SELECT COUNT(*) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS rating_count
                     {$favoriteSelect}
                 FROM recipes r
                 LEFT JOIN recipe_categories rc ON rc.id = r.category_id
@@ -114,12 +116,19 @@ final class RecipeRepository extends AbstractRepository
             ? 'LEFT JOIN favorite_recipes fr ON fr.recipe_id = r.id AND fr.user_id = :user_id'
             : '';
 
+        $userRatingSelect = $userId !== null
+            ? ', (SELECT score FROM recipe_ratings WHERE user_id = :rating_user_id AND recipe_id = r.id) AS user_rating'
+            : ', NULL::integer AS user_rating';
+
         $stmt = $this->connection->prepare(
             "SELECT r.id, r.author_user_id, r.category_id, r.title, r.description, r.difficulty, r.prep_time_minutes, r.servings,
                 r.status, r.visibility,
                 rc.code AS category_code, rc.label AS category_label,
                 up.display_name AS author_name,
-                rn.calories, rn.protein_grams, rn.fat_grams, rn.carbohydrates_grams, rn.fiber_grams
+                rn.calories, rn.protein_grams, rn.fat_grams, rn.carbohydrates_grams, rn.fiber_grams,
+                (SELECT ROUND(AVG(rr.score)::numeric, 1) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS avg_rating,
+                (SELECT COUNT(*) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS rating_count
+                {$userRatingSelect}
                 {$favoriteSelect}
             FROM recipes r
             LEFT JOIN recipe_categories rc ON rc.id = r.category_id
@@ -134,6 +143,7 @@ final class RecipeRepository extends AbstractRepository
 
         if ($userId !== null) {
             $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindValue(':rating_user_id', $userId, PDO::PARAM_INT);
         }
 
         $stmt->execute();

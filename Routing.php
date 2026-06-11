@@ -176,6 +176,10 @@ final class Routing
             "controller" => RecipeController::class,
             "action" => "toggleFavorite",
         ],
+        "api/recipes/{recipeId}/rating" => [
+            "controller" => RecipeController::class,
+            "action" => "rating",
+        ],
         "api/recipes/{recipeId}/submit-for-review" => [
             "controller" => RecipeController::class,
             "action" => "submitForReview",

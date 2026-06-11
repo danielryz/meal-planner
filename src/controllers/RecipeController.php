@@ -7,7 +7,9 @@ namespace App\Controllers;
 use App\Database\Database;
 use App\Http\Response;
 use App\Repositories\MediaRepository;
+use App\Repositories\RatingRepository;
 use App\Repositories\RecipeRepository;
+use App\Repositories\SettingsRepository;
 
 final class RecipeController extends AppController
 {
@@ -17,14 +19,25 @@ final class RecipeController extends AppController
         $page    = max(1, (int) $this->request->query('page', 1));
         $perPage = 12;
 
+        $dietFilter = (array) $this->request->query('diet', []);
         $filters = [
             'q'          => (string) $this->request->query('q', ''),
             'difficulty' => (string) $this->request->query('difficulty', ''),
             'category'   => (string) $this->request->query('category', ''),
             'time'       => (string) $this->request->query('time', ''),
-            'diet'       => (array) $this->request->query('diet', []),
+            'diet'       => $dietFilter,
             'favorites'  => (string) $this->request->query('favorites', ''),
         ];
+
+        $userDietPreference = null;
+        if ($userId !== null && empty(array_filter($dietFilter))) {
+            $db2   = new Database();
+            $prefs = (new SettingsRepository($db2->connection()))->getFoodPreferences($userId);
+            if ($prefs && !empty($prefs['diet_type']) && $prefs['diet_type'] !== 'standard') {
+                $userDietPreference  = $prefs['diet_type'];
+                $filters['diet']     = [$userDietPreference];
+            }
+        }
 
         $db     = new Database();
         $repo   = new RecipeRepository($db->connection());
@@ -35,8 +48,8 @@ final class RecipeController extends AppController
             'title'               => $row['title'],
             'category'            => $row['category_label'],
             'imageUrl'            => null,
-            'rating'              => null,
-            'reviewCount'         => 0,
+            'rating'              => $row['avg_rating'] !== null ? (float) $row['avg_rating'] : null,
+            'reviewCount'         => (int) $row['rating_count'],
             'cookingTimeMinutes'  => (int) $row['prep_time_minutes'],
             'servings'            => (int) $row['servings'],
             'dietTags'            => $row['diet_tags'],
@@ -46,13 +59,18 @@ final class RecipeController extends AppController
         $total = $result['total'];
         $pages = max(1, (int) ceil($total / $perPage));
 
+        $filterOptions = $repo->listFilterOptions();
+        if ($userDietPreference !== null) {
+            $filterOptions['userDietPreference'] = $userDietPreference;
+        }
+
         return Response::json([
             'recipes' => $recipes,
             'total'   => $total,
             'page'    => $page,
             'perPage' => $perPage,
             'pages'   => $pages,
-            'filters' => $repo->listFilterOptions(),
+            'filters' => $filterOptions,
         ]);
     }
 
@@ -98,6 +116,9 @@ final class RecipeController extends AppController
             'servings'           => (int) $row['servings'],
             'author'             => $row['author_name'],
             'isFavorite'         => (bool) $row['is_favorite'],
+            'averageRating'      => $row['avg_rating'] !== null ? (float) $row['avg_rating'] : null,
+            'ratingCount'        => (int) $row['rating_count'],
+            'userRating'         => $row['user_rating'] !== null ? (int) $row['user_rating'] : null,
             'dietTags'           => $row['diet_tags'],
             'ingredients'        => $row['ingredients'],
             'steps'              => $row['steps'],
@@ -393,6 +414,39 @@ final class RecipeController extends AppController
         }
 
         return Response::json(['status' => 'submitted']);
+    }
+
+    public function rating(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        $recipeId = (int) $this->request->routeParam('recipeId');
+        $userId   = $this->sessions->currentUser()->id();
+        $db       = new Database();
+        $repo     = new RatingRepository($db->connection());
+
+        if ($this->isDelete()) {
+            $repo->delete($userId, $recipeId);
+            return Response::json(['success' => true]);
+        }
+
+        if ($this->isPost()) {
+            $score   = (int) $this->request->input('score', 0);
+            $comment = $this->request->input('comment');
+
+            if ($score < 1 || $score > 5) {
+                return $this->jsonError('Ocena musi być w skali 1–5.', 422);
+            }
+
+            $repo->upsert($userId, $recipeId, $score, $comment !== null ? (string) $comment : null);
+            $stats = $repo->findStatsByRecipe($recipeId);
+
+            return Response::json(['success' => true, 'stats' => $stats]);
+        }
+
+        return $this->jsonError('Metoda niedozwolona.', 405);
     }
 
     private function slugify(string $text): string

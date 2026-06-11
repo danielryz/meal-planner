@@ -188,6 +188,10 @@
 
       if (!filtersRendered && data.filters) {
         renderFilters(data.filters);
+        if (data.filters.userDietPreference && dietContainer) {
+          const cb = dietContainer.querySelector(`[value="${CSS.escape(data.filters.userDietPreference)}"]`);
+          if (cb) cb.checked = true;
+        }
       }
 
       const recipes = Array.isArray(data.recipes) ? data.recipes : [];
