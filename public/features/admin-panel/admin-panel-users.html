@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Użytkownicy — Panel administracyjny';
+      $pageScripts = ['public/features/admin-panel/admin-panel-users.js'];
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="admin-page">
+      <div class="admin-shell">
+        <?php include 'public/features/admin-panel/admin-panel-nav.html'; ?>
+
+        <div class="admin-main" data-admin-users>
+          <header class="admin-topbar">
+            <h1>Użytkownicy</h1>
+            <div class="admin-topbar__actions">
+              <button class="admin-btn admin-btn--primary" type="button" data-open-invite>
+                + Zaproś użytkownika
+              </button>
+            </div>
+          </header>
+
+          <div class="admin-content">
+            <div class="admin-stats-grid" style="margin-bottom:1.5rem">
+              <div class="admin-stat-card admin-stat-card--green">
+                <span class="admin-stat-card__label">Aktywni</span>
+                <strong class="admin-stat-card__value" data-stat-active>—</strong>
+              </div>
+              <div class="admin-stat-card admin-stat-card--amber">
+                <span class="admin-stat-card__label">Oczekujący</span>
+                <strong class="admin-stat-card__value" data-stat-pending>—</strong>
+              </div>
+              <div class="admin-stat-card admin-stat-card--red">
+                <span class="admin-stat-card__label">Zawieszeni</span>
+                <strong class="admin-stat-card__value" data-stat-suspended>—</strong>
+              </div>
+              <div class="admin-stat-card">
+                <span class="admin-stat-card__label">Wszyscy</span>
+                <strong class="admin-stat-card__value" data-stat-total>—</strong>
+              </div>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <div class="admin-table-toolbar">
+                <h2>Lista użytkowników</h2>
+                <div class="admin-search">
+                  <input type="search" placeholder="Szukaj po imieniu lub e-mail..." data-search />
+                </div>
+                <select class="admin-filter-select" data-filter-role>
+                  <option value="">Wszystkie role</option>
+                  <option value="owner">Właściciel</option>
+                  <option value="admin">Admin</option>
+                  <option value="employee">Pracownik</option>
+                  <option value="user">Użytkownik</option>
+                </select>
+                <select class="admin-filter-select" data-filter-status>
+                  <option value="">Wszystkie statusy</option>
+                  <option value="active">Aktywni</option>
+                  <option value="pending">Oczekujący</option>
+                  <option value="suspended">Zawieszeni</option>
+                </select>
+              </div>
+
+              <p class="admin-state" data-loading>Ładowanie użytkowników...</p>
+              <p class="admin-state admin-state--error" data-error hidden>Nie udało się załadować listy użytkowników.</p>
+              <p class="admin-state" data-empty hidden>Nie znaleziono użytkowników.</p>
+
+              <table class="admin-table" data-table hidden>
+                <thead>
+                  <tr>
+                    <th>Użytkownik</th>
+                    <th>Rola</th>
+                    <th>Status</th>
+                    <th>Rejestracja</th>
+                    <th>Ostatnie logowanie</th>
+                    <th>Akcje</th>
+                  </tr>
+                </thead>
+                <tbody data-tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invite modal -->
+    <div class="admin-modal-backdrop" data-invite-modal hidden>
+      <div class="admin-modal" role="dialog" aria-labelledby="invite-title" aria-modal="true">
+        <h2 id="invite-title">Zaproś użytkownika</h2>
+        <div class="form-field">
+          <label for="invite-email">Adres e-mail</label>
+          <input id="invite-email" type="email" placeholder="osoba@example.com" data-invite-email />
+          <p class="admin-form-error" data-invite-error></p>
+        </div>
+        <div class="form-field">
+          <label for="invite-role">Rola</label>
+          <select id="invite-role" data-invite-role>
+            <option value="user">Użytkownik</option>
+            <option value="employee">Pracownik</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="admin-modal-footer">
+          <button class="admin-btn admin-btn--secondary" type="button" data-close-invite>Anuluj</button>
+          <button class="admin-btn admin-btn--primary" type="button" data-submit-invite>Wyślij zaproszenie</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm dialog -->
+    <div class="admin-modal-backdrop" data-confirm-modal hidden>
+      <div class="admin-modal admin-confirm-dialog" role="dialog" aria-labelledby="confirm-title" aria-modal="true">
+        <h2 id="confirm-title" data-confirm-title></h2>
+        <p data-confirm-message></p>
+        <div class="admin-modal-footer">
+          <button class="admin-btn admin-btn--secondary" type="button" data-confirm-cancel>Anuluj</button>
+          <button class="admin-btn admin-btn--danger" type="button" data-confirm-ok>Potwierdź</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

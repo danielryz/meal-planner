@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Controllers\AdminApiController;
+use App\Controllers\AdminController;
 use App\Controllers\DashboardController;
 use App\Controllers\GroceryListController;
 use App\Controllers\MealPlanController;
@@ -269,6 +271,78 @@ final class Routing
         "api/settings/preference-options" => [
             "controller" => ProfileController::class,
             "action" => "preferenceOptions",
+        ],
+        "admin-panel/login" => [
+            "controller" => AdminController::class,
+            "action" => "login",
+        ],
+        "admin-panel/dashboard" => [
+            "controller" => AdminController::class,
+            "action" => "dashboard",
+        ],
+        "admin-panel/users" => [
+            "controller" => AdminController::class,
+            "action" => "users",
+        ],
+        "admin-panel/users/{userId}" => [
+            "controller" => AdminController::class,
+            "action" => "userDetail",
+        ],
+        "admin-panel/recipe-reviews" => [
+            "controller" => AdminController::class,
+            "action" => "recipeReviews",
+        ],
+        "admin-panel/settings" => [
+            "controller" => AdminController::class,
+            "action" => "settings",
+        ],
+        "api/admin/login" => [
+            "controller" => AdminApiController::class,
+            "action" => "login",
+        ],
+        "api/admin/logout" => [
+            "controller" => AdminApiController::class,
+            "action" => "logout",
+        ],
+        "api/admin/stats" => [
+            "controller" => AdminApiController::class,
+            "action" => "stats",
+        ],
+        "api/admin/users" => [
+            "controller" => AdminApiController::class,
+            "action" => "users",
+        ],
+        "api/admin/users/invite" => [
+            "controller" => AdminApiController::class,
+            "action" => "inviteUser",
+        ],
+        "api/admin/users/{userId}" => [
+            "controller" => AdminApiController::class,
+            "action" => "userDetail",
+        ],
+        "api/admin/users/{userId}/send-password-reset" => [
+            "controller" => AdminApiController::class,
+            "action" => "sendPasswordReset",
+        ],
+        "api/admin/recipe-reviews" => [
+            "controller" => AdminApiController::class,
+            "action" => "recipeReviews",
+        ],
+        "api/admin/recipes/{recipeId}/approve" => [
+            "controller" => AdminApiController::class,
+            "action" => "approveRecipe",
+        ],
+        "api/admin/recipes/{recipeId}/request-changes" => [
+            "controller" => AdminApiController::class,
+            "action" => "requestChangesRecipe",
+        ],
+        "api/admin/recipes/{recipeId}/reject" => [
+            "controller" => AdminApiController::class,
+            "action" => "rejectRecipe",
+        ],
+        "api/admin/settings" => [
+            "controller" => AdminApiController::class,
+            "action" => "settings",
         ],
         "logout" => [
             "controller" => SecurityController::class,

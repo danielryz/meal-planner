@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Weryfikacja przepisów — Panel administracyjny';
+      $pageScripts = ['public/features/admin-panel/admin-panel-recipe-reviews.js'];
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="admin-page">
+      <div class="admin-shell">
+        <?php include 'public/features/admin-panel/admin-panel-nav.html'; ?>
+
+        <div class="admin-main" data-admin-reviews>
+          <header class="admin-topbar">
+            <h1>Weryfikacja przepisów</h1>
+          </header>
+
+          <div class="admin-content">
+            <div class="admin-stats-grid" style="margin-bottom:1.5rem">
+              <div class="admin-stat-card admin-stat-card--amber">
+                <span class="admin-stat-card__label">Oczekujące</span>
+                <strong class="admin-stat-card__value" data-stat-pending>—</strong>
+              </div>
+              <div class="admin-stat-card">
+                <span class="admin-stat-card__label">Do poprawek</span>
+                <strong class="admin-stat-card__value" data-stat-changes>—</strong>
+              </div>
+              <div class="admin-stat-card admin-stat-card--green">
+                <span class="admin-stat-card__label">Zaakceptowane</span>
+                <strong class="admin-stat-card__value" data-stat-approved>—</strong>
+              </div>
+              <div class="admin-stat-card admin-stat-card--red">
+                <span class="admin-stat-card__label">Odrzucone</span>
+                <strong class="admin-stat-card__value" data-stat-rejected>—</strong>
+              </div>
+            </div>
+
+            <p class="admin-state" data-loading>Ładowanie kolejki weryfikacji...</p>
+            <p class="admin-state admin-state--error" data-error hidden>Nie udało się załadować kolejki weryfikacji.</p>
+
+            <div class="admin-split" data-content hidden>
+              <div class="admin-split-list">
+                <div class="admin-split-list__header">
+                  <h2>Zgłoszenia</h2>
+                  <div class="admin-search" style="margin-bottom:0.5rem">
+                    <input type="search" placeholder="Szukaj po nazwie lub autorze..." data-search />
+                  </div>
+                  <select class="admin-filter-select" style="width:100%" data-filter-status>
+                    <option value="all">Wszystkie statusy</option>
+                    <option value="submitted">Oczekujące</option>
+                    <option value="changes_requested">Do poprawek</option>
+                    <option value="approved">Zaakceptowane</option>
+                    <option value="rejected">Odrzucone</option>
+                  </select>
+                </div>
+                <div class="admin-split-list__items" data-review-list>
+                  <!-- items filled by JS -->
+                </div>
+                <p class="admin-state" data-empty hidden>Nie znaleziono zgłoszeń.</p>
+              </div>
+
+              <div class="admin-split-detail" data-review-detail>
+                <div class="admin-split-detail__empty">Wybierz przepis z listy, aby zobaczyć szczegóły.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

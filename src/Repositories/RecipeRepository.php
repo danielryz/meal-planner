@@ -447,6 +447,88 @@ final class RecipeRepository extends AbstractRepository
         }
     }
 
+    public function updateDraft(int $recipeId, int $userId, array $data): bool
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT author_user_id, status FROM recipes WHERE id = :id'
+        );
+        $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row === false) {
+            return false;
+        }
+
+        if ((int) $row['author_user_id'] !== $userId) {
+            throw new \RuntimeException('forbidden');
+        }
+
+        if (!in_array($row['status'], ['draft', 'changes_requested'], true)) {
+            throw new \RuntimeException('invalid_status');
+        }
+
+        $categoryId = null;
+        if (!empty($data['categoryCode'])) {
+            $stmt = $this->connection->prepare('SELECT id FROM recipe_categories WHERE code = :code');
+            $stmt->bindValue(':code', $data['categoryCode']);
+            $stmt->execute();
+            $id = $stmt->fetchColumn();
+            $categoryId = $id !== false ? (int) $id : null;
+        }
+
+        $this->connection->beginTransaction();
+
+        try {
+            $stmt = $this->connection->prepare(
+                "UPDATE recipes
+                 SET title = :title, description = :description, category_id = :category_id,
+                     difficulty = :difficulty, prep_time_minutes = :prep_time,
+                     servings = :servings, video_url = :video_url,
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE id = :id"
+            );
+            $stmt->bindValue(':title', $data['title']);
+            $stmt->bindValue(':description', $data['description']);
+            $stmt->bindValue(':category_id', $categoryId, $categoryId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+            $stmt->bindValue(':difficulty', $data['difficulty'] ?? 'easy');
+            $stmt->bindValue(':prep_time', (int) ($data['prepTimeMinutes'] ?? 30), PDO::PARAM_INT);
+            $stmt->bindValue(':servings', (int) ($data['servings'] ?? 2), PDO::PARAM_INT);
+            $stmt->bindValue(':video_url', $data['videoUrl'] ?? null);
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $stmt = $this->connection->prepare('DELETE FROM recipe_ingredients WHERE recipe_id = :id');
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            foreach ($data['ingredients'] ?? [] as $i => $ingredient) {
+                $this->addIngredient(
+                    $recipeId,
+                    $i + 1,
+                    (string) ($ingredient['name'] ?? ''),
+                    (string) ($ingredient['amount'] ?? ''),
+                    isset($ingredient['note']) ? (string) $ingredient['note'] : null
+                );
+            }
+
+            $stmt = $this->connection->prepare('DELETE FROM recipe_steps WHERE recipe_id = :id');
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            foreach ($data['steps'] ?? [] as $i => $step) {
+                $this->addStep($recipeId, $i + 1, (string) ($step['instruction'] ?? ''));
+            }
+
+            $this->connection->commit();
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
     public function submitForReview(int $recipeId, int $userId): bool
     {
         $stmt = $this->connection->prepare(

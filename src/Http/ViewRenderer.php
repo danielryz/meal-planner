@@ -33,6 +33,12 @@ final class ViewRenderer
         'settings' => 'public/features/profile/settings.html',
         'notification-settings' => 'public/features/profile/notification-settings.html',
         'preferences' => 'public/features/profile/preferences.html',
+        'admin-panel-login'           => 'public/features/admin-panel/admin-panel-login.html',
+        'admin-panel-dashboard'       => 'public/features/admin-panel/admin-panel-dashboard.html',
+        'admin-panel-users'           => 'public/features/admin-panel/admin-panel-users.html',
+        'admin-panel-user-detail'     => 'public/features/admin-panel/admin-panel-user-detail.html',
+        'admin-panel-recipe-reviews'  => 'public/features/admin-panel/admin-panel-recipe-reviews.html',
+        'admin-panel-settings'        => 'public/features/admin-panel/admin-panel-settings.html',
     ];
 
     public function __construct(private readonly string $projectRoot)

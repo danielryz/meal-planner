@@ -38,6 +38,11 @@ abstract class AppController
         return $this->request->isPatch();
     }
 
+    protected function isPut(): bool
+    {
+        return $this->request->isPut();
+    }
+
     protected function isDelete(): bool
     {
         return $this->request->isDelete();

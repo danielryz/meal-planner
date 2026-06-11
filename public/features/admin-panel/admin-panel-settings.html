@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Ustawienia aplikacji — Panel administracyjny';
+      $pageScripts = ['public/features/admin-panel/admin-panel-settings.js'];
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="admin-page">
+      <div class="admin-shell">
+        <?php include 'public/features/admin-panel/admin-panel-nav.html'; ?>
+
+        <div class="admin-main" data-admin-settings>
+          <header class="admin-topbar">
+            <h1>Ustawienia aplikacji</h1>
+          </header>
+
+          <div class="admin-content">
+            <p class="admin-state" data-loading>Ładowanie ustawień...</p>
+            <p class="admin-state admin-state--error" data-error hidden>Nie udało się załadować ustawień aplikacji.</p>
+
+            <div data-content hidden>
+              <form class="admin-settings-form" novalidate>
+
+                <!-- Media -->
+                <div class="admin-section" style="margin-bottom:1.5rem">
+                  <div class="admin-section__header">
+                    <h2>Media</h2>
+                  </div>
+                  <div class="admin-section__body">
+                    <div class="form-row">
+                      <div>
+                        <label for="media-limit">Limit zdjęcia (MB)</label>
+                        <input id="media-limit" type="number" min="1" max="100" data-field="mediaLimitMb" />
+                      </div>
+                      <div>
+                        <label for="video-limit">Limit wideo (MB)</label>
+                        <input id="video-limit" type="number" min="1" max="2000" data-field="videoLimitMb" />
+                      </div>
+                    </div>
+                    <button class="admin-btn admin-btn--primary" type="button" data-save="media">Zapisz ustawienia mediów</button>
+                  </div>
+                </div>
+
+                <!-- Session -->
+                <div class="admin-section" style="margin-bottom:1.5rem">
+                  <div class="admin-section__header">
+                    <h2>Sesja</h2>
+                  </div>
+                  <div class="admin-section__body">
+                    <div class="form-row">
+                      <div>
+                        <label for="session-ttl">Czas sesji (godziny)</label>
+                        <input id="session-ttl" type="number" min="1" max="720" data-field="sessionTtlHours" />
+                      </div>
+                      <div>
+                        <label for="remember-me">Zapamiętaj mnie (dni)</label>
+                        <input id="remember-me" type="number" min="1" max="365" data-field="rememberMeDays" />
+                      </div>
+                    </div>
+                    <button class="admin-btn admin-btn--primary" type="button" data-save="session">Zapisz ustawienia sesji</button>
+                  </div>
+                </div>
+
+                <!-- Public data -->
+                <div class="admin-section" style="margin-bottom:1.5rem">
+                  <div class="admin-section__header">
+                    <h2>Dane publiczne</h2>
+                  </div>
+                  <div class="admin-section__body">
+                    <div class="form-row">
+                      <div>
+                        <label for="app-name">Nazwa aplikacji</label>
+                        <input id="app-name" type="text" maxlength="80" data-field="appName" />
+                      </div>
+                      <div>
+                        <label for="contact-email">E-mail kontaktowy</label>
+                        <input id="contact-email" type="email" data-field="contactEmail" />
+                      </div>
+                    </div>
+                    <div style="margin-bottom:1rem">
+                      <label for="app-tagline">Tagline</label>
+                      <input id="app-tagline" type="text" maxlength="120" data-field="tagline" />
+                    </div>
+                    <button class="admin-btn admin-btn--primary" type="button" data-save="public">Zapisz dane publiczne</button>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

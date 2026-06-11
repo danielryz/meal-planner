@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Dashboard — Panel administracyjny';
+      $pageScripts = ['public/features/admin-panel/admin-panel-dashboard.js'];
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="admin-page">
+      <div class="admin-shell">
+        <?php include 'public/features/admin-panel/admin-panel-nav.html'; ?>
+
+        <div class="admin-main" data-admin-dashboard>
+          <header class="admin-topbar">
+            <h1>Przegląd systemu</h1>
+            <div class="admin-topbar__actions">
+              <span data-admin-current-date style="font-size:0.875rem;color:#6b7280"></span>
+            </div>
+          </header>
+
+          <div class="admin-content">
+            <p class="admin-state" data-admin-loading>Ładowanie statystyk...</p>
+            <p class="admin-state admin-state--error" data-admin-error hidden>Nie udało się załadować statystyk systemu.</p>
+
+            <div data-admin-content hidden>
+              <section aria-label="Statystyki użytkowników">
+                <h2 style="font-size:0.875rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem">Użytkownicy</h2>
+                <div class="admin-stats-grid">
+                  <div class="admin-stat-card admin-stat-card--blue">
+                    <span class="admin-stat-card__label">Aktywni</span>
+                    <strong class="admin-stat-card__value" data-stat-users-active>—</strong>
+                  </div>
+                  <div class="admin-stat-card admin-stat-card--amber">
+                    <span class="admin-stat-card__label">Oczekujący</span>
+                    <strong class="admin-stat-card__value" data-stat-users-pending>—</strong>
+                  </div>
+                  <div class="admin-stat-card admin-stat-card--red">
+                    <span class="admin-stat-card__label">Zawieszeni</span>
+                    <strong class="admin-stat-card__value" data-stat-users-suspended>—</strong>
+                  </div>
+                  <div class="admin-stat-card">
+                    <span class="admin-stat-card__label">Wszyscy</span>
+                    <strong class="admin-stat-card__value" data-stat-users-total>—</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section aria-label="Statystyki przepisów" style="margin-top:2rem">
+                <h2 style="font-size:0.875rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem">Przepisy i plany</h2>
+                <div class="admin-stats-grid">
+                  <div class="admin-stat-card admin-stat-card--green">
+                    <span class="admin-stat-card__label">Publiczne przepisy</span>
+                    <strong class="admin-stat-card__value" data-stat-recipes-public>—</strong>
+                  </div>
+                  <div class="admin-stat-card admin-stat-card--amber">
+                    <span class="admin-stat-card__label">Oczekują na weryfikację</span>
+                    <strong class="admin-stat-card__value" data-stat-recipes-pending>—</strong>
+                    <span class="admin-stat-card__sub"><a href="/admin-panel/recipe-reviews" style="color:inherit">Przejdź do kolejki →</a></span>
+                  </div>
+                  <div class="admin-stat-card admin-stat-card--blue">
+                    <span class="admin-stat-card__label">Aktywne plany</span>
+                    <strong class="admin-stat-card__value" data-stat-plans>—</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section style="margin-top:2rem">
+                <div class="admin-section">
+                  <div class="admin-section__header">
+                    <h2>Ostatnie zdarzenia moderacyjne</h2>
+                  </div>
+                  <div class="admin-section__body">
+                    <ul class="admin-events-list" data-admin-events>
+                      <li class="admin-state" style="padding:1rem 0">Brak zdarzeń.</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -66,6 +66,10 @@ final class RecipeController extends AppController
             return $this->handleDeleteDraft();
         }
 
+        if ($this->isPut()) {
+            return $this->handleUpdateDraft();
+        }
+
         $recipeId = (int) $this->request->routeParam('recipeId');
         $userId   = $this->sessions->currentUser()->id();
 
@@ -170,6 +174,83 @@ final class RecipeController extends AppController
         ], $rows);
 
         return Response::json(['recipes' => $recipes]);
+    }
+
+    private function handleUpdateDraft(): Response
+    {
+        $recipeId    = (int) $this->request->routeParam('recipeId');
+        $title       = trim((string) $this->request->input('title', ''));
+        $description = trim((string) $this->request->input('description', ''));
+        $ingredients = $this->request->input('ingredients', []);
+        $steps       = $this->request->input('steps', []);
+
+        if (strlen($title) < 3) {
+            return $this->jsonError('Tytuł musi mieć co najmniej 3 znaki.');
+        }
+        if (strlen($description) < 20) {
+            return $this->jsonError('Opis musi mieć co najmniej 20 znaków.');
+        }
+        if (empty($ingredients) || !is_array($ingredients)) {
+            return $this->jsonError('Przepis musi mieć co najmniej jeden składnik.');
+        }
+        if (empty($steps) || !is_array($steps)) {
+            return $this->jsonError('Przepis musi mieć co najmniej jeden krok.');
+        }
+
+        $rawVideoUrl = $this->request->input('videoUrl');
+        $videoUrl    = null;
+        if ($rawVideoUrl !== null) {
+            $trimmed  = trim((string) $rawVideoUrl);
+            $videoUrl = filter_var($trimmed, FILTER_VALIDATE_URL) !== false ? $trimmed : null;
+        }
+
+        $userId = $this->sessions->currentUser()->id();
+        $db     = new Database();
+        $repo   = new RecipeRepository($db->connection());
+
+        try {
+            $found = $repo->updateDraft($recipeId, $userId, [
+                'title'           => $title,
+                'description'     => $description,
+                'categoryCode'    => (string) $this->request->input('categoryCode', ''),
+                'difficulty'      => (string) $this->request->input('difficulty', 'easy'),
+                'prepTimeMinutes' => (int) $this->request->input('prepTimeMinutes', 30),
+                'servings'        => (int) $this->request->input('servings', 2),
+                'ingredients'     => $ingredients,
+                'steps'           => $steps,
+                'videoUrl'        => $videoUrl,
+            ]);
+        } catch (\RuntimeException $e) {
+            return match ($e->getMessage()) {
+                'forbidden'      => $this->jsonError('Brak dostępu do tego przepisu.', 403),
+                'invalid_status' => $this->jsonError('Można edytować tylko szkice i przepisy do poprawy.', 409),
+                default          => $this->jsonError('Błąd serwera.', 500),
+            };
+        }
+
+        if (!$found) {
+            return $this->jsonError('Przepis nie istnieje.', 404);
+        }
+
+        $mediaRepo = new MediaRepository($db->connection());
+
+        $mediaId = $this->request->input('mediaId');
+        if ($mediaId !== null) {
+            $mediaId = (int) $mediaId;
+            if ($mediaRepo->belongsToUser($mediaId, $userId)) {
+                $mediaRepo->addRecipeMainPhoto($recipeId, $mediaId);
+            }
+        }
+
+        $videoMediaId = $this->request->input('videoMediaId');
+        if ($videoMediaId !== null) {
+            $videoMediaId = (int) $videoMediaId;
+            if ($mediaRepo->belongsToUser($videoMediaId, $userId)) {
+                $mediaRepo->addRecipeMainVideo($recipeId, $videoMediaId);
+            }
+        }
+
+        return Response::json(['recipeId' => $recipeId]);
     }
 
     private function handleDeleteDraft(): Response

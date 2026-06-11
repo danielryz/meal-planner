@@ -1,0 +1,46 @@
+<aside class="admin-sidebar" aria-label="Nawigacja panelu administracyjnego">
+  <div class="admin-sidebar__brand">
+    <img src="/public/assets/icons/logo.svg" alt="MealPlanner" />
+    <span>MealPlanner</span>
+    <span class="admin-sidebar__badge">Admin</span>
+  </div>
+
+  <nav class="admin-nav" aria-label="Menu admina">
+    <span class="admin-nav__section-label">Zarządzanie</span>
+
+    <a class="admin-nav__link <?= ($activeSection ?? '') === 'dashboard' ? 'is-active' : '' ?>" href="/admin-panel/dashboard">
+      <img src="/public/assets/icons/calendar.svg" alt="" />
+      <span>Dashboard</span>
+    </a>
+
+    <a class="admin-nav__link <?= ($activeSection ?? '') === 'users' ? 'is-active' : '' ?>" href="/admin-panel/users">
+      <img src="/public/assets/icons/profile.svg" alt="" />
+      <span>Użytkownicy</span>
+    </a>
+
+    <a class="admin-nav__link <?= ($activeSection ?? '') === 'recipe-reviews' ? 'is-active' : '' ?>" href="/admin-panel/recipe-reviews">
+      <img src="/public/assets/icons/recipes.svg" alt="" />
+      <span>Weryfikacja przepisów</span>
+    </a>
+
+    <a class="admin-nav__link <?= ($activeSection ?? '') === 'settings' ? 'is-active' : '' ?>" href="/admin-panel/settings">
+      <img src="/public/assets/icons/settings.svg" alt="" />
+      <span>Ustawienia</span>
+    </a>
+
+    <span class="admin-nav__section-label" style="margin-top:0.5rem">Aplikacja</span>
+
+    <a class="admin-nav__link" href="/dashboard">
+      <img src="/public/assets/icons/home.svg" alt="" />
+      <span>Wróć do aplikacji</span>
+    </a>
+  </nav>
+
+  <div class="admin-sidebar__user">
+    <span class="admin-sidebar__user-name"><?= htmlspecialchars($adminUserName ?? '') ?></span>
+    <span class="admin-sidebar__user-role"><?= htmlspecialchars($adminUserRole ?? '') ?></span>
+    <button class="admin-sidebar__logout" type="button" data-admin-logout>
+      Wyloguj się
+    </button>
+  </div>
+</aside>

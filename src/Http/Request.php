@@ -71,6 +71,11 @@ final class Request
         return $this->method() === 'PATCH';
     }
 
+    public function isPut(): bool
+    {
+        return $this->method() === 'PUT';
+    }
+
     public function isDelete(): bool
     {
         return $this->method() === 'DELETE';

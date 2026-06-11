@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Logowanie — Panel administracyjny';
+      $pageScripts = ['public/features/admin-panel/admin-panel-login.js'];
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="admin-login-page">
+      <main class="admin-login-shell">
+        <div class="admin-login-card">
+          <div class="admin-login-logo">
+            <img src="/public/assets/icons/logo.svg" alt="" />
+            <span>MealPlanner</span>
+          </div>
+
+          <span class="admin-login-badge">Panel administracyjny</span>
+          <h1>Zaloguj się</h1>
+          <p>Dostęp tylko dla właścicieli i administratorów.</p>
+
+          <form class="admin-login-form" novalidate data-admin-login-form>
+            <input type="hidden" name="csrfToken" value="<?= htmlspecialchars($csrfToken ?? '') ?>" />
+
+            <div class="form-field">
+              <label for="admin-email">Adres e-mail</label>
+              <input
+                id="admin-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="admin@example.com"
+                required
+              />
+              <p class="admin-form-error" data-error-email aria-live="polite"></p>
+            </div>
+
+            <div class="form-field">
+              <label for="admin-password">Hasło</label>
+              <input
+                id="admin-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Wpisz hasło"
+                required
+              />
+              <p class="admin-form-error" data-error-password aria-live="polite"></p>
+            </div>
+
+            <button class="admin-login-submit" type="submit" data-admin-login-submit>
+              Zaloguj się do panelu
+            </button>
+          </form>
+
+          <div class="admin-login-footer">
+            <a href="/login">← Powrót do logowania użytkownika</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

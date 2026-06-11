@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Szczegóły użytkownika — Panel administracyjny';
+      $pageScripts = ['public/features/admin-panel/admin-panel-user-detail.js'];
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+  </head>
+  <body>
+    <div class="admin-page">
+      <div class="admin-shell">
+        <?php include 'public/features/admin-panel/admin-panel-nav.html'; ?>
+
+        <div class="admin-main" data-admin-user-detail data-user-id="<?= (int) ($userId ?? 0) ?>">
+          <header class="admin-topbar">
+            <h1>Szczegóły użytkownika</h1>
+            <div class="admin-topbar__actions">
+              <a class="admin-btn admin-btn--secondary" href="/admin-panel/users">← Wróć do listy</a>
+            </div>
+          </header>
+
+          <div class="admin-content">
+            <p class="admin-state" data-loading>Ładowanie danych użytkownika...</p>
+            <p class="admin-state admin-state--error" data-error hidden>Nie udało się załadować danych użytkownika.</p>
+
+            <div data-content hidden>
+              <nav class="admin-breadcrumb">
+                <a href="/admin-panel/users">Użytkownicy</a>
+                <span class="admin-breadcrumb__sep">›</span>
+                <span data-user-name>...</span>
+              </nav>
+
+              <div class="admin-user-detail-grid">
+                <!-- Account info -->
+                <div class="admin-section">
+                  <div class="admin-section__header">
+                    <h2>Dane konta</h2>
+                    <span class="admin-badge" data-user-status-badge></span>
+                  </div>
+                  <div class="admin-section__body">
+                    <dl class="admin-detail-dl">
+                      <div>
+                        <dt>Imię i nazwisko</dt>
+                        <dd data-user-display-name>—</dd>
+                      </div>
+                      <div>
+                        <dt>E-mail</dt>
+                        <dd data-user-email>—</dd>
+                      </div>
+                      <div>
+                        <dt>Rola</dt>
+                        <dd>
+                          <select class="admin-role-select" data-user-role-select>
+                            <option value="user">Użytkownik</option>
+                            <option value="employee">Pracownik</option>
+                            <option value="admin">Admin</option>
+                            <option value="owner">Właściciel</option>
+                          </select>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Status</dt>
+                        <dd data-user-status-text>—</dd>
+                      </div>
+                      <div>
+                        <dt>Data rejestracji</dt>
+                        <dd data-user-created-at>—</dd>
+                      </div>
+                      <div>
+                        <dt>Ostatnie logowanie</dt>
+                        <dd data-user-last-login>—</dd>
+                      </div>
+                    </dl>
+
+                    <div style="display:flex;gap:0.625rem;margin-top:1.25rem;flex-wrap:wrap">
+                      <button class="admin-btn admin-btn--primary" type="button" data-save-role>Zapisz rolę</button>
+                      <button class="admin-btn admin-btn--danger" type="button" data-suspend-btn>Zawieś konto</button>
+                      <button class="admin-btn admin-btn--success" type="button" data-restore-btn hidden>Przywróć konto</button>
+                      <button class="admin-btn admin-btn--secondary" type="button" data-send-reset>Wyślij reset hasła</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="admin-section">
+                  <div class="admin-section__header">
+                    <h2>Statystyki</h2>
+                  </div>
+                  <div class="admin-section__body">
+                    <div class="admin-stats-grid">
+                      <div class="admin-stat-card">
+                        <span class="admin-stat-card__label">Przepisy</span>
+                        <strong class="admin-stat-card__value" data-stat-recipes>—</strong>
+                      </div>
+                      <div class="admin-stat-card">
+                        <span class="admin-stat-card__label">Plany</span>
+                        <strong class="admin-stat-card__value" data-stat-plans>—</strong>
+                      </div>
+                      <div class="admin-stat-card">
+                        <span class="admin-stat-card__label">Ulubione</span>
+                        <strong class="admin-stat-card__value" data-stat-favorites>—</strong>
+                      </div>
+                      <div class="admin-stat-card">
+                        <span class="admin-stat-card__label">Oceny</span>
+                        <strong class="admin-stat-card__value" data-stat-reviews>—</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Activity -->
+                <div class="admin-section">
+                  <div class="admin-section__header">
+                    <h2>Historia aktywności</h2>
+                  </div>
+                  <div class="admin-section__body">
+                    <ul class="admin-activity-list" data-activity-list>
+                      <li class="admin-state" style="padding:0.5rem 0">Brak aktywności.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm dialog -->
+    <div class="admin-modal-backdrop" data-confirm-modal hidden>
+      <div class="admin-modal admin-confirm-dialog" role="dialog" aria-labelledby="confirm-title-detail" aria-modal="true">
+        <h2 id="confirm-title-detail" data-confirm-title></h2>
+        <p data-confirm-message></p>
+        <div class="admin-modal-footer">
+          <button class="admin-btn admin-btn--secondary" type="button" data-confirm-cancel>Anuluj</button>
+          <button class="admin-btn admin-btn--danger" type="button" data-confirm-ok>Potwierdź</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
