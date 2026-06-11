@@ -122,7 +122,7 @@ final class RecipeRepository extends AbstractRepository
 
         $stmt = $this->connection->prepare(
             "SELECT r.id, r.author_user_id, r.category_id, r.title, r.description, r.difficulty, r.prep_time_minutes, r.servings,
-                r.status, r.visibility,
+                r.status, r.visibility, r.video_url,
                 rc.code AS category_code, rc.label AS category_label,
                 up.display_name AS author_name,
                 rn.calories, rn.protein_grams, rn.fat_grams, rn.carbohydrates_grams, rn.fiber_grams,

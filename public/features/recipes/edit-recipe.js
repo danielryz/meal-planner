@@ -266,7 +266,7 @@
       const opts   = await optRes.json();
       const recipe = await recipeRes.json();
 
-      fillSelect(categorySelect, opts.categories, recipe.category ? opts.categories.find((c) => c.label === recipe.category)?.id ?? "" : "");
+      fillSelect(categorySelect, opts.categories, recipe.categoryCode ?? "");
       fillSelect(difficultySelect, opts.difficulties, recipe.difficulty ?? "easy");
 
       titleInput.value       = recipe.title ?? "";
@@ -354,7 +354,7 @@
       const updateData = await updateRes.json();
 
       if (!updateRes.ok) {
-        showMessage(updateData.error ?? "Wystąpił błąd podczas zapisu.");
+        window.toast?.error(updateData.error ?? "Wystąpił błąd podczas zapisu.");
         return;
       }
 
@@ -365,7 +365,7 @@
         });
 
         if (!reviewRes.ok) {
-          showMessage("Przepis zapisany, ale nie udało się wysłać do weryfikacji.");
+          window.toast?.error("Przepis zapisany, ale nie udało się wysłać do weryfikacji.");
           return;
         }
 
@@ -376,7 +376,7 @@
 
       window.location.href = "/recipe-management";
     } catch {
-      showMessage("Błąd połączenia z serwerem.");
+      window.toast?.error("Błąd połączenia z serwerem.");
     }
   });
 
