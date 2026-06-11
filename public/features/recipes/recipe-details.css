@@ -681,3 +681,99 @@
   display: flex;
   gap: 10px;
 }
+
+/* Rating section */
+.recipe-rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid rgba(60, 190, 64, 0.1);
+  border-radius: 32px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  padding: 20px 24px;
+}
+
+.recipe-rating[hidden] { display: none; }
+
+.recipe-rating__average {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recipe-rating__stars-row {
+  display: flex;
+  gap: 1px;
+  font-size: 1.375rem;
+  color: #f59e0b;
+}
+
+.recipe-rating__avg-value {
+  font-size: 1.375rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.recipe-rating__avg-count {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.recipe-rating__sep {
+  width: 1px;
+  height: 36px;
+  background: #e2e8f0;
+}
+
+.recipe-rating__user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.recipe-rating__user-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.recipe-rating__input {
+  display: flex;
+  gap: 2px;
+}
+
+.recipe-rating__star {
+  background: none;
+  border: none;
+  font-size: 1.625rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 2px 3px;
+  line-height: 1;
+  transition: color 0.1s, transform 0.1s;
+}
+
+.recipe-rating__star.is-filled { color: #f59e0b; }
+.recipe-rating__star.is-hover  { color: #fbbf24; transform: scale(1.18); }
+
+.recipe-rating__clear {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 12px;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.recipe-rating__clear:hover {
+  border-color: var(--color-danger, #ef4444);
+  color: var(--color-danger, #ef4444);
+}

@@ -63,6 +63,20 @@
               </article>
             </section>
 
+            <section class="recipe-rating" data-rating-section hidden aria-label="Oceny przepisu">
+              <div class="recipe-rating__average">
+                <div class="recipe-rating__stars-row" data-rating-avg-stars></div>
+                <span class="recipe-rating__avg-value" data-rating-avg-value>—</span>
+                <span class="recipe-rating__avg-count" data-rating-avg-count></span>
+              </div>
+              <div class="recipe-rating__sep" data-rating-sep aria-hidden="true" hidden></div>
+              <div class="recipe-rating__user" data-rating-user hidden>
+                <span class="recipe-rating__user-label">Twoja ocena:</span>
+                <div class="recipe-rating__input" data-rating-stars role="group" aria-label="Oceń od 1 do 5 gwiazdek"></div>
+                <button class="recipe-rating__clear" type="button" data-rating-clear hidden>Usuń ocenę</button>
+              </div>
+            </section>
+
             <div class="recipe-detail-grid">
               <section class="recipe-panel recipe-ingredients" aria-labelledby="recipe-ingredients-title">
                 <div class="recipe-panel__header">

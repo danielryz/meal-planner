@@ -26,6 +26,15 @@
   const addToPlanBtn     = view.querySelector("[data-add-to-plan]");
   const addToGroceryBtn  = view.querySelector("[data-add-to-grocery]");
 
+  const ratingSection  = view.querySelector("[data-rating-section]");
+  const ratingAvgStars = view.querySelector("[data-rating-avg-stars]");
+  const ratingAvgValue = view.querySelector("[data-rating-avg-value]");
+  const ratingAvgCount = view.querySelector("[data-rating-avg-count]");
+  const ratingSep      = view.querySelector("[data-rating-sep]");
+  const ratingUser     = view.querySelector("[data-rating-user]");
+  const ratingStars    = view.querySelector("[data-rating-stars]");
+  const ratingClear    = view.querySelector("[data-rating-clear]");
+
   const planDialog       = document.querySelector("[data-plan-dialog]");
   const planDay          = planDialog?.querySelector("[data-plan-day]");
   const planMealType     = planDialog?.querySelector("[data-plan-meal-type]");
@@ -38,6 +47,7 @@
   let baseServings    = 1;
   let currentServings = 1;
   let groceryListId   = null;
+  let userRating      = null;
 
   const NUTRITION_LABELS = {
     calories: 'Kalorie', protein: 'Białko', fat: 'Tłuszcz',
@@ -160,6 +170,99 @@
     relatedSection.hidden = false;
   }
 
+  function ratingLabel(n) {
+    if (n === 1) return 'ocena';
+    if (n < 5)   return 'oceny';
+    return 'ocen';
+  }
+
+  function buildAvgStars(avg) {
+    const rounded = Math.round(avg ?? 0);
+    return [1, 2, 3, 4, 5]
+      .map(i => `<span aria-hidden="true">${i <= rounded ? '★' : '☆'}</span>`)
+      .join('');
+  }
+
+  function updateAvgDisplay(average, count) {
+    if (ratingAvgStars) ratingAvgStars.innerHTML = buildAvgStars(average);
+    if (ratingAvgValue) ratingAvgValue.textContent = count > 0 ? String(average ?? '—') : '—';
+    if (ratingAvgCount) ratingAvgCount.textContent = count > 0
+      ? `(${count} ${ratingLabel(count)})`
+      : 'Brak ocen';
+  }
+
+  function renderInputStars(current) {
+    if (!ratingStars) return;
+    ratingStars.innerHTML = [1, 2, 3, 4, 5]
+      .map(i => `<button type="button" class="recipe-rating__star${i <= (current ?? 0) ? ' is-filled' : ''}"
+        data-score="${i}" aria-label="Oceń na ${i} gwiazdek">★</button>`)
+      .join('');
+    if (ratingClear) ratingClear.hidden = current === null;
+  }
+
+  function renderRating(data) {
+    if (!ratingSection) return;
+    userRating = data.userRating ?? null;
+    updateAvgDisplay(data.averageRating, data.ratingCount ?? 0);
+    if (isAuthenticated && ratingUser) {
+      renderInputStars(userRating);
+      if (ratingSep) ratingSep.hidden = false;
+      ratingUser.hidden = false;
+    }
+    ratingSection.hidden = false;
+  }
+
+  async function submitRating(score) {
+    try {
+      const res = await fetch(`/api/recipes/${recipeId}/rating`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ score }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      userRating = score;
+      renderInputStars(score);
+      if (data.stats) updateAvgDisplay(data.stats.average, data.stats.count ?? 0);
+      window.toast?.success('Ocena zapisana.');
+    } catch {
+      window.toast?.error('Nie udało się zapisać oceny.');
+    }
+  }
+
+  async function clearRating() {
+    try {
+      const res = await fetch(`/api/recipes/${recipeId}/rating`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      userRating = null;
+      renderInputStars(null);
+      window.toast?.info('Ocena usunięta.');
+    } catch {
+      window.toast?.error('Nie udało się usunąć oceny.');
+    }
+  }
+
+  ratingStars?.addEventListener('mouseover', (e) => {
+    const btn = e.target.closest('[data-score]');
+    if (!btn) return;
+    const hovered = Number(btn.dataset.score);
+    ratingStars.querySelectorAll('[data-score]').forEach(s =>
+      s.classList.toggle('is-hover', Number(s.dataset.score) <= hovered)
+    );
+  });
+
+  ratingStars?.addEventListener('mouseleave', () => {
+    ratingStars.querySelectorAll('[data-score]').forEach(s => s.classList.remove('is-hover'));
+  });
+
+  ratingStars?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-score]');
+    if (!btn) return;
+    submitRating(Number(btn.dataset.score));
+  });
+
+  ratingClear?.addEventListener('click', clearRating);
+
   function renderRecipe(data) {
     recipe          = data;
     baseServings    = data.servings || 1;
@@ -183,6 +286,7 @@
     renderNutrition(data.nutrition);
     renderSteps(data.steps);
     renderRelated(data.related);
+    renderRating(data);
 
     if (data.tip && chefTip && tipSection) {
       chefTip.textContent = data.tip;
