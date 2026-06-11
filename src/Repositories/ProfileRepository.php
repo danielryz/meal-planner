@@ -25,7 +25,7 @@ final class ProfileRepository extends AbstractRepository
                 up.is_public,
                 uas.password_changed_at,
                 (SELECT COUNT(*) FROM favorite_recipes fr WHERE fr.user_id = u.id) AS favorite_recipes_count,
-                (SELECT COUNT(*) FROM recipes rec WHERE rec.author_id = u.id) AS own_recipes_count
+                (SELECT COUNT(*) FROM recipes rec WHERE rec.author_user_id = u.id) AS own_recipes_count
             FROM users u
             JOIN roles r ON r.id = u.role_id
             JOIN user_profiles up ON up.user_id = u.id
@@ -63,7 +63,7 @@ final class ProfileRepository extends AbstractRepository
         $stmt = $this->connection->prepare(
             'SELECT id, title, slug, status, created_at
              FROM recipes
-             WHERE author_id = :user_id
+             WHERE author_user_id = :user_id
              ORDER BY created_at DESC
              LIMIT 50'
         );
