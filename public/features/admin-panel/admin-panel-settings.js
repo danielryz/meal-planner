@@ -16,6 +16,12 @@
   function fillForm(data) {
     settings = data;
     for (const [key, val] of Object.entries(data)) {
+      if (key === "allowedInviteRoles" && Array.isArray(val)) {
+        view.querySelectorAll("[data-role-invite]").forEach(cb => {
+          cb.checked = val.includes(cb.dataset.roleInvite);
+        });
+        continue;
+      }
       const el = getField(key);
       if (el) el.value = val;
     }
@@ -32,8 +38,16 @@
     return payload;
   }
 
+  function collectRoles() {
+    const checked = [];
+    view.querySelectorAll("[data-role-invite]:checked").forEach(cb => {
+      checked.push(cb.dataset.roleInvite);
+    });
+    return { allowedInviteRoles: checked };
+  }
+
   async function save(group, keys) {
-    const payload = collectGroup(keys);
+    const payload = group === "roles" ? collectRoles() : collectGroup(keys);
     try {
       const res = await fetch("/api/admin/settings", {
         method: "POST",
@@ -44,6 +58,7 @@
       if (res.ok) {
         const messages = {
           media:   "Ustawienia mediów zapisane.",
+          roles:   "Ustawienia ról zapisane.",
           session: "Parametry sesji zapisane.",
           public:  "Dane publiczne aplikacji zaktualizowane.",
         };

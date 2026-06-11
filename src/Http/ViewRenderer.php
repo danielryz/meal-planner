@@ -25,6 +25,7 @@ final class ViewRenderer
         'recipes' => 'public/features/recipes/recipes.html',
         'recipe-details' => 'public/features/recipes/recipe-details.html',
         'add-recipe' => 'public/features/recipes/add-recipe.html',
+        'edit-recipe' => 'public/features/recipes/edit-recipe.html',
         'recipe-reviews' => 'public/features/recipes/recipe-reviews.html',
         'recipe-management' => 'public/features/recipes/recipe-management.html',
         'grocery-list' => 'public/features/grocery-list/grocery-list.html',

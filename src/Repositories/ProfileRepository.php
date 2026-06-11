@@ -40,6 +40,52 @@ final class ProfileRepository extends AbstractRepository
         return $row !== false ? $row : null;
     }
 
+    public function findFavoritesByUserId(int $userId): array
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT r.id, r.title, r.slug, r.status, r.created_at,
+                    up.display_name AS author_name
+             FROM favorite_recipes fr
+             JOIN recipes r ON r.id = fr.recipe_id
+             JOIN users u ON u.id = r.author_id
+             JOIN user_profiles up ON up.user_id = u.id
+             WHERE fr.user_id = :user_id
+             ORDER BY fr.created_at DESC
+             LIMIT 50'
+        );
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findRecipesByUserId(int $userId): array
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT id, title, slug, status, created_at
+             FROM recipes
+             WHERE author_id = :user_id
+             ORDER BY created_at DESC
+             LIMIT 50'
+        );
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findActivityByUserId(int $userId): array
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT event_type, metadata, created_at
+             FROM user_activity_events
+             WHERE user_id = :user_id
+             ORDER BY created_at DESC
+             LIMIT 20'
+        );
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function updateDisplayName(int $userId, string $displayName): void
     {
         $stmt = $this->connection->prepare(

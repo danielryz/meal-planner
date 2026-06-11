@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Auth\CsrfTokenManager;
 use App\Auth\SessionManager;
+use App\Database\Database;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\ViewRenderer;
@@ -60,15 +61,28 @@ abstract class AppController
 
     protected function requireLogin(): ?Response
     {
-        if ($this->sessions->isLoggedIn()) {
-            return null;
+        if (!$this->sessions->isLoggedIn()) {
+            if (str_starts_with($this->request->path(), 'api/')) {
+                return Response::json(['error' => 'Wymagane logowanie.'], 401);
+            }
+            return $this->redirect('/login');
         }
 
-        if (str_starts_with($this->request->path(), 'api/')) {
-            return Response::json(['error' => 'Wymagane logowanie.'], 401);
+        $userId = $this->sessions->currentUser()->id();
+        $db     = new Database();
+        $stmt   = $db->connection()->prepare('SELECT is_active FROM users WHERE id = :id');
+        $stmt->execute([':id' => $userId]);
+        $isActive = $stmt->fetchColumn();
+
+        if ($isActive === false || !(bool) $isActive) {
+            $this->sessions->logout();
+            if (str_starts_with($this->request->path(), 'api/')) {
+                return Response::json(['error' => 'Konto zostało zawieszone.', 'code' => 'ACCOUNT_SUSPENDED'], 403);
+            }
+            return $this->redirect('/login?suspended=1');
         }
 
-        return $this->redirect('/login');
+        return null;
     }
 
     protected function requireVerified(): ?Response

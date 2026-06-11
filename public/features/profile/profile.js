@@ -22,6 +22,23 @@
   const detailsEl    = view.querySelector("[data-profile-details]");
   const activityEl   = view.querySelector("[data-profile-activity]");
 
+  const eventLabels = {
+    login:              "Logowanie",
+    logout:             "Wylogowanie",
+    login_failed:       "Nieudana próba logowania",
+    password_changed:   "Zmiana hasła",
+    email_changed:      "Zmiana adresu e-mail",
+    profile_updated:    "Aktualizacja profilu",
+    avatar_uploaded:    "Upload avatara",
+    avatar_deleted:     "Usunięcie avatara",
+    recipe_created:     "Nowy przepis",
+    recipe_submitted:   "Przepis wysłany do weryfikacji",
+    approved_recipe:    "Przepis zatwierdzony",
+    rejected_recipe:    "Przepis odrzucony",
+    requested_changes:  "Poprawki do przepisu",
+    recipe_favorited:   "Przepis dodany do ulubionych",
+  };
+
   const roleLabels = {
     admin:    "Admin",
     owner:    "Właściciel",
@@ -70,16 +87,19 @@
       activityEl.innerHTML = `<li class="profile-activity-empty">Brak zarejestrowanej aktywności.</li>`;
       return;
     }
-    activityEl.innerHTML = items.map((item) => `
-      <li>
-        <span aria-hidden="true"></span>
-        <div>
-          <strong>${escapeHtml(item.title)}</strong>
-          <p>${escapeHtml(item.description ?? "")}</p>
-          <small>${escapeHtml(item.time ?? "")}</small>
-        </div>
-      </li>
-    `).join("");
+    activityEl.innerHTML = items.map((item) => {
+      const label = eventLabels[item.type] ?? item.type;
+      const date  = item.createdAt ? item.createdAt.slice(0, 16).replace("T", " ") : "";
+      return `
+        <li>
+          <span aria-hidden="true"></span>
+          <div>
+            <strong>${escapeHtml(label)}</strong>
+            <small>${escapeHtml(date)}</small>
+          </div>
+        </li>
+      `;
+    }).join("");
   }
 
   function render(profile) {
@@ -105,7 +125,17 @@
     if (recipesEl)   recipesEl.textContent   = stats.ownRecipes      ?? 0;
 
     renderDetails(profile);
-    renderActivity(profile.activity ?? []);
+  }
+
+  async function loadActivity() {
+    try {
+      const res = await fetch("/api/profile/activity");
+      if (!res.ok) return;
+      const items = await res.json();
+      renderActivity(items);
+    } catch {
+      renderActivity([]);
+    }
   }
 
   async function loadProfile() {
@@ -121,10 +151,12 @@
       loadingState.hidden = true;
       errorState.hidden   = true;
       content.hidden      = false;
+      loadActivity();
     } catch {
       loadingState.hidden = true;
       errorState.hidden   = false;
       content.hidden      = true;
+      window.toast?.error("Nie udało się załadować profilu.");
     }
   }
 

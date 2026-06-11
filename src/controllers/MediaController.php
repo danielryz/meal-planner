@@ -48,6 +48,28 @@ final class MediaController extends AppController
         ], 201);
     }
 
+    public function deleteAvatar(): Response
+    {
+        if ($guard = $this->requireLogin()) {
+            return $guard;
+        }
+
+        $userId = $this->sessions->currentUser()->id();
+        $db     = new Database();
+        $repo   = new MediaRepository($db->connection());
+
+        $fileId = $repo->findOldAvatarFileId($userId);
+
+        if ($fileId === null) {
+            return $this->jsonError('Brak avatara do usunięcia.', 404);
+        }
+
+        $repo->clearUserAvatar($userId);
+        $repo->softDelete($fileId);
+
+        return Response::json(['success' => true]);
+    }
+
     public function uploadRecipePhoto(): Response
     {
         if ($guard = $this->requireLogin()) {

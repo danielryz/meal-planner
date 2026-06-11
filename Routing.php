@@ -236,6 +236,10 @@ final class Routing
             "controller" => MediaController::class,
             "action"     => "uploadAvatar",
         ],
+        "api/media/avatars/current" => [
+            "controller" => MediaController::class,
+            "action"     => "deleteAvatar",
+        ],
         "api/media/recipe-photos" => [
             "controller" => MediaController::class,
             "action"     => "uploadRecipePhoto",
@@ -247,6 +251,18 @@ final class Routing
         "api/profile" => [
             "controller" => ProfileController::class,
             "action" => "getProfile",
+        ],
+        "api/profile/favorites" => [
+            "controller" => ProfileController::class,
+            "action" => "getProfileFavorites",
+        ],
+        "api/profile/recipes" => [
+            "controller" => ProfileController::class,
+            "action" => "getProfileRecipes",
+        ],
+        "api/profile/activity" => [
+            "controller" => ProfileController::class,
+            "action" => "getProfileActivity",
         ],
         "api/settings/account" => [
             "controller" => ProfileController::class,

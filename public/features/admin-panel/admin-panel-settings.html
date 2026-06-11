@@ -45,6 +45,28 @@
                   </div>
                 </div>
 
+                <!-- Roles -->
+                <div class="admin-section" style="margin-bottom:1.5rem">
+                  <div class="admin-section__header">
+                    <h2>Role</h2>
+                  </div>
+                  <div class="admin-section__body">
+                    <p style="margin-bottom:0.75rem">Role, które mogą być przypisywane przy zapraszaniu nowych użytkowników:</p>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem">
+                      <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                        <input type="checkbox" data-role-invite="user" /> Użytkownik (user)
+                      </label>
+                      <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                        <input type="checkbox" data-role-invite="employee" /> Pracownik (employee)
+                      </label>
+                      <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                        <input type="checkbox" data-role-invite="admin" /> Administrator (admin)
+                      </label>
+                    </div>
+                    <button class="admin-btn admin-btn--primary" type="button" data-save="roles">Zapisz ustawienia ról</button>
+                  </div>
+                </div>
+
                 <!-- Session -->
                 <div class="admin-section" style="margin-bottom:1.5rem">
                   <div class="admin-section__header">

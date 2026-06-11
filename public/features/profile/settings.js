@@ -28,6 +28,7 @@
   const currentPasswordError = view.querySelector("[data-current-password-error]");
   const newPasswordError   = view.querySelector("[data-new-password-error]");
   const repeatPasswordError = view.querySelector("[data-repeat-password-error]");
+  const deleteAvatarBtn     = view.querySelector("[data-delete-avatar]");
 
   let account = null;
 
@@ -68,9 +69,11 @@
       avatarImg.src    = data.avatarUrl;
       avatarImg.hidden = false;
       if (initialsEl) initialsEl.hidden = true;
+      if (deleteAvatarBtn) deleteAvatarBtn.hidden = false;
     } else {
       if (initialsEl) { initialsEl.textContent = data.initials ?? ""; initialsEl.hidden = false; }
       if (avatarImg)  avatarImg.hidden = true;
+      if (deleteAvatarBtn) deleteAvatarBtn.hidden = true;
     }
 
     if (roleEl)         roleEl.textContent         = roleLabels[data.role] ?? data.role;
@@ -111,6 +114,29 @@
     if (!url) return;
     if (avatarImg) { avatarImg.src = url; avatarImg.hidden = false; }
     if (initialsEl) initialsEl.hidden = true;
+    if (deleteAvatarBtn) deleteAvatarBtn.hidden = false;
+    window.toast?.success("Plik przesłany pomyślnie.");
+  });
+
+  // Delete current avatar
+  deleteAvatarBtn?.addEventListener("click", async () => {
+    deleteAvatarBtn.disabled = true;
+    try {
+      const res = await fetch("/api/media/avatars/current", { method: "DELETE" });
+      if (res.ok) {
+        if (avatarImg) { avatarImg.src = ""; avatarImg.hidden = true; }
+        if (initialsEl) { initialsEl.textContent = account?.initials ?? ""; initialsEl.hidden = false; }
+        deleteAvatarBtn.hidden = true;
+        window.toast?.success("Zdjęcie profilowe zostało usunięte.");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        window.toast?.error(data.error ?? "Nie udało się usunąć zdjęcia.");
+      }
+    } catch {
+      window.toast?.error("Błąd połączenia z serwerem.");
+    } finally {
+      deleteAvatarBtn.disabled = false;
+    }
   });
 
   // --- Validation blur handlers ---

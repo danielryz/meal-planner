@@ -229,6 +229,53 @@ final class ProfileController extends AppController
         return $this->jsonError('Metoda niedozwolona.', 405);
     }
 
+    public function getProfileFavorites(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        $userId = $this->sessions->currentUser()->id();
+        $db     = new Database();
+        $repo   = new ProfileRepository($db->connection());
+
+        return Response::json($repo->findFavoritesByUserId($userId));
+    }
+
+    public function getProfileRecipes(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        $userId = $this->sessions->currentUser()->id();
+        $db     = new Database();
+        $repo   = new ProfileRepository($db->connection());
+
+        return Response::json($repo->findRecipesByUserId($userId));
+    }
+
+    public function getProfileActivity(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        $userId = $this->sessions->currentUser()->id();
+        $db     = new Database();
+        $repo   = new ProfileRepository($db->connection());
+
+        $events = $repo->findActivityByUserId($userId);
+
+        return Response::json(array_map(static function (array $event): array {
+            return [
+                'type'      => $event['event_type'],
+                'metadata'  => $event['metadata'] !== null ? json_decode((string) $event['metadata'], true) : null,
+                'createdAt' => $event['created_at'],
+            ];
+        }, $events));
+    }
+
     public function preferenceOptions(): Response
     {
         if ($response = $this->requireLogin()) {

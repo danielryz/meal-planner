@@ -88,6 +88,14 @@ final class MediaRepository
         $stmt->execute([':recipe_id' => $recipeId, ':media_file_id' => $mediaFileId]);
     }
 
+    public function clearUserAvatar(int $userId): void
+    {
+        $stmt = $this->db->prepare(
+            'DELETE FROM user_profile_avatars WHERE user_id = :user_id'
+        );
+        $stmt->execute([':user_id' => $userId]);
+    }
+
     public function softDelete(int $mediaFileId): void
     {
         $stmt = $this->db->prepare(
