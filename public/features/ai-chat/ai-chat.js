@@ -55,10 +55,36 @@
     return div;
   }
 
+  function welcomeMarkup() {
+    return `
+      <div class="ai-chat__welcome">
+        <p>Cześć! Jestem kulinarnym asystentem AI. Mogę pomóc w tych rzeczach:</p>
+        <div class="ai-chat__quick-actions" aria-label="Szybkie akcje asystenta AI">
+          <button type="button" data-ai-prompt="Zaproponuj mi prosty posiłek na dziś">
+            <strong>Pomysł na posiłek</strong>
+            <span>Doradzę, co ugotować dziś.</span>
+          </button>
+          <button type="button" data-ai-prompt="Znajdź szybki przepis do 30 minut">
+            <strong>Szukaj przepisu</strong>
+            <span>Sprawdzę przepisy z bazy.</span>
+          </button>
+          <button type="button" data-ai-prompt="Pokaż moją listę zakupów">
+            <strong>Lista zakupów</strong>
+            <span>Pokażę aktualne produkty.</span>
+          </button>
+          <button type="button" data-ai-prompt="Dodaj 500 g pomidorów do listy zakupów">
+            <strong>Dodaj produkt</strong>
+            <span>Dopiszę rzecz do listy.</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   function renderHistory() {
     messages.innerHTML = '';
     if (history.length === 0) {
-      messages.innerHTML = '<div class="ai-chat__welcome"><p>Cześć! Jestem kulinarnym asystentem AI. Zapytaj mnie o przepisy, planowanie posiłków lub wartości odżywcze — albo poproś, żebym coś dodał do listy zakupów.</p></div>';
+      messages.innerHTML = welcomeMarkup();
       return;
     }
     history.forEach(msg => appendBubble(msg.role, msg.content));
@@ -87,6 +113,7 @@
     showBackdrop();
     renderHistory();
     input.focus();
+    fetch('/api/ai/warmup', { method: 'POST' }).catch(() => {});
   }
 
   function closePanel() {
@@ -158,6 +185,14 @@
   closeBtn.addEventListener('click', closePanel);
   clearBtn.addEventListener('click', clearChat);
   sendBtn.addEventListener('click', send);
+
+  messages.addEventListener('click', (event) => {
+    const promptBtn = event.target.closest('[data-ai-prompt]');
+    if (!promptBtn || busy) return;
+
+    input.value = promptBtn.dataset.aiPrompt ?? '';
+    send();
+  });
 
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {

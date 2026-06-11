@@ -362,6 +362,14 @@
   font-weight: 700;
 }
 
+.grocery-item__price {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .grocery-alternative {
   min-height: 34px;
   flex: 0 0 auto;

@@ -17,6 +17,7 @@ Teksty widoczne w interfejsie użytkownika powinny być po polsku. Nazwy technic
 - Docker
 - Docker Compose
 - Git
+- Dostęp do internetu przy pierwszym pobraniu obrazu Ollama i modelu AI
 
 ## Konfiguracja Środowiska
 
@@ -37,6 +38,7 @@ Domyślne porty lokalne:
 - Aplikacja: `http://localhost:8080`
 - PostgreSQL: `localhost:5433`
 - pgAdmin: `http://localhost:5050`
+- Ollama API: `http://localhost:11434`
 
 Domyślne dane logowania do pgAdmin są zapisane w `.env`:
 
@@ -46,6 +48,173 @@ PGADMIN_DEFAULT_PASSWORD=admin
 ```
 
 Nie commituj pliku `.env`. Do repozytorium trafia tylko `.env.example`.
+
+## Uruchomienie Krok Po Kroku Z Ollama
+
+Poniższa ścieżka uruchamia aplikację, bazę PostgreSQL, pgAdmin oraz lokalny serwis Ollama używany przez czat AI.
+
+### 1. Sklonuj repozytorium i wejdź do katalogu projektu
+
+```bash
+git clone <adres-repozytorium>
+cd MealPlanner
+```
+
+Jeśli repozytorium jest już sklonowane, wystarczy wejść do katalogu projektu.
+
+### 2. Utwórz plik `.env`
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Linux/macOS:
+
+```bash
+cp .env.example .env
+```
+
+Minimalna konfiguracja AI w `.env`:
+
+```env
+OLLAMA_URL=http://ollama:11434
+OLLAMA_MODEL=qwen2.5:14b
+```
+
+`OLLAMA_URL=http://ollama:11434` jest poprawne dla aplikacji działającej w Docker Compose, ponieważ kontener PHP łączy się z serwisem `ollama` po nazwie usługi.
+
+### 3. Uruchom kontenery
+
+```bash
+docker compose up --build -d
+```
+
+Sprawdź, czy kontenery działają:
+
+```bash
+docker compose ps
+```
+
+Powinny być widoczne między innymi usługi `server`, `php`, `db`, `ollama` oraz `pgadmin-wdpai`.
+
+### 4. Pobierz model Ollama
+
+Pierwsze pobranie modelu może potrwać kilka minut:
+
+```bash
+docker compose exec ollama ollama pull qwen2.5:14b
+```
+
+Jeśli w `.env` ustawisz inny model, pobierz tę samą nazwę, np.:
+
+```bash
+docker compose exec ollama ollama pull <nazwa-modelu>
+```
+
+### 5. Sprawdź, czy Ollama odpowiada
+
+Z hosta:
+
+```bash
+curl http://localhost:11434/api/tags
+```
+
+Windows PowerShell:
+
+```powershell
+Invoke-RestMethod http://localhost:11434/api/tags
+```
+
+W odpowiedzi powinna pojawić się lista lokalnych modeli, w tym `qwen2.5:14b`.
+
+### 6. Uruchom migracje i seed danych
+
+```bash
+docker compose exec php php /app/scripts/run-migrations.php
+docker compose exec php php /app/scripts/seed.php
+```
+
+Seed tworzy konta demo i zestaw przepisów potrzebny do testów biblioteki, recenzji, listy zakupów i czatu AI.
+
+### 7. Otwórz aplikację
+
+```text
+http://localhost:8080
+```
+
+Zaloguj się jednym z kont demo:
+
+| E-mail | Hasło | Rola |
+|---|---|---|
+| `owner@mealplanner.test` | `Demo1234!` | owner |
+| `employee@mealplanner.test` | `Demo1234!` | employee |
+| `user@mealplanner.test` | `Demo1234!` | user |
+
+### 8. Sprawdź czat AI w aplikacji
+
+1. Zaloguj się jako `user@mealplanner.test`.
+2. Wejdź na `/dashboard`, `/recipes` albo `/grocery-list`.
+3. Kliknij ikonę czatu AI w prawym dolnym rogu.
+4. Wpisz przykładowe polecenie:
+
+```text
+Dodaj 500 g pomidorów i makaron Lubella 500 g do listy zakupów
+```
+
+Następnie wejdź na `/grocery-list` i sprawdź, czy produkty pojawiły się na aktywnej liście zakupów wraz z cenami oszacowanymi przez AI.
+
+Inne przykłady:
+
+```text
+Dodaj mleko za 4,20 zł do listy zakupów
+Znajdź szybki przepis do 30 minut
+Pokaż moją listę zakupów
+Stwórz przepis na sałatkę z kaszą bulgur dla 2 osób
+```
+
+Czat AI używa tool callingu — model samodzielnie decyduje, kiedy wywołać akcje w aplikacji (dodanie produktu, wyszukanie przepisu, utworzenie szkicu). Ceny produktów i składników przepisów są szacowane przez model na podstawie polskich cen rynkowych; użytkownik może też podać cenę wprost. Jeśli Ollama nie działa albo model nie jest pobrany, API czatu zwróci komunikat, że asystent AI jest chwilowo niedostępny.
+
+### 9. Zatrzymanie środowiska
+
+```bash
+docker compose down
+```
+
+Jeśli chcesz usunąć także dane Ollama i bazę z wolumenów, użyj:
+
+```bash
+docker compose down -v
+```
+
+### 10. Wyczyść lokalne obrazy, wolumeny i cache Dockera
+
+Najpierw zatrzymaj środowisko projektu:
+
+```bash
+docker compose down
+```
+
+Usuń kontenery i wolumeny tylko tego projektu, czyli bazę danych oraz pobrane modele Ollama zapisane w wolumenie Compose:
+
+```bash
+docker compose down -v --remove-orphans
+```
+
+Usuń nieużywane obrazy, zatrzymane kontenery, sieci i cache buildów z całego Dockera:
+
+```bash
+docker system prune -a
+```
+
+Usuń także nieużywane wolumeny z całego Dockera:
+
+```bash
+docker system prune -a --volumes
+```
+
+Uwaga: `docker system prune -a --volumes` czyści globalnie nieużywane zasoby Dockera, nie tylko MealPlanner. Może usunąć lokalne bazy danych, cache i modele Ollama używane przez inne projekty, jeśli nie są aktualnie podpięte do działających kontenerów.
 
 ## Uruchomienie Aplikacji
 
@@ -135,9 +304,9 @@ Demo konta:
 
 | E-mail | Hasło | Rola |
 |---|---|---|
-| `owner@example.com` | `password` | owner |
-| `employee@example.com` | `password` | employee |
-| `user@example.com` | `password` | user |
+| `owner@mealplanner.test` | `Demo1234!` | owner |
+| `employee@mealplanner.test` | `Demo1234!` | employee |
+| `user@mealplanner.test` | `Demo1234!` | user |
 
 ## Struktura Projektu
 

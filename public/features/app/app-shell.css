@@ -319,7 +319,7 @@
 
 @media (max-width: 820px) {
   .app-page {
-    padding-bottom: 78px;
+    padding-bottom: 96px;
   }
 
   .app-topbar__inner {
@@ -358,7 +358,7 @@
     bottom: 12px;
     z-index: 40;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
     gap: 4px;
     border: 1px solid rgba(226, 232, 240, 0.9);
     border-radius: 28px;

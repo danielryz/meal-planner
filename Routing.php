@@ -369,6 +369,10 @@ final class Routing
             "controller" => AiController::class,
             "action" => "chat",
         ],
+        "api/ai/warmup" => [
+            "controller" => AiController::class,
+            "action" => "warmup",
+        ],
         "logout" => [
             "controller" => SecurityController::class,
             "action" => "logout",

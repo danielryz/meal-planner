@@ -31,6 +31,7 @@
   const addItemForm   = addItemDialog?.querySelector("[data-add-item-form]");
   const addItemName   = addItemDialog?.querySelector("[data-item-name]");
   const addItemQty    = addItemDialog?.querySelector("[data-item-qty]");
+  const addItemPrice  = addItemDialog?.querySelector("[data-item-price]");
   const addItemCat    = addItemDialog?.querySelector("[data-item-cat]");
   const addItemError  = addItemDialog?.querySelector("[data-add-error]");
   const addItemSubmit = addItemDialog?.querySelector("[data-add-submit]");
@@ -124,6 +125,9 @@
     const checkedClass = item.isBought ? " is-bought" : "";
     const checked      = item.isBought ? "checked" : "";
     const qty          = item.quantity ? `<small>${escapeHtml(item.quantity)}</small>` : "";
+    const price        = item.estimatedPrice > 0
+      ? `<span class="grocery-item__price">${formatMoney(item.estimatedPrice)}</span>`
+      : "";
     const alt          = item.alternative
       ? `<button class="grocery-alternative" type="button" data-alternative="${escapeHtml(item.alternative)}">Zamiennik</button>`
       : "";
@@ -139,6 +143,7 @@
           ${qty}
         </div>
         ${alt}
+        ${price}
         <button class="grocery-item__delete" type="button"
           data-delete-item="${escapeHtml(item.id)}"
           aria-label="Usuń ${escapeHtml(item.name)}">×</button>
@@ -297,6 +302,7 @@
     e.preventDefault();
     const name    = addItemName?.value.trim() ?? "";
     const qty     = addItemQty?.value.trim() || null;
+    const price   = addItemPrice?.value.trim() || null;
     const catCode = addItemCat?.value || "other";
 
     if (name.length < 2) {
@@ -315,7 +321,7 @@
       const res  = await fetch(`/api/grocery-lists/${groceryData.listId}/items`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ name, quantity: qty, categoryCode: catCode }),
+        body:    JSON.stringify({ name, quantity: qty, estimatedPrice: price, categoryCode: catCode }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Błąd dodawania.");

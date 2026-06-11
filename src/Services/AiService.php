@@ -29,6 +29,10 @@ final class AiService
             'model'    => $this->model,
             'messages' => $messages,
             'stream'   => false,
+            'options'  => [
+                'temperature' => 0.2,
+                'top_p'       => 0.8,
+            ],
         ];
 
         if (!empty($tools)) {
@@ -42,7 +46,7 @@ final class AiService
                 'method'        => 'POST',
                 'header'        => "Content-Type: application/json\r\nAccept: application/json\r\n",
                 'content'       => $payload,
-                'timeout'       => 60,
+                'timeout'       => 600,
                 'ignore_errors' => true,
             ],
         ]);
@@ -51,6 +55,17 @@ final class AiService
 
         if ($result === false) {
             throw new \RuntimeException('ollama_unreachable');
+        }
+
+        $httpCode = 200;
+        foreach ($http_response_header ?? [] as $header) {
+            if (preg_match('#^HTTP/\S+\s+(\d+)#', $header, $m)) {
+                $httpCode = (int) $m[1];
+            }
+        }
+
+        if ($httpCode === 400 && !empty($tools)) {
+            return $this->sendMessage($messages);
         }
 
         $data = json_decode($result, true);

@@ -99,17 +99,23 @@
 
     ingredientsList.innerHTML = (recipe.ingredients ?? []).map(ing => {
       const scaled = scaleAmount(ing.amount ?? '', ratio);
+      const price  = ing.estimatedPrice > 0
+        ? `<span class="recipe-ingredient-price">${Number(ing.estimatedPrice).toFixed(2).replace('.', ',')} zł</span>`
+        : '';
       return `
         <li>
-          <span aria-hidden="true"></span>
-          <strong>${escapeHtml(ing.name)}</strong>
-          <small>${escapeHtml(scaled)}</small>
+          <div class="recipe-ingredient-body">
+            <strong>${escapeHtml(ing.name)}</strong>
+            <small>${escapeHtml(scaled)}</small>
+          </div>
+          ${price}
           <button
             class="recipe-ingredient-add"
             type="button"
             aria-label="Dodaj ${escapeHtml(ing.name)} do listy zakupów"
             data-add-ingredient="${escapeHtml(ing.name)}"
-            data-ingredient-amount="${escapeHtml(ing.amount ?? '')}">+</button>
+            data-ingredient-amount="${escapeHtml(ing.amount ?? '')}"
+            data-ingredient-price="${escapeHtml(ing.estimatedPrice ?? '')}">+</button>
         </li>`;
     }).join('');
 
@@ -307,12 +313,12 @@
     return groceryListId;
   }
 
-  async function addToGroceryList(name, quantity) {
+  async function addToGroceryList(name, quantity, estimatedPrice = null) {
     const listId = await getGroceryListId();
     const res = await fetch(`/api/grocery-lists/${listId}/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, quantity: quantity || null }),
+      body: JSON.stringify({ name, quantity: quantity || null, estimatedPrice }),
     });
     if (!res.ok) throw new Error('failed');
     return res.json();
@@ -387,7 +393,7 @@
         const res = await fetch(`/api/grocery-lists/${listId}/items`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: ing.name, quantity: qty || null }),
+          body: JSON.stringify({ name: ing.name, quantity: qty || null, estimatedPrice: ing.estimatedPrice ?? null }),
         });
         if (res.ok) added++;
       }
@@ -407,7 +413,7 @@
     const qty   = scaleAmount(btn.dataset.ingredientAmount, ratio);
     btn.disabled = true;
     try {
-      await addToGroceryList(name, qty);
+      await addToGroceryList(name, qty, btn.dataset.ingredientPrice || null);
       window.toast?.success(`${name} dodano do listy zakupów.`);
     } catch {
       window.toast?.error('Nie udało się dodać do listy zakupów.');
