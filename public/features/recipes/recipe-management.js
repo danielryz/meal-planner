@@ -10,7 +10,6 @@
   const content        = view.querySelector("[data-management-content]");
   const list           = view.querySelector("[data-management-list]");
   const emptyState     = view.querySelector("[data-management-empty]");
-  const message        = view.querySelector("[data-management-message]");
   const searchInput    = view.querySelector("[data-management-search]");
   const statusFilter   = view.querySelector("[data-management-status-filter]");
   const draftCount     = view.querySelector("[data-management-draft-count]");
@@ -130,12 +129,6 @@
     return recipes.find((r) => r.id === recipeId) ?? null;
   }
 
-  function showMessage(text) {
-    message.textContent = text;
-    message.hidden      = false;
-    window.setTimeout(() => { message.hidden = true; }, 2200);
-  }
-
   // Dialog helpers
   function openDeleteDialog(recipe) {
     pendingDeleteId = recipe.id;
@@ -158,14 +151,13 @@
       if (res.ok) {
         recipes = recipes.filter((r) => r.id !== id);
         render();
-        if (window.toast) window.toast.success("Przepis usunięty.");
-        else showMessage("Przepis usunięty.");
+        window.toast?.success("Przepis usunięty.");
       } else {
         const data = await res.json();
-        showMessage(data.error ?? "Wystąpił błąd.");
+        window.toast?.error(data.error ?? "Wystąpił błąd.");
       }
     } catch {
-      showMessage("Błąd połączenia z serwerem.");
+      window.toast?.error("Błąd połączenia z serwerem.");
     }
   });
 
@@ -226,14 +218,13 @@
           recipe.submittedAt = new Date().toISOString().slice(0, 10);
           recipe.reviewReason = "";
           render();
-          if (window.toast) window.toast.success("Przepis wysłany do weryfikacji.");
-          else showMessage("Przepis wysłany do weryfikacji.");
+          window.toast?.success("Przepis wysłany do weryfikacji.");
         } else {
           const data = await res.json();
-          showMessage(data.error ?? "Wystąpił błąd.");
+          window.toast?.error(data.error ?? "Wystąpił błąd.");
         }
       } catch {
-        showMessage("Błąd połączenia z serwerem.");
+        window.toast?.error("Błąd połączenia z serwerem.");
       }
     }
 

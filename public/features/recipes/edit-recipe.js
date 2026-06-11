@@ -20,7 +20,6 @@
   const stepsList        = view.querySelector("[data-steps-list]");
   const ingredientsCount = view.querySelector("[data-ingredients-count]");
   const stepsCount       = view.querySelector("[data-steps-count]");
-  const message          = view.querySelector("[data-recipe-form-message]");
   const titleError       = view.querySelector("[data-title-error]");
   const descriptionError = view.querySelector("[data-description-error]");
   const statusLabel      = view.querySelector("[data-edit-status-label]");
@@ -126,12 +125,6 @@
   function setFieldState(input, error, isValid) {
     input.classList.toggle("is-invalid", !isValid);
     error.hidden = isValid;
-  }
-
-  function showMessage(text) {
-    message.textContent = text;
-    message.hidden = false;
-    window.setTimeout(() => { message.hidden = true; }, 2400);
   }
 
   function collectIngredients() {
