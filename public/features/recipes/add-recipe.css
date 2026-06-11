@@ -226,7 +226,7 @@
 
 .add-recipe-repeat-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(140px, 0.45fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(130px, 0.4fr) minmax(120px, 0.35fr) auto;
   gap: 12px;
   align-items: end;
   border-radius: 24px;

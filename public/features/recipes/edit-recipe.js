@@ -84,7 +84,7 @@
     stepsCount.textContent = stepsList.querySelectorAll("[data-step-row]").length;
   }
 
-  function createIngredientRow(name = "", amount = "") {
+  function createIngredientRow(name = "", amount = "", estimatedPrice = "") {
     const row = document.createElement("div");
     row.className = "add-recipe-repeat-row";
     row.dataset.ingredientRow = "";
@@ -96,6 +96,10 @@
       <label>
         <span>Ilość</span>
         <input name="ingredientAmount[]" type="text" value="${escapeHtml(amount)}" placeholder="np. 400 g" />
+      </label>
+      <label>
+        <span>Cena szac.</span>
+        <input name="ingredientPrice[]" type="number" min="0" step="0.01" value="${escapeHtml(estimatedPrice)}" placeholder="np. 6.50" />
       </label>
       <button type="button" data-remove-row aria-label="Usuń składnik">
         <img src="/public/assets/icons/x.svg" alt="" />
@@ -132,6 +136,7 @@
       .map((row) => ({
         name: (row.querySelector("input[name='ingredientName[]']")?.value ?? "").trim(),
         amount: (row.querySelector("input[name='ingredientAmount[]']")?.value ?? "").trim(),
+        estimatedPrice: (row.querySelector("input[name='ingredientPrice[]']")?.value ?? "").trim(),
       }))
       .filter((i) => i.name && i.amount);
   }
@@ -275,7 +280,7 @@
         submitReviewBtn.hidden = !["draft", "changes_requested"].includes(recipe.status ?? "");
       }
 
-      (recipe.ingredients ?? []).forEach((ing) => createIngredientRow(ing.name ?? "", ing.amount ?? ""));
+      (recipe.ingredients ?? []).forEach((ing) => createIngredientRow(ing.name ?? "", ing.amount ?? "", ing.estimatedPrice ?? ""));
       if ((recipe.ingredients ?? []).length === 0) createIngredientRow();
 
       (recipe.steps ?? []).forEach((s) => createStepRow(s.instruction ?? ""));

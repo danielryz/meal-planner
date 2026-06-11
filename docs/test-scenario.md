@@ -1,230 +1,290 @@
-# Scenariusz testów manualnych — MealPlanner
+# Scenariusz testów manualnych - MealPlanner
 
-Scenariusz do ręcznej weryfikacji kluczowych przepływów w aplikacji. Uruchamiać po każdym większym wdrożeniu lub przed oddaniem projektu.
+Scenariusz służy do ręcznej weryfikacji głównych przepływów aplikacji po uruchomieniu środowiska lub przed oddaniem projektu.
 
 ## Wymagania wstępne
 
-- Aplikacja uruchomiona przez Docker Compose (`docker compose up -d`)
-- Baza danych zainicjalizowana z danymi seed
-- Dostęp do `http://localhost`
+- Aplikacja uruchomiona przez Docker Compose: `docker compose up -d`
+- Migracje i seed danych wykonane: `php scripts/run-migrations.php` oraz `php scripts/seed.php`
+- Dostęp do aplikacji pod adresem `http://localhost`
+- Opcjonalnie dla czatu AI: uruchomiona Ollama oraz skonfigurowany model z tool calling
 
-## Konta demo
+## Poprawne dane logowania
 
-| Rola | E-mail | Hasło |
-|------|--------|-------|
-| Właściciel | owner@mealplanner.test | Demo1234! |
-| Pracownik | employee@mealplanner.test | Demo1234! |
-| Użytkownik | user@mealplanner.test | Demo1234! |
-
----
-
-## TC-01 — Rejestracja i logowanie
-
-### TC-01-A: Rejestracja nowego konta
-
-1. Wejdź na `/register`
-2. Wypełnij formularz: imię, nowy e-mail, hasło ≥ 8 znaków, zaznacz regulamin
-3. Kliknij „Zarejestruj się"
-
-**Oczekiwany wynik:** Przekierowanie do `/dashboard`, widoczne imię użytkownika w nawigacji.
-
-### TC-01-B: Logowanie z poprawnymi danymi
-
-1. Wyloguj się (jeśli zalogowany)
-2. Wejdź na `/login`
-3. Podaj dane konta demo `user@mealplanner.test` / `Demo1234!`
-4. Kliknij „Zaloguj się"
-
-**Oczekiwany wynik:** Przekierowanie do `/dashboard`.
-
-### TC-01-C: Logowanie z błędnymi danymi
-
-1. Na `/login` podaj dowolny e-mail i błędne hasło
-2. Kliknij „Zaloguj się"
-
-**Oczekiwany wynik:** Formularz pozostaje na `/login`, komunikat „Nieprawidłowy adres e-mail lub hasło." bez wskazania, które pole jest błędne.
-
-### TC-01-D: Rate limiting
-
-1. Na `/login` podaj błędne dane 5 razy z rzędu
-2. Przy 5. próbie lub po niej
-
-**Oczekiwany wynik:** Komunikat o blokadzie na 15 minut, odpowiedź HTTP 429.
-
-### TC-01-E: Wylogowanie
-
-1. Zaloguj się
-2. Kliknij „Wyloguj" w menu
-3. Spróbuj wejść bezpośrednio na `/dashboard`
-
-**Oczekiwany wynik:** Przekierowanie do `/login`.
+| Rola | E-mail | Hasło | Główne uprawnienia |
+|------|--------|-------|--------------------|
+| Właściciel | `owner@mealplanner.test` | `Demo1234!` | dashboard, przepisy, lista zakupów, użytkownicy, recenzje |
+| Pracownik | `employee@mealplanner.test` | `Demo1234!` | dashboard, przepisy, lista zakupów, recenzje |
+| Użytkownik | `user@mealplanner.test` | `Demo1234!` | dashboard, przepisy, planer, lista zakupów, profil |
 
 ---
 
-## TC-02 — Ochrona tras
+## TC-01 - Start i nawigacja publiczna
 
-### TC-02-A: Strona chroniona bez sesji zwraca przekierowanie
+### TC-01-A: Strona główna informuje o czacie AI
 
-1. Wyloguj się
-2. Wejdź na `/dashboard` bezpośrednio w przeglądarce
+1. Wyloguj się.
+2. Wejdź na `/`.
+3. Sprawdź sekcję główną i listę funkcji.
+
+**Oczekiwany wynik:** Strona informuje, że po zalogowaniu dostępny jest kulinarny asystent AI, który pomaga szukać przepisów i uzupełniać listę zakupów.
+
+### TC-01-B: Ikona czatu AI nie jest widoczna dla gościa
+
+1. Wyloguj się.
+2. Wejdź na `/recipes`.
+3. Sprawdź prawy dolny róg ekranu na desktopie i mobile.
+
+**Oczekiwany wynik:** Ikona czatu AI nie jest renderowana dla niezalogowanego użytkownika.
+
+### TC-01-C: Przekierowanie zalogowanego użytkownika z `/`
+
+1. Zaloguj się jako `user@mealplanner.test`.
+2. Wejdź na `/`.
+
+**Oczekiwany wynik:** Aplikacja przekierowuje na `/dashboard`.
+
+---
+
+## TC-02 - Rejestracja, logowanie i sesja
+
+### TC-02-A: Rejestracja nowego konta
+
+1. Wejdź na `/register`.
+2. Wypełnij formularz: imię, unikalny e-mail, hasło co najmniej 8 znaków, zaakceptuj regulamin.
+3. Kliknij „Zarejestruj się”.
+
+**Oczekiwany wynik:** Konto zostaje utworzone, użytkownik trafia do aplikacji albo do ekranu potwierdzenia e-mail zgodnie z aktualną konfiguracją.
+
+### TC-02-B: Logowanie z poprawnymi danymi
+
+1. Wyloguj się.
+2. Wejdź na `/login`.
+3. Zaloguj się jako `user@mealplanner.test` z hasłem `Demo1234!`.
+
+**Oczekiwany wynik:** Przekierowanie do `/dashboard`, w nawigacji widoczny profil użytkownika.
+
+### TC-02-C: Logowanie z błędnymi danymi
+
+1. Na `/login` podaj poprawny lub dowolny e-mail i błędne hasło.
+2. Kliknij „Zaloguj się”.
+
+**Oczekiwany wynik:** Formularz pozostaje na `/login`, widoczny jest ogólny komunikat „Nieprawidłowy adres e-mail lub hasło.”.
+
+### TC-02-D: Wylogowanie
+
+1. Zaloguj się.
+2. Kliknij „Wyloguj”.
+3. Wejdź bezpośrednio na `/dashboard`.
+
+**Oczekiwany wynik:** Sesja jest zakończona, a wejście na stronę chronioną przekierowuje do `/login`.
+
+---
+
+## TC-03 - Ochrona tras i role
+
+### TC-03-A: Strona chroniona bez sesji
+
+1. Wyloguj się.
+2. Wejdź na `/dashboard`.
 
 **Oczekiwany wynik:** Przekierowanie 302 do `/login`.
 
-### TC-02-B: Endpoint API bez sesji zwraca 401
+### TC-03-B: API bez sesji
 
-1. Wyloguj się
-2. W konsoli przeglądarki: `fetch('/api/my-recipes').then(r => console.log(r.status))`
+1. Wyloguj się.
+2. W konsoli przeglądarki uruchom: `fetch('/api/my-recipes').then(r => console.log(r.status))`.
 
-**Oczekiwany wynik:** Status 401, odpowiedź JSON `{"error":"Wymagane logowanie."}`.
+**Oczekiwany wynik:** Status 401 i odpowiedź JSON z komunikatem o wymaganym logowaniu.
 
-### TC-02-C: Pracownik nie ma dostępu do zarządzania użytkownikami
+### TC-03-C: Pracownik bez dostępu do zarządzania użytkownikami
 
-1. Zaloguj się jako `employee@mealplanner.test`
-2. Wywołaj w konsoli: `fetch('/api/users').then(r => console.log(r.status))`
+1. Zaloguj się jako `employee@mealplanner.test`.
+2. Wejdź na `/users` albo wywołaj `fetch('/api/users').then(r => console.log(r.status))`.
 
-**Oczekiwany wynik:** Status 403, odpowiedź JSON `{"error":"Brak uprawnień."}`.
-
----
-
-## TC-03 — Przepisy
-
-### TC-03-A: Tworzenie szkicu przepisu
-
-1. Zaloguj się jako `user@mealplanner.test`
-2. Wejdź na `/recipes/add`
-3. Wypełnij tytuł (min 3 znaki), opis (min 20 znaków), dodaj składniki i kroki
-4. Kliknij „Zapisz jako szkic"
-
-**Oczekiwany wynik:** Status 201, przepis widoczny na liście „Moje przepisy" ze statusem „Szkic".
-
-### TC-03-B: Zgłoszenie przepisu do recenzji
-
-1. Na liście „Moje przepisy" znajdź szkic z TC-03-A
-2. Kliknij „Zgłoś do recenzji"
-
-**Oczekiwany wynik:** Status przepisu zmienia się na „Oczekuje na recenzję".
-
-### TC-03-C: Zatwierdzenie przepisu przez pracownika
-
-1. Zaloguj się jako `employee@mealplanner.test`
-2. Wejdź na `/recipes/reviews`
-3. Znajdź zgłoszony przepis
-4. Kliknij „Zatwierdź"
-
-**Oczekiwany wynik:** Przepis znika z kolejki recenzji. Po ponownym zalogowaniu na konto użytkownika status przepisu to „Zatwierdzony".
-
-### TC-03-D: Odrzucenie przepisu z powodem
-
-1. Zaloguj się jako `employee@mealplanner.test`
-2. Na `/recipes/reviews` kliknij „Odrzuć" przy dowolnym przepisie
-3. Wpisz powód odrzucenia
-
-**Oczekiwany wynik:** Przepis znika z kolejki. Użytkownik-autor widzi status „Odrzucony".
-
-### TC-03-E: Usunięcie szkicu
-
-1. Zaloguj się jako `user@mealplanner.test`
-2. Na liście „Moje przepisy" kliknij „Usuń" przy szkicu
-
-**Oczekiwany wynik:** Przepis znika z listy, status odpowiedzi 200.
+**Oczekiwany wynik:** Brak dostępu do zarządzania użytkownikami, status 403 dla API.
 
 ---
 
-## TC-04 — Planer posiłków
+## TC-04 - Przepisy
 
-### TC-04-A: Tworzenie planu tygodniowego
+### TC-04-A: Biblioteka przepisów z seeda
 
-1. Zaloguj się jako `user@mealplanner.test`
-2. Wejdź na `/meal-planner`
-3. Przejdź przez wizard: wybierz dni (np. poniedziałek, środa, piątek), typy posiłków (np. śniadanie, obiad)
-4. Na ostatnim kroku kliknij „Zapisz plan"
+1. Zaloguj się jako `user@mealplanner.test`.
+2. Wejdź na `/recipes`.
+3. Użyj wyszukiwarki i filtrów: czas do 30 min, dieta wegetariańska, trudność „Zaawansowany”.
 
-**Oczekiwany wynik:** Pojawia się komunikat sukcesu z nazwą planu w formacie „Tydzień od DD.MM.YYYY".
+**Oczekiwany wynik:** Seed zawiera różne przepisy publiczne, kategorie, czasy i poziomy trudności. Filtry zawężają listę bez błędów.
 
-### TC-04-B: Tworzenie planu dla już istniejącego tygodnia
+### TC-04-B: Szczegóły przepisu
 
-1. Powtórz TC-04-A bez zmiany tygodnia
+1. Na `/recipes` otwórz dowolny przepis.
+2. Sprawdź składniki, kroki, wartości odżywcze i akcje użytkownika.
 
-**Oczekiwany wynik:** Status 409, komunikat o konflikcie — dla tego tygodnia plan już istnieje.
+**Oczekiwany wynik:** Szczegóły przepisu są czytelne, a dane pochodzą z bazy.
 
----
+### TC-04-C: Tworzenie szkicu przepisu
 
-## TC-05 — Lista zakupów
+1. Wejdź na `/add-recipe`.
+2. Wypełnij tytuł, opis, kategorię, trudność, czas, porcje, składniki i kroki.
+3. Kliknij zapis szkicu.
 
-### TC-05-A: Wyświetlanie aktywnej listy
+**Oczekiwany wynik:** Status 201, przepis widoczny na `/recipe-management` ze statusem „Szkic”.
 
-1. Zaloguj się jako `user@mealplanner.test`
-2. Wejdź na `/grocery-list`
+### TC-04-D: Zgłoszenie przepisu do recenzji
 
-**Oczekiwany wynik:** Widoczna lista zakupów pogrupowana według kategorii. Jeśli pierwsza wizyta — lista zostaje automatycznie utworzona.
+1. Na `/recipe-management` znajdź szkic.
+2. Kliknij „Zgłoś do recenzji”.
 
-### TC-05-B: Dodanie pozycji do listy
+**Oczekiwany wynik:** Status przepisu zmienia się na „Oczekuje na recenzję”.
 
-1. Na stronie listy zakupów kliknij „Dodaj produkt"
-2. Wpisz nazwę (min 2 znaki) i opcjonalnie ilość, kategorię
-3. Zatwierdź
+### TC-04-E: Recenzja przepisu przez pracownika
 
-**Oczekiwany wynik:** Nowa pozycja pojawia się na liście we właściwej kategorii.
+1. Zaloguj się jako `employee@mealplanner.test`.
+2. Wejdź na `/recipe-reviews`.
+3. Zatwierdź, odrzuć albo odeślij do poprawek wybrany przepis.
 
-### TC-05-C: Oznaczenie produktu jako kupiony
-
-1. Na liście zakupów kliknij checkbox przy dowolnej pozycji
-
-**Oczekiwany wynik:** Checkbox natychmiast się zaznacza (optymistyczna aktualizacja UI). Odświeżenie strony zachowuje stan.
-
-### TC-05-D: Usunięcie pozycji
-
-1. Przy dowolnej pozycji kliknij przycisk usuwania
-
-**Oczekiwany wynik:** Pozycja znika z listy, status odpowiedzi 200.
+**Oczekiwany wynik:** Akcja zmienia status przepisu, a pozycja znika z kolejki recenzji.
 
 ---
 
-## TC-06 — Walidacja i błędy
+## TC-05 - Planer posiłków
 
-### TC-06-A: Zbyt krótki tytuł przepisu
+### TC-05-A: Tworzenie planu tygodniowego
 
-1. Spróbuj zapisać przepis z tytułem krótszym niż 3 znaki
+1. Zaloguj się jako `user@mealplanner.test`.
+2. Wejdź na `/meal-planner`.
+3. Wybierz dni, typy posiłków i zapisz plan.
 
-**Oczekiwany wynik:** Status 400, pole tytułu z komunikatem błędu.
+**Oczekiwany wynik:** Plan zostaje zapisany, a dashboard pokazuje aktywny plan.
 
-### TC-06-B: Nieznaleziony zasób
+### TC-05-B: Konflikt planu dla tego samego tygodnia
 
-1. W przeglądarce wejdź na `/api/recipes/999999`
+1. Utwórz plan dla tygodnia.
+2. Spróbuj utworzyć kolejny plan dla tego samego tygodnia.
 
-**Oczekiwany wynik:** Status 404, odpowiedź JSON `{"error":"Nie znaleziono przepisu."}` lub podobna.
-
-### TC-06-C: Nieprawidłowy token CSRF
-
-1. Otwórz formularz logowania
-2. Poczekaj, aż sesja wygaśnie (lub ręcznie wyczyść ciasteczko)
-3. Spróbuj zalogować się
-
-**Oczekiwany wynik:** Status 400, komunikat „Sesja formularza wygasła. Spróbuj ponownie."
+**Oczekiwany wynik:** API zwraca 409, a UI pokazuje komunikat o istniejącym planie.
 
 ---
 
-## TC-07 — Zarządzanie użytkownikami (właściciel)
+## TC-06 - Lista zakupów
 
-### TC-07-A: Lista użytkowników
+### TC-06-A: Aktywna lista zakupów
 
-1. Zaloguj się jako `owner@mealplanner.test`
-2. Wejdź na `/users`
+1. Zaloguj się jako `user@mealplanner.test`.
+2. Wejdź na `/grocery-list`.
 
-**Oczekiwany wynik:** Widoczna lista wszystkich użytkowników z ich rolami.
+**Oczekiwany wynik:** Widoczna jest aktywna lista zakupów, tworzona automatycznie przy pierwszej wizycie.
 
-### TC-07-B: Zmiana roli użytkownika
+### TC-06-B: Dodanie produktu ręcznie
 
-1. Na stronie `/users` wybierz dowolnego użytkownika
-2. Zmień rolę i zapisz
+1. Kliknij „Dodaj produkt”.
+2. Podaj nazwę, ilość i opcjonalną kategorię.
+3. Zatwierdź.
 
-**Oczekiwany wynik:** Rola zaktualizowana, zmiana widoczna na liście.
+**Oczekiwany wynik:** Produkt pojawia się na liście we właściwej kategorii.
+
+### TC-06-C: Oznaczenie i usunięcie produktu
+
+1. Zaznacz produkt jako kupiony.
+2. Odśwież stronę.
+3. Usuń produkt.
+
+**Oczekiwany wynik:** Stan kupienia utrzymuje się po odświeżeniu, a usunięty produkt znika z listy.
 
 ---
 
-## TC-08 — Smoke test (skrypt)
+## TC-07 - Czat AI
 
-Uruchom jeden z poniższych skryptów, żeby sprawdzić podstawowe endpointy:
+### TC-07-A: Ikona czatu jest widoczna po zalogowaniu
+
+1. Zaloguj się jako `user@mealplanner.test`.
+2. Wejdź na `/dashboard`, `/recipes` albo `/grocery-list`.
+
+**Oczekiwany wynik:** W prawym dolnym rogu widoczna jest ikona asystenta AI.
+
+### TC-07-B: Otwarcie i zamknięcie czatu
+
+1. Kliknij ikonę czatu AI.
+2. Zamknij panel przyciskiem zamknięcia.
+3. Otwórz ponownie i zamknij klawiszem Escape.
+4. Na mobile sprawdź backdrop i bottom sheet.
+
+**Oczekiwany wynik:** Panel otwiera się i zamyka poprawnie na desktopie oraz mobile.
+
+### TC-07-C: Wyszukiwanie przepisu przez AI
+
+1. W czacie wpisz: `Znajdź szybki przepis wegetariański do 30 minut`.
+
+**Oczekiwany wynik:** AI używa narzędzia wyszukiwania przepisów albo zwraca tekstową odpowiedź, jeśli model nie obsługuje tool calling. Przy działającym tool calling odpowiedź zawiera propozycje z bazy.
+
+### TC-07-D: Dodanie produktu do listy zakupów przez AI
+
+1. W czacie wpisz: `Dodaj 500 g pomidorów do listy zakupów`.
+2. Wejdź na `/grocery-list`.
+
+**Oczekiwany wynik:** Produkt jest dodany do aktywnej listy zakupów, a AI potwierdza wykonanie akcji.
+
+### TC-07-E: Pobranie listy zakupów przez AI
+
+1. W czacie wpisz: `Pokaż moją listę zakupów`.
+
+**Oczekiwany wynik:** AI zwraca aktualną zawartość aktywnej listy zakupów.
+
+### TC-07-F: Utworzenie szkicu przepisu przez AI
+
+1. W czacie wpisz: `Utwórz szkic przepisu na sałatkę z kaszą bulgur dla 2 osób`.
+2. Wejdź na `/recipe-management`.
+
+**Oczekiwany wynik:** Nowy szkic przepisu jest widoczny na liście „Moje przepisy”.
+
+---
+
+## TC-08 - Zarządzanie użytkownikami
+
+### TC-08-A: Lista użytkowników
+
+1. Zaloguj się jako `owner@mealplanner.test`.
+2. Wejdź na `/users`.
+
+**Oczekiwany wynik:** Widoczna jest lista użytkowników z rolami i statusami.
+
+### TC-08-B: Zmiana roli albo statusu użytkownika
+
+1. Wybierz użytkownika testowego.
+2. Zmień rolę lub status zgodnie z dostępnymi akcjami.
+
+**Oczekiwany wynik:** Zmiana jest zapisana i widoczna po odświeżeniu listy.
+
+---
+
+## TC-09 - Walidacja i błędy
+
+### TC-09-A: Niepoprawne dane przepisu
+
+1. Spróbuj zapisać przepis z tytułem krótszym niż 3 znaki albo opisem krótszym niż 20 znaków.
+
+**Oczekiwany wynik:** API zwraca 400, a UI pokazuje komunikat walidacyjny.
+
+### TC-09-B: Nieznaleziony zasób
+
+1. Wejdź na `/api/recipes/999999`.
+
+**Oczekiwany wynik:** Status 404 i odpowiedź JSON z komunikatem o braku przepisu.
+
+### TC-09-C: Nieprawidłowy token CSRF
+
+1. Otwórz formularz logowania.
+2. Usuń ciasteczko sesji albo poczekaj na wygaśnięcie sesji.
+3. Spróbuj wysłać formularz.
+
+**Oczekiwany wynik:** Status 400 i komunikat o wygaśnięciu sesji formularza.
+
+---
+
+## TC-10 - Smoke test
+
+Uruchom jeden ze skryptów:
 
 ```bash
 # Linux/macOS
@@ -234,4 +294,4 @@ bash scripts/smoke.sh
 .\scripts\smoke.ps1
 ```
 
-**Oczekiwany wynik:** Wszystkie sprawdzenia oznaczone jako `OK`. Żaden endpoint nie zwraca nieoczekiwanego statusu.
+**Oczekiwany wynik:** Wszystkie sprawdzenia kończą się wynikiem `OK`, a endpointy zwracają oczekiwane statusy.

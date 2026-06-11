@@ -60,6 +60,7 @@ final class GroceryListRepository
                 gi.id,
                 gi.name,
                 gi.quantity,
+                gi.estimated_price_cents,
                 gi.note,
                 gi.is_checked,
                 gi.position,
@@ -94,7 +95,7 @@ final class GroceryListRepository
                 'id'             => (int) $row['id'],
                 'name'           => $row['name'],
                 'quantity'       => (string) ($row['quantity'] ?? ''),
-                'estimatedPrice' => 0,
+                'estimatedPrice' => round(((int) $row['estimated_price_cents']) / 100, 2),
                 'isBought'       => (bool) $row['is_checked'],
                 'alternative'    => (string) ($row['note'] ?? ''),
             ];
@@ -103,8 +104,10 @@ final class GroceryListRepository
         return array_values($categories);
     }
 
-    public function addItem(int $listId, string $name, ?string $quantity, ?int $categoryId, ?string $note): int
+    public function addItem(int $listId, string $name, ?string $quantity, ?int $categoryId, ?string $note, int $estimatedPriceCents = 0): int
     {
+        $estimatedPriceCents = max(0, $estimatedPriceCents);
+
         if ($quantity !== null) {
             $parsed = $this->parseQuantity($quantity);
             if ($parsed !== null) {
@@ -115,9 +118,11 @@ final class GroceryListRepository
                         $newValue  = $existingParsed['value'] + $parsed['value'];
                         $formatted = $this->formatQuantity($newValue, $parsed['unit']);
                         $stmt = $this->connection->prepare(
-                            'UPDATE grocery_items SET quantity = ?, updated_at = NOW() WHERE id = ? AND grocery_list_id = ?'
+                            'UPDATE grocery_items
+                             SET quantity = ?, estimated_price_cents = estimated_price_cents + ?, updated_at = NOW()
+                             WHERE id = ? AND grocery_list_id = ?'
                         );
-                        $stmt->execute([$formatted, $existing['id'], $listId]);
+                        $stmt->execute([$formatted, $estimatedPriceCents, $existing['id'], $listId]);
                         return (int) $existing['id'];
                     }
                 }
@@ -131,10 +136,20 @@ final class GroceryListRepository
         $position = (int) $stmt->fetchColumn();
 
         $stmt = $this->connection->prepare(
-            'INSERT INTO grocery_items (grocery_list_id, name, quantity, category_id, note, position)
-             VALUES (?, ?, ?, ?, ?, ?) RETURNING id'
+            'INSERT INTO grocery_items (grocery_list_id, name, quantity, category_id, estimated_price_cents, note, position)
+             VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id'
         );
-        $stmt->execute([$listId, $name, $quantity, $categoryId, $note, $position]);
+        $stmt->execute([$listId, $name, $quantity, $categoryId, $estimatedPriceCents, $note, $position]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function estimatedTotalCents(int $listId): int
+    {
+        $stmt = $this->connection->prepare(
+            'SELECT COALESCE(SUM(estimated_price_cents), 0) FROM grocery_items WHERE grocery_list_id = ?'
+        );
+        $stmt->execute([$listId]);
 
         return (int) $stmt->fetchColumn();
     }
@@ -186,6 +201,11 @@ final class GroceryListRepository
         if (array_key_exists('quantity', $data)) {
             $sets[]   = 'quantity = ?';
             $params[] = (string) $data['quantity'];
+        }
+
+        if (array_key_exists('estimatedPriceCents', $data)) {
+            $sets[]   = 'estimated_price_cents = ?';
+            $params[] = max(0, (int) $data['estimatedPriceCents']);
         }
 
         if (array_key_exists('note', $data)) {

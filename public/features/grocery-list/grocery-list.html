@@ -109,6 +109,10 @@
             <input class="add-item-dialog__input" id="add-item-qty" type="text" name="quantity"
               placeholder="np. 500 g, 1 szt., 2 l" autocomplete="off" data-item-qty />
 
+            <label class="add-item-dialog__label" for="add-item-price">Cena szac.</label>
+            <input class="add-item-dialog__input" id="add-item-price" type="number" min="0" step="0.01" name="estimatedPrice"
+              placeholder="np. 4.50" autocomplete="off" data-item-price />
+
             <label class="add-item-dialog__label" for="add-item-cat">Kategoria</label>
             <select class="add-item-dialog__select" id="add-item-cat" name="categoryCode" data-item-cat>
               <option value="vegetables">Warzywa i przetwory</option>

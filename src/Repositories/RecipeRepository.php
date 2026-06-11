@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use PDO;
+use App\Services\PriceEstimator;
 
 final class RecipeRepository extends AbstractRepository
 {
@@ -428,7 +429,8 @@ final class RecipeRepository extends AbstractRepository
                     $i + 1,
                     (string) ($ingredient['name'] ?? ''),
                     (string) ($ingredient['amount'] ?? ''),
-                    isset($ingredient['note']) ? (string) $ingredient['note'] : null
+                    isset($ingredient['note']) ? (string) $ingredient['note'] : null,
+                    (int) ($ingredient['estimatedPriceCents'] ?? 0)
                 );
             }
 
@@ -518,7 +520,8 @@ final class RecipeRepository extends AbstractRepository
                     $i + 1,
                     (string) ($ingredient['name'] ?? ''),
                     (string) ($ingredient['amount'] ?? ''),
-                    isset($ingredient['note']) ? (string) $ingredient['note'] : null
+                    isset($ingredient['note']) ? (string) $ingredient['note'] : null,
+                    (int) ($ingredient['estimatedPriceCents'] ?? 0)
                 );
             }
 
@@ -661,17 +664,26 @@ final class RecipeRepository extends AbstractRepository
         $stmt->execute();
     }
 
-    public function addIngredient(int $recipeId, int $position, string $name, string $amount, ?string $note = null): void
+    public function addIngredient(int $recipeId, int $position, string $name, string $amount, ?string $note = null, int $estimatedPriceCents = 0): void
     {
+        if ($estimatedPriceCents <= 0) {
+            $estimatedPriceCents = (new PriceEstimator())->estimateCents($name, $amount);
+        }
+
         $stmt = $this->connection->prepare(
-            'INSERT INTO recipe_ingredients (recipe_id, position, name, amount, note)
-            VALUES (:recipe_id, :position, :name, :amount, :note)
-            ON CONFLICT (recipe_id, position) DO UPDATE SET name = EXCLUDED.name, amount = EXCLUDED.amount, note = EXCLUDED.note'
+            'INSERT INTO recipe_ingredients (recipe_id, position, name, amount, estimated_price_cents, note)
+            VALUES (:recipe_id, :position, :name, :amount, :estimated_price_cents, :note)
+            ON CONFLICT (recipe_id, position) DO UPDATE SET
+                name = EXCLUDED.name,
+                amount = EXCLUDED.amount,
+                estimated_price_cents = EXCLUDED.estimated_price_cents,
+                note = EXCLUDED.note'
         );
         $stmt->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
         $stmt->bindValue(':position', $position, PDO::PARAM_INT);
         $stmt->bindValue(':name', $name);
         $stmt->bindValue(':amount', $amount);
+        $stmt->bindValue(':estimated_price_cents', max(0, $estimatedPriceCents), PDO::PARAM_INT);
         $stmt->bindValue(':note', $note);
         $stmt->execute();
     }
@@ -743,13 +755,17 @@ final class RecipeRepository extends AbstractRepository
     private function ingredientsForRecipe(int $recipeId): array
     {
         $stmt = $this->connection->prepare(
-            'SELECT name, amount, note FROM recipe_ingredients
+            'SELECT name, amount, estimated_price_cents, note FROM recipe_ingredients
             WHERE recipe_id = :recipe_id ORDER BY position'
         );
         $stmt->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(static function (array $row): array {
+            $row['estimatedPrice'] = round(((int) $row['estimated_price_cents']) / 100, 2);
+            unset($row['estimated_price_cents']);
+            return $row;
+        }, $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     private function stepsForRecipe(int $recipeId): array

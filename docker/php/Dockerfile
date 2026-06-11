@@ -1,4 +1,4 @@
-FROM php:8.3.18RC1-fpm-alpine3.21
+FROM php:8.3-fpm-alpine
 
 ENV RUN_DEPS \
     zlib \
@@ -23,6 +23,7 @@ ENV PHP_EXTENSIONS \
     pdo_pgsql
 
 RUN apk add --no-cache --virtual .build-deps $BUILD_DEPS \
+    $PHPIZE_DEPS \
     && docker-php-ext-configure gd --with-jpeg \
     && docker-php-ext-install -j "$(nproc)" $PHP_EXTENSIONS \
     && apk del .build-deps

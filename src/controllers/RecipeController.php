@@ -10,6 +10,7 @@ use App\Repositories\MediaRepository;
 use App\Repositories\RatingRepository;
 use App\Repositories\RecipeRepository;
 use App\Repositories\SettingsRepository;
+use App\Services\PriceEstimator;
 
 final class RecipeController extends AppController
 {
@@ -240,7 +241,7 @@ final class RecipeController extends AppController
                 'difficulty'      => (string) $this->request->input('difficulty', 'easy'),
                 'prepTimeMinutes' => (int) $this->request->input('prepTimeMinutes', 30),
                 'servings'        => (int) $this->request->input('servings', 2),
-                'ingredients'     => $ingredients,
+                'ingredients'     => $this->normalizeIngredients($ingredients),
                 'steps'           => $steps,
                 'videoUrl'        => $videoUrl,
             ]);
@@ -357,7 +358,7 @@ final class RecipeController extends AppController
             'difficulty'      => (string) $this->request->input('difficulty', 'easy'),
             'prepTimeMinutes' => (int) $this->request->input('prepTimeMinutes', 30),
             'servings'        => (int) $this->request->input('servings', 2),
-            'ingredients'     => $ingredients,
+            'ingredients'     => $this->normalizeIngredients($ingredients),
             'steps'           => $steps,
             'dietTypes'       => (array) $this->request->input('dietTypes', []),
             'tags'            => (array) $this->request->input('tags', []),
@@ -461,5 +462,22 @@ final class RecipeController extends AppController
         $text = preg_replace('/[^a-z0-9]+/', '-', $text) ?? '';
 
         return trim($text, '-') ?: 'przepis';
+    }
+
+    private function normalizeIngredients(array $ingredients): array
+    {
+        $estimator = new PriceEstimator();
+
+        return array_map(static function (array $ingredient) use ($estimator): array {
+            $name   = trim((string) ($ingredient['name'] ?? ''));
+            $amount = trim((string) ($ingredient['amount'] ?? ''));
+            $manual = $estimator->parseMoneyToCents($ingredient['estimatedPrice'] ?? null);
+
+            $ingredient['name']                = $name;
+            $ingredient['amount']              = $amount;
+            $ingredient['estimatedPriceCents'] = $manual ?? $estimator->estimateCents($name, $amount);
+
+            return $ingredient;
+        }, $ingredients);
     }
 }

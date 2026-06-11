@@ -6,6 +6,7 @@ namespace App\Database;
 
 use App\Repositories\RecipeRepository;
 use App\Repositories\UserRepository;
+use App\Services\PriceEstimator;
 use PDO;
 
 final class DataSeeder
@@ -22,6 +23,8 @@ final class DataSeeder
         $this->seedReferenceData();
         $this->seedDemoUsers();
         $this->seedDemoRecipes();
+        $this->backfillEstimatedIngredientPrices();
+        $this->backfillEstimatedGroceryItemPrices();
     }
 
     private function seedReferenceData(): void
@@ -90,22 +93,22 @@ final class DataSeeder
 
     private function seedDemoUsers(): void
     {
-        // password: "password"
-        $hash = password_hash('password', PASSWORD_BCRYPT);
+        // password: "Demo1234!"
+        $hash = password_hash('Demo1234!', PASSWORD_BCRYPT);
 
-        if (!$this->users->emailExists('owner@example.com')) {
-            $this->users->createUserWithRole('owner', 'owner@example.com', 'owner_demo', $hash, 'Wlasciciel MealPlanner');
-            echo "Created user owner@example.com\n";
+        if (!$this->users->emailExists('owner@mealplanner.test')) {
+            $this->users->createUserWithRole('owner', 'owner@mealplanner.test', 'owner_demo', $hash, 'Właściciel MealPlanner');
+            echo "Created user owner@mealplanner.test\n";
         }
 
-        if (!$this->users->emailExists('employee@example.com')) {
-            $this->users->createUserWithRole('employee', 'employee@example.com', 'employee_demo', $hash, 'Pracownik MealPlanner');
-            echo "Created user employee@example.com\n";
+        if (!$this->users->emailExists('employee@mealplanner.test')) {
+            $this->users->createUserWithRole('employee', 'employee@mealplanner.test', 'employee_demo', $hash, 'Pracownik MealPlanner');
+            echo "Created user employee@mealplanner.test\n";
         }
 
-        if (!$this->users->emailExists('user@example.com')) {
-            $this->users->createUserWithRole('user', 'user@example.com', 'user_demo', $hash, 'Uzytkownik Demo');
-            echo "Created user user@example.com\n";
+        if (!$this->users->emailExists('user@mealplanner.test')) {
+            $this->users->createUserWithRole('user', 'user@mealplanner.test', 'user_demo', $hash, 'Użytkownik Demo');
+            echo "Created user user@mealplanner.test\n";
         }
     }
 
@@ -116,8 +119,8 @@ final class DataSeeder
             return;
         }
 
-        $regularUser = $this->users->findAuthUserByEmail('user@example.com');
-        $owner       = $this->users->findAuthUserByEmail('owner@example.com');
+        $regularUser = $this->users->findAuthUserByEmail('user@mealplanner.test');
+        $owner       = $this->users->findAuthUserByEmail('owner@mealplanner.test');
 
         if ($regularUser === null || $owner === null) {
             throw new \RuntimeException('Demo users not found.');
@@ -257,6 +260,121 @@ final class DataSeeder
         $this->recipes->addStep($id5, 3, 'Dodaj mąkę, wymieszaj, przelej do formy 20x20 cm.');
         $this->recipes->addStep($id5, 4, 'Piecz 25 minut w 180°C. Brownie ma być lekko wilgotne w środku.');
 
+        $id6 = $this->recipes->createRecipe($userId, [
+            'categoryCode'    => 'breakfast',
+            'title'           => 'Jajka po turecku z jogurtem',
+            'slug'            => 'jajka-po-turecku-z-jogurtem',
+            'description'     => 'Kremowy jogurt czosnkowy, jajka w koszulce i masło z papryką tworzą sycące śniadanie weekendowe.',
+            'difficulty'      => 'medium',
+            'prepTimeMinutes' => 20,
+            'servings'        => 2,
+            'status'          => 'approved',
+            'visibility'      => 'public',
+        ]);
+        $this->recipes->addNutrition($id6, ['calories' => 430, 'protein' => 24.00, 'fat' => 29.00, 'carbs' => 18.00, 'fiber' => 2.00]);
+        $this->recipes->addIngredient($id6, 1, 'Jajka', '4 sztuki');
+        $this->recipes->addIngredient($id6, 2, 'Jogurt grecki', '250 g');
+        $this->recipes->addIngredient($id6, 3, 'Czosnek', '1 ząbek');
+        $this->recipes->addIngredient($id6, 4, 'Masło', '30 g');
+        $this->recipes->addIngredient($id6, 5, 'Papryka wędzona', '1 łyżeczka');
+        $this->recipes->addStep($id6, 1, 'Wymieszaj jogurt z czosnkiem i szczyptą soli.');
+        $this->recipes->addStep($id6, 2, 'Ugotuj jajka w koszulce w lekko zakwaszonej wodzie.');
+        $this->recipes->addStep($id6, 3, 'Rozpuść masło z papryką i polej nim jajka ułożone na jogurcie.');
+        $this->recipes->addDietType($id6, 'vegetarian');
+        $this->recipes->addTag($id6, 'protein');
+
+        $id7 = $this->recipes->createRecipe($ownerId, [
+            'categoryCode'    => 'dinner',
+            'title'           => 'Tofu teriyaki z ryżem i brokułem',
+            'slug'            => 'tofu-teriyaki-z-ryzem-i-brokulem',
+            'description'     => 'Roślinny obiad meal prep z chrupiącym tofu, ryżem jaśminowym, brokułem i szybkim sosem teriyaki.',
+            'difficulty'      => 'medium',
+            'prepTimeMinutes' => 35,
+            'servings'        => 3,
+            'status'          => 'approved',
+            'visibility'      => 'public',
+        ]);
+        $this->recipes->addNutrition($id7, ['calories' => 610, 'protein' => 31.00, 'fat' => 22.00, 'carbs' => 74.00, 'fiber' => 8.00]);
+        $this->recipes->addIngredient($id7, 1, 'Tofu naturalne', '400 g');
+        $this->recipes->addIngredient($id7, 2, 'Ryż jaśminowy', '240 g');
+        $this->recipes->addIngredient($id7, 3, 'Brokuł', '1 sztuka');
+        $this->recipes->addIngredient($id7, 4, 'Sos sojowy', '4 łyżki');
+        $this->recipes->addIngredient($id7, 5, 'Syrop klonowy', '1 łyżka');
+        $this->recipes->addStep($id7, 1, 'Ugotuj ryż i podziel brokuł na różyczki.');
+        $this->recipes->addStep($id7, 2, 'Podsmaż osuszone tofu na złoto, a brokuł krótko podduś.');
+        $this->recipes->addStep($id7, 3, 'Wlej sos sojowy z syropem, odparuj i podaj z ryżem.');
+        $this->recipes->addDietType($id7, 'vegan');
+        $this->recipes->addTag($id7, 'meal_prep');
+        $this->recipes->addTag($id7, 'protein');
+
+        $id8 = $this->recipes->createRecipe($ownerId, [
+            'categoryCode'    => 'supper',
+            'title'           => 'Sałatka grecka z pieczoną ciecierzycą',
+            'slug'            => 'salatka-grecka-z-pieczona-ciecierzyca',
+            'description'     => 'Kolacja bez glutenu z warzywami, fetą i chrupiącą ciecierzycą doprawioną oregano.',
+            'difficulty'      => 'easy',
+            'prepTimeMinutes' => 25,
+            'servings'        => 2,
+            'status'          => 'approved',
+            'visibility'      => 'public',
+        ]);
+        $this->recipes->addNutrition($id8, ['calories' => 470, 'protein' => 19.00, 'fat' => 25.00, 'carbs' => 42.00, 'fiber' => 11.00]);
+        $this->recipes->addIngredient($id8, 1, 'Ciecierzyca', '1 puszka');
+        $this->recipes->addIngredient($id8, 2, 'Ogórek', '1 sztuka');
+        $this->recipes->addIngredient($id8, 3, 'Pomidory', '2 sztuki');
+        $this->recipes->addIngredient($id8, 4, 'Ser feta', '120 g');
+        $this->recipes->addIngredient($id8, 5, 'Oliwki', '60 g');
+        $this->recipes->addStep($id8, 1, 'Ciecierzycę osusz, dopraw oregano i piecz 15 minut.');
+        $this->recipes->addStep($id8, 2, 'Pokrój warzywa, dodaj fetę oraz oliwki.');
+        $this->recipes->addStep($id8, 3, 'Wymieszaj z oliwą i posyp ciepłą ciecierzycą.');
+        $this->recipes->addDietType($id8, 'vegetarian');
+        $this->recipes->addDietType($id8, 'gluten_free');
+        $this->recipes->addTag($id8, 'quick');
+
+        $id9 = $this->recipes->createRecipe($userId, [
+            'categoryCode'    => 'soup',
+            'title'           => 'Ramen domowy z jajkiem',
+            'slug'            => 'ramen-domowy-z-jajkiem',
+            'description'     => 'Aromatyczny ramen z bulionem drobiowym, makaronem, grzybami, jajkiem i warzywami.',
+            'difficulty'      => 'advanced',
+            'prepTimeMinutes' => 90,
+            'servings'        => 4,
+            'status'          => 'approved',
+            'visibility'      => 'public',
+        ]);
+        $this->recipes->addNutrition($id9, ['calories' => 680, 'protein' => 36.00, 'fat' => 24.00, 'carbs' => 78.00, 'fiber' => 6.00]);
+        $this->recipes->addIngredient($id9, 1, 'Bulion drobiowy', '1,5 l');
+        $this->recipes->addIngredient($id9, 2, 'Makaron ramen', '300 g');
+        $this->recipes->addIngredient($id9, 3, 'Jajka', '4 sztuki');
+        $this->recipes->addIngredient($id9, 4, 'Grzyby shiitake', '150 g');
+        $this->recipes->addIngredient($id9, 5, 'Sos sojowy', '5 łyżek');
+        $this->recipes->addStep($id9, 1, 'Podgrzewaj bulion z sosem sojowym i grzybami przez 30 minut.');
+        $this->recipes->addStep($id9, 2, 'Ugotuj makaron i jajka z półpłynnym żółtkiem.');
+        $this->recipes->addStep($id9, 3, 'Rozłóż składniki w miskach i zalej gorącym bulionem.');
+        $this->recipes->addTag($id9, 'family');
+
+        $id10 = $this->recipes->createRecipe($userId, [
+            'categoryCode'    => 'dinner',
+            'title'           => 'Gulasz z soczewicy i batatów',
+            'slug'            => 'gulasz-z-soczewicy-i-batatow',
+            'description'     => 'Rozgrzewający gulasz roślinny z czerwonej soczewicy, batatów, pomidorów i mleczka kokosowego.',
+            'difficulty'      => 'easy',
+            'prepTimeMinutes' => 40,
+            'servings'        => 4,
+            'status'          => 'submitted',
+            'visibility'      => 'private',
+        ]);
+        $this->recipes->addNutrition($id10, ['calories' => 540, 'protein' => 20.00, 'fat' => 18.00, 'carbs' => 76.00, 'fiber' => 15.00]);
+        $this->recipes->addIngredient($id10, 1, 'Soczewica czerwona', '250 g');
+        $this->recipes->addIngredient($id10, 2, 'Bataty', '500 g');
+        $this->recipes->addIngredient($id10, 3, 'Pomidory krojone', '400 g');
+        $this->recipes->addIngredient($id10, 4, 'Mleczko kokosowe', '400 ml');
+        $this->recipes->addStep($id10, 1, 'Podsmaż przyprawy, dodaj bataty i soczewicę.');
+        $this->recipes->addStep($id10, 2, 'Wlej pomidory oraz mleczko kokosowe i gotuj do miękkości.');
+        $this->recipes->addDietType($id10, 'vegan');
+        $this->recipes->addTag($id10, 'budget');
+        $this->recipes->addTag($id10, 'seasonal');
+
         $this->recipes->createRecipe($userId, [
             'categoryCode'    => 'dinner',
             'title'           => 'Risotto z grzybami',
@@ -293,5 +411,59 @@ final class DataSeeder
         foreach ($rows as $row) {
             $stmt->execute($row);
         }
+    }
+
+    private function backfillEstimatedIngredientPrices(): void
+    {
+        $stmt = $this->connection->query(
+            'SELECT id, name, amount FROM recipe_ingredients WHERE estimated_price_cents = 0'
+        );
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($rows === []) {
+            echo "Recipe ingredient prices already seeded.\n";
+            return;
+        }
+
+        $estimator = new PriceEstimator();
+        $update = $this->connection->prepare(
+            'UPDATE recipe_ingredients SET estimated_price_cents = :price WHERE id = :id'
+        );
+
+        foreach ($rows as $row) {
+            $update->execute([
+                'price' => $estimator->estimateCents((string) $row['name'], (string) $row['amount']),
+                'id'    => (int) $row['id'],
+            ]);
+        }
+
+        echo 'Recipe ingredient prices seeded: ' . count($rows) . "\n";
+    }
+
+    private function backfillEstimatedGroceryItemPrices(): void
+    {
+        $stmt = $this->connection->query(
+            'SELECT id, name, quantity FROM grocery_items WHERE estimated_price_cents = 0'
+        );
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($rows === []) {
+            echo "Grocery item prices already seeded.\n";
+            return;
+        }
+
+        $estimator = new PriceEstimator();
+        $update = $this->connection->prepare(
+            'UPDATE grocery_items SET estimated_price_cents = :price WHERE id = :id'
+        );
+
+        foreach ($rows as $row) {
+            $update->execute([
+                'price' => $estimator->estimateCents((string) $row['name'], (string) ($row['quantity'] ?? '')),
+                'id'    => (int) $row['id'],
+            ]);
+        }
+
+        echo 'Grocery item prices seeded: ' . count($rows) . "\n";
     }
 }

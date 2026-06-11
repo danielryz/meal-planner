@@ -15,3 +15,5 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 \i /docker-entrypoint-initdb.d/migrations/009_meal_plan_budget.sql
 \i /docker-entrypoint-initdb.d/migrations/010_recipe_video_url.sql
 \i /docker-entrypoint-initdb.d/migrations/011_preference_types_seed.sql
+\i /docker-entrypoint-initdb.d/migrations/012_recipe_ratings.sql
+\i /docker-entrypoint-initdb.d/migrations/013_estimated_item_prices.sql

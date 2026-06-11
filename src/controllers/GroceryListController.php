@@ -8,6 +8,7 @@ use App\Database\Database;
 use App\Http\Response;
 use App\Repositories\GroceryListRepository;
 use App\Repositories\MealPlanRepository;
+use App\Services\PriceEstimator;
 
 final class GroceryListController extends AppController
 {
@@ -23,6 +24,7 @@ final class GroceryListController extends AppController
 
         $list       = $repo->findOrCreateActive($userId);
         $categories = $repo->getItemsGroupedByCategory((int) $list['id']);
+        $spent      = round($repo->estimatedTotalCents((int) $list['id']) / 100, 2);
 
         $stmt = $db->connection()->prepare(
             "SELECT weekly_budget FROM meal_plans WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1"
@@ -34,7 +36,7 @@ final class GroceryListController extends AppController
             'listId'     => (int) $list['id'],
             'weekLabel'  => $list['title'],
             'currency'   => 'PLN',
-            'budget'     => ['limit' => $weeklyBudget, 'spent' => 0, 'saved' => 0],
+            'budget'     => ['limit' => $weeklyBudget, 'spent' => $spent, 'saved' => 0],
             'categories' => $categories,
         ]);
     }
@@ -72,8 +74,11 @@ final class GroceryListController extends AppController
             ? trim((string) $this->request->input('note'))
             : null;
         $categoryId   = $repo->findCategoryByCode($categoryCode);
+        $estimator    = new PriceEstimator();
+        $manualPrice  = $estimator->parseMoneyToCents($this->request->input('estimatedPrice'));
+        $priceCents   = $manualPrice ?? $estimator->estimateCents($name, $quantity ?: null);
 
-        $itemId = $repo->addItem($listId, $name, $quantity ?: null, $categoryId, $note ?: null);
+        $itemId = $repo->addItem($listId, $name, $quantity ?: null, $categoryId, $note ?: null, $priceCents);
 
         return Response::json(['itemId' => $itemId], 201);
     }
@@ -107,7 +112,7 @@ final class GroceryListController extends AppController
         $listId = (int) $list['id'];
 
         $stmt = $db->connection()->prepare(
-            'SELECT ri.name, ri.amount, msr.servings, r.servings AS recipe_servings
+            'SELECT ri.name, ri.amount, ri.estimated_price_cents, msr.servings, r.servings AS recipe_servings
              FROM meal_plan_days mpd
              JOIN meal_slots ms          ON ms.meal_plan_day_id = mpd.id
              JOIN meal_slot_recipes msr  ON msr.meal_slot_id = ms.id
@@ -124,7 +129,11 @@ final class GroceryListController extends AppController
         foreach ($rows as $row) {
             $ratio  = (float) max(1, (int) $row['servings']) / max(1, (int) $row['recipe_servings']);
             $amount = $this->scaleAmount((string) ($row['amount'] ?? ''), $ratio);
-            $repo->addItem($listId, $row['name'], $amount ?: null, null, null);
+            $priceCents = (int) round(((int) $row['estimated_price_cents']) * $ratio);
+            if ($priceCents <= 0) {
+                $priceCents = (new PriceEstimator())->estimateCents((string) $row['name'], $amount ?: null);
+            }
+            $repo->addItem($listId, $row['name'], $amount ?: null, null, null, $priceCents);
             $added++;
         }
 
@@ -186,6 +195,13 @@ final class GroceryListController extends AppController
 
         if ($this->request->input('quantity') !== null) {
             $data['quantity'] = trim((string) $this->request->input('quantity'));
+        }
+
+        if ($this->request->input('estimatedPrice') !== null) {
+            $priceCents = (new PriceEstimator())->parseMoneyToCents($this->request->input('estimatedPrice'));
+            if ($priceCents !== null) {
+                $data['estimatedPriceCents'] = $priceCents;
+            }
         }
 
         if ($this->request->input('note') !== null) {

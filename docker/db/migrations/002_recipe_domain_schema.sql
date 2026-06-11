@@ -76,11 +76,13 @@ CREATE TABLE IF NOT EXISTS recipe_ingredients (
     position SMALLINT NOT NULL,
     name VARCHAR(160) NOT NULL,
     amount VARCHAR(80) NOT NULL,
+    estimated_price_cents INTEGER NOT NULL DEFAULT 0,
     note VARCHAR(160),
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT recipe_ingredients_position_check CHECK (position > 0),
     CONSTRAINT recipe_ingredients_name_length_check CHECK (char_length(name) >= 2),
     CONSTRAINT recipe_ingredients_amount_length_check CHECK (char_length(amount) >= 1),
+    CONSTRAINT recipe_ingredients_estimated_price_check CHECK (estimated_price_cents >= 0),
     UNIQUE (recipe_id, position)
 );
 
