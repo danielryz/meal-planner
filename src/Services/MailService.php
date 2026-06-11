@@ -39,14 +39,23 @@ final class MailService
     {
         $mail = new PHPMailer(true);
 
+        $username = (string) Env::get('MAIL_USERNAME', '');
+        $password = (string) Env::get('MAIL_PASSWORD', '');
+
         $mail->isSMTP();
-        $mail->Host       = (string) Env::get('MAIL_HOST', 'smtp.mailgun.org');
-        $mail->SMTPAuth   = true;
-        $mail->Username   = (string) Env::get('MAIL_USERNAME', '');
-        $mail->Password   = (string) Env::get('MAIL_PASSWORD', '');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = (int) Env::get('MAIL_PORT', '587');
-        $mail->CharSet    = 'UTF-8';
+        $mail->Host     = (string) Env::get('MAIL_HOST', 'mailpit');
+        $mail->Port     = (int) Env::get('MAIL_PORT', '1025');
+        $mail->CharSet  = 'UTF-8';
+
+        if ($username !== '') {
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $username;
+            $mail->Password   = $password;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        } else {
+            $mail->SMTPAuth   = false;
+            $mail->SMTPSecure = '';
+        }
 
         $mail->setFrom(
             (string) Env::get('MAIL_FROM', 'no-reply@mealplanner.pl'),
