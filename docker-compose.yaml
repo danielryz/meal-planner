@@ -46,6 +46,13 @@ services:
     networks:
       - pg-network
 
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
+    networks:
+      - pg-network
+
   pgadmin-wdpai:
     image: dpage/pgadmin4:latest
     container_name: ${PGADMIN_CONTAINER_NAME:-pg-admin}
