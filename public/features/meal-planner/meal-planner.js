@@ -17,7 +17,10 @@
   }
 
   function toDateStr(date) {
-    return date.toISOString().slice(0, 10);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   function formatWeekLabel(monday) {
@@ -252,9 +255,10 @@
   function openPicker(title = 'Wybierz przepis') {
     if (pickerTitle)   pickerTitle.textContent = title;
     if (pickerSearch)  pickerSearch.value = '';
-    if (pickerResults) pickerResults.innerHTML = '<li class="recipe-picker-empty">Zacznij pisać, aby wyszukać przepis.</li>';
+    if (pickerResults) pickerResults.innerHTML = '<li class="recipe-picker-loading">Ładowanie…</li>';
     recipePicker?.showModal();
     pickerSearch?.focus();
+    searchRecipes('');
   }
 
   prevWeekBtn?.addEventListener('click', () => {
@@ -416,10 +420,7 @@
     function getInput(id)     { return stepForm.querySelector(`#${id}`)?.value ?? ''; }
 
     function getMondayStr() {
-      const d   = new Date();
-      const dow = d.getDay();
-      d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
-      return d.toISOString().slice(0, 10);
+      return toDateStr(getMondayOf(new Date()));
     }
 
     function updateSummary() {
@@ -512,9 +513,11 @@
     }
 
     function showError(msg) {
-      if (!plannerMessage) return;
-      plannerMessage.textContent = msg;
-      plannerMessage.hidden      = false;
+      window.toast?.error(msg);
+      if (plannerMessage) {
+        plannerMessage.textContent = msg;
+        plannerMessage.hidden      = false;
+      }
     }
 
     renderStep(0);
