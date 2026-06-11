@@ -36,6 +36,15 @@ services:
     networks:
       - pg-network
   
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - pg-network
+
   pgadmin-wdpai:
     image: dpage/pgadmin4:latest
     container_name: ${PGADMIN_CONTAINER_NAME:-pg-admin}
@@ -52,3 +61,4 @@ networks:
 
 volumes:
   pg-data:
+  ollama_data:

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controllers\AiController;
 use App\Controllers\AdminApiController;
 use App\Controllers\AdminController;
 use App\Controllers\DashboardController;
@@ -363,6 +364,10 @@ final class Routing
         "api/admin/settings" => [
             "controller" => AdminApiController::class,
             "action" => "settings",
+        ],
+        "api/ai/chat" => [
+            "controller" => AiController::class,
+            "action" => "chat",
         ],
         "logout" => [
             "controller" => SecurityController::class,
