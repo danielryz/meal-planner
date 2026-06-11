@@ -23,6 +23,7 @@
   place-items: center;
   box-shadow: 0 4px 20px rgba(60, 190, 64, 0.45);
   transition: transform 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
 }
 
 .ai-chat__toggle:hover {
@@ -36,7 +37,7 @@
   fill: currentColor;
 }
 
-/* Panel */
+/* Panel — desktop */
 .ai-chat__panel {
   width: 360px;
   max-height: 520px;
@@ -46,9 +47,16 @@
   background: #fff;
   box-shadow: 0 8px 40px rgba(15, 23, 42, 0.18);
   overflow: hidden;
+  transform-origin: bottom right;
+  animation: aiPanelIn 0.18s ease both;
 }
 
 .ai-chat__panel[hidden] { display: none; }
+
+@keyframes aiPanelIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
 
 /* Header */
 .ai-chat__header {
@@ -116,6 +124,7 @@
   flex-direction: column;
   gap: 10px;
   scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 .ai-chat__welcome {
@@ -215,14 +224,44 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 480px) {
+/* Backdrop (mobile) — injected by JS */
+.ai-chat-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 999;
+  animation: aiBackdropIn 0.2s ease both;
+}
+
+@keyframes aiBackdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Mobile: bottom sheet ───────────────────────────────── */
+@media (max-width: 640px) {
   .ai-chat {
-    bottom: 80px;
-    right: 12px;
+    bottom: 76px;
+    right: 16px;
+    gap: 0;
   }
 
   .ai-chat__panel {
-    width: calc(100vw - 24px);
-    max-height: 440px;
+    /* break out of parent fixed container → use viewport */
+    position: fixed;
+    bottom: 64px;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-height: calc(100svh - 132px);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 32px rgba(15, 23, 42, 0.22);
+    transform-origin: bottom center;
+    animation: aiSheetIn 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
   }
+}
+
+@keyframes aiSheetIn {
+  from { transform: translateY(60%); opacity: 0.6; }
+  to   { transform: translateY(0);   opacity: 1; }
 }

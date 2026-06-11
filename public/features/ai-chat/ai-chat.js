@@ -11,9 +11,13 @@
   const closeBtn   = widget.querySelector('[data-ai-close]');
 
   const STORAGE_KEY = 'ai_chat_history';
+  const MOBILE_BP   = 640;
 
-  let history = [];
-  let busy    = false;
+  let history  = [];
+  let busy     = false;
+  let backdrop = null;
+
+  /* ── History ─────────────────────────────────────────── */
 
   function loadHistory() {
     try {
@@ -30,12 +34,7 @@
     } catch {}
   }
 
-  function escapeHtml(str) {
-    return String(str)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;');
-  }
+  /* ── Rendering ───────────────────────────────────────── */
 
   function appendBubble(role, text) {
     const div = document.createElement('div');
@@ -56,18 +55,47 @@
     return div;
   }
 
-  function removeLoading() {
-    widget.querySelector('[data-loading]')?.remove();
-  }
-
   function renderHistory() {
     messages.innerHTML = '';
     if (history.length === 0) {
-      messages.innerHTML = '<div class="ai-chat__welcome"><p>Cześć! Jestem kulinarnym asystentem AI. Zapytaj mnie o przepisy, planowanie posiłków lub wartości odżywcze.</p></div>';
+      messages.innerHTML = '<div class="ai-chat__welcome"><p>Cześć! Jestem kulinarnym asystentem AI. Zapytaj mnie o przepisy, planowanie posiłków lub wartości odżywcze — albo poproś, żebym coś dodał do listy zakupów.</p></div>';
       return;
     }
     history.forEach(msg => appendBubble(msg.role, msg.content));
   }
+
+  /* ── Backdrop (mobile only) ──────────────────────────── */
+
+  function showBackdrop() {
+    if (window.innerWidth > MOBILE_BP) return;
+    backdrop = document.createElement('div');
+    backdrop.className = 'ai-chat-backdrop';
+    backdrop.addEventListener('click', closePanel);
+    document.body.appendChild(backdrop);
+  }
+
+  function hideBackdrop() {
+    backdrop?.remove();
+    backdrop = null;
+  }
+
+  /* ── Panel open / close ──────────────────────────────── */
+
+  function openPanel() {
+    panel.hidden = false;
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    showBackdrop();
+    renderHistory();
+    input.focus();
+  }
+
+  function closePanel() {
+    panel.hidden = true;
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    hideBackdrop();
+  }
+
+  /* ── Send ─────────────────────────────────────────────── */
 
   async function send() {
     const text = input.value.trim();
@@ -113,23 +141,15 @@
     }
   }
 
-  function openPanel() {
-    panel.hidden = false;
-    toggleBtn.setAttribute('aria-expanded', 'true');
-    renderHistory();
-    input.focus();
-  }
-
-  function closePanel() {
-    panel.hidden = true;
-    toggleBtn.setAttribute('aria-expanded', 'false');
-  }
+  /* ── Clear ────────────────────────────────────────────── */
 
   function clearChat() {
     history = [];
     saveHistory();
     renderHistory();
   }
+
+  /* ── Events ───────────────────────────────────────────── */
 
   toggleBtn.addEventListener('click', () => {
     panel.hidden ? openPanel() : closePanel();
@@ -149,6 +169,16 @@
   input.addEventListener('input', () => {
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  });
+
+  /* Close on Escape */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) closePanel();
+  });
+
+  /* Resize: remove backdrop if switching to desktop */
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > MOBILE_BP && backdrop) hideBackdrop();
   });
 
   loadHistory();

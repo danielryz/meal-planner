@@ -18,16 +18,24 @@ final class AiService
     }
 
     /**
-     * @param  array<array{role: string, content: string}> $messages
+     * @param  array<array<string, mixed>> $messages
+     * @param  array<mixed>                $tools    Ollama tool definitions (empty = disabled)
+     * @return array{role: string, content: string, tool_calls?: array<mixed>}
      * @throws \RuntimeException when Ollama is unreachable or returns an error
      */
-    public function chat(array $messages): string
+    public function sendMessage(array $messages, array $tools = []): array
     {
-        $payload = json_encode([
+        $body = [
             'model'    => $this->model,
             'messages' => $messages,
             'stream'   => false,
-        ], JSON_THROW_ON_ERROR);
+        ];
+
+        if (!empty($tools)) {
+            $body['tools'] = $tools;
+        }
+
+        $payload = json_encode($body, JSON_THROW_ON_ERROR);
 
         $context = stream_context_create([
             'http' => [
@@ -47,10 +55,20 @@ final class AiService
 
         $data = json_decode($result, true);
 
-        if (!is_array($data) || !isset($data['message']['content'])) {
+        if (!is_array($data) || !isset($data['message'])) {
             throw new \RuntimeException('ollama_bad_response');
         }
 
-        return (string) $data['message']['content'];
+        return $data['message'];
+    }
+
+    /**
+     * @param  array<array{role: string, content: string}> $messages
+     * @throws \RuntimeException
+     */
+    public function chat(array $messages): string
+    {
+        $message = $this->sendMessage($messages);
+        return (string) ($message['content'] ?? '');
     }
 }
