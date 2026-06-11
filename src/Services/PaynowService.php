@@ -42,13 +42,12 @@ final class PaynowService
         $payment = new Payment($this->client);
 
         $result = $payment->authorize([
-            'amount'          => $amountGrosh,
-            'currency'        => 'PLN',
-            'externalId'      => $externalId,
-            'description'     => $description,
-            'buyer'           => ['email' => $buyerEmail],
-            'continueUrl'     => $continueUrl,
-            'notificationUrl' => $notificationUrl,
+            'amount'      => $amountGrosh,
+            'currency'    => 'PLN',
+            'externalId'  => $externalId,
+            'description' => $description,
+            'buyer'       => ['email' => $buyerEmail],
+            'continueUrl' => $continueUrl,
         ], $externalId);
 
         return [
