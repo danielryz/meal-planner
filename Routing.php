@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\AiController;
+use App\Controllers\PaymentController;
 use App\Controllers\AdminApiController;
 use App\Controllers\AdminController;
 use App\Controllers\DashboardController;
@@ -372,6 +373,14 @@ final class Routing
         "api/ai/warmup" => [
             "controller" => AiController::class,
             "action" => "warmup",
+        ],
+        "api/payments/create" => [
+            "controller" => PaymentController::class,
+            "action" => "create",
+        ],
+        "api/payments/notify" => [
+            "controller" => PaymentController::class,
+            "action" => "notify",
         ],
         "auth/google" => [
             "controller" => SecurityController::class,

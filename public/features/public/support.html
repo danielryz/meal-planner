@@ -3,6 +3,7 @@
   <head>
     <?php
       $pageTitle = 'Wesprzyj nas - MealPlanner';
+      $pageScripts = ['public/features/public/support.js'];
       include $partialsPath . '/head.html';
     ?>
     <title><?= htmlspecialchars($pageTitle) ?></title>
@@ -24,37 +25,78 @@
               Twoje wsparcie finansowe pozwala utrzymać serwery, rozwijać nowe funkcje i udostępniać aplikację bezpłatnie.
             </p>
 
-            <div class="support-tiers">
-              <article class="support-tier">
+            <?php if (isset($_GET['payment']) && $_GET['payment'] === 'success'): ?>
+            <div class="support-notice support-notice--success" role="alert">
+              <strong>Dziękujemy za wsparcie!</strong>
+              Twoja płatność została zarejestrowana. Po potwierdzeniu przez bramkę płatności wyślemy potwierdzenie na podany adres e-mail.
+            </div>
+            <?php endif; ?>
+
+            <div class="support-tiers" data-support-tiers>
+              <article class="support-tier" data-tier="1000" data-label="Kawa">
                 <div class="support-tier__amount">10 zł</div>
                 <div class="support-tier__label">Kawa</div>
                 <p class="support-tier__copy">
                   Postaw kawę twórcom. Każdy gest się liczy i motywuje do dalszej pracy.
                 </p>
+                <button class="button support-tier__btn" type="button" data-pay-btn="1000" data-pay-label="Kawa dla twórców">
+                  Wesprzyj za 10 zł
+                </button>
               </article>
 
-              <article class="support-tier support-tier--featured">
+              <article class="support-tier support-tier--featured" data-tier="3000" data-label="Wsparcie miesiąca">
+                <div class="support-tier__badge">Najpopularniejsze</div>
                 <div class="support-tier__amount">30 zł</div>
                 <div class="support-tier__label">Wsparcie miesiąca</div>
                 <p class="support-tier__copy">
                   Pokrywa koszty serwera przez miesiąc i pozwala zaplanować kolejne funkcje.
                 </p>
+                <button class="button support-tier__btn" type="button" data-pay-btn="3000" data-pay-label="Wsparcie miesiąca">
+                  Wesprzyj za 30 zł
+                </button>
               </article>
 
-              <article class="support-tier">
+              <article class="support-tier" data-tier="10000" data-label="Patron">
                 <div class="support-tier__amount">100 zł</div>
                 <div class="support-tier__label">Patron</div>
                 <p class="support-tier__copy">
                   Zostań patronem projektu i zyskaj wpływ na kierunek rozwoju aplikacji.
                 </p>
+                <button class="button support-tier__btn" type="button" data-pay-btn="10000" data-pay-label="Patron MealPlanner">
+                  Wesprzyj za 100 zł
+                </button>
               </article>
             </div>
 
-            <div class="support-coming-soon">
-              <strong>Płatności online — wkrótce.</strong>
-              Integracja z bramką płatności jest w przygotowaniu.
-              Na razie możesz wesprzeć projekt przez przelew na adres e-mail
-              <a href="mailto:support@mealplanner.pl">support@mealplanner.pl</a>.
+            <!-- Payment form -->
+            <div class="support-form" data-support-form hidden>
+              <div class="support-form__card">
+                <button class="support-form__close" type="button" data-form-close aria-label="Zamknij">&#x2715;</button>
+                <p class="support-form__title">Płatność: <strong data-form-label></strong></p>
+                <div class="form-field">
+                  <label class="form-label" for="support-email">Adres e-mail (do potwierdzenia)</label>
+                  <input
+                    id="support-email"
+                    name="email"
+                    type="email"
+                    inputmode="email"
+                    autocomplete="email"
+                    placeholder="twoj@email.pl"
+                    class="support-form__input"
+                    data-form-email
+                    required
+                  />
+                  <p class="form-error" data-form-error hidden></p>
+                </div>
+                <button class="button auth-primary-button" type="button" data-form-submit>
+                  <span>Przejdź do płatności</span>
+                  <img src="/public/assets/icons/strzalka.svg" alt="" aria-hidden="true" />
+                </button>
+                <p class="support-form__secured">
+                  <img src="/public/assets/icons/lock.svg" alt="" aria-hidden="true" />
+                  Bezpieczna płatność Paynow
+                </p>
+              </div>
             </div>
           </div>
         </section>

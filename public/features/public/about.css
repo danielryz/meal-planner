@@ -470,6 +470,131 @@
   font-size: 0.9375rem;
 }
 
+.support-tier {
+  position: relative;
+}
+
+.support-tier__badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  padding: 4px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.support-tier__btn {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.support-notice {
+  margin: 32px 0;
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-size: 0.9375rem;
+  text-align: left;
+}
+
+.support-notice--success {
+  background: rgba(60, 190, 64, 0.08);
+  border: 1px solid rgba(60, 190, 64, 0.3);
+  color: #166534;
+}
+
+.support-form {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  padding: 16px;
+}
+
+.support-form[hidden] {
+  display: none;
+}
+
+.support-form__card {
+  position: relative;
+  width: min(100%, 440px);
+  background: #ffffff;
+  border-radius: 28px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.14);
+  padding: 40px 32px 32px;
+  display: grid;
+  gap: 20px;
+}
+
+.support-form__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 1rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.support-form__close:hover {
+  background: #e2e8f0;
+}
+
+.support-form__title {
+  font-size: 1.0625rem;
+  color: #0f172a;
+  margin: 0;
+}
+
+.support-form__input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.95rem;
+  padding: 11px 16px;
+}
+
+.support-form__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: #ffffff;
+}
+
+.support-form__secured {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.support-form__secured img {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+}
+
 /* --- Demo dialog --- */
 
 .demo-dialog {
