@@ -62,7 +62,7 @@ final class PaymentController extends AppController
                 $appUrl . '/support?payment=success',
                 $appUrl . '/api/payments/notify'
             );
-        } catch (\RuntimeException $e) {
+        } catch (\Throwable) {
             return Response::json(['error' => 'Bramka płatności jest chwilowo niedostępna. Spróbuj ponownie.'], 503);
         }
 
