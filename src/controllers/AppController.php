@@ -51,7 +51,9 @@ abstract class AppController
 
     protected function render(string $template, array $variables = [], int $statusCode = 200): Response
     {
-        return $this->viewRenderer->render($template, $variables, $statusCode);
+        return $this->viewRenderer->render($template, array_merge([
+            'isLoggedIn' => $this->sessions->isLoggedIn(),
+        ], $variables), $statusCode);
     }
 
     protected function redirect(string $location): Response

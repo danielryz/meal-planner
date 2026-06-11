@@ -11,10 +11,6 @@ final class DashboardController extends AppController
 {
     public function home(): Response
     {
-        if ($this->sessions->isLoggedIn()) {
-            return $this->redirect('/dashboard');
-        }
-
         return $this->render("index", ["title" => "MealPlanner"]);
     }
 

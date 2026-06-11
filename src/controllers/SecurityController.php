@@ -358,7 +358,7 @@ final class SecurityController extends AppController
             $this->sessions->logout();
         }
 
-        return $this->redirect('/login');
+        return $this->redirect('/');
     }
 
     private function handleOAuthLogin(array $oauthUser): Response

@@ -17,8 +17,12 @@
     </nav>
 
     <div class="site-header__actions">
-      <a class="button button-secondary" href="/login">Logowanie</a>
-      <a class="button" href="/register">Rejestracja</a>
+      <?php if ($isLoggedIn ?? false): ?>
+        <a class="button" href="/dashboard">Aplikacja</a>
+      <?php else: ?>
+        <a class="button button-secondary" href="/login">Logowanie</a>
+        <a class="button" href="/register">Rejestracja</a>
+      <?php endif; ?>
     </div>
   </div>
 </header>
