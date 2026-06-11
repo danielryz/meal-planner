@@ -265,6 +265,66 @@ final class UserRepository extends AbstractRepository
         return $row !== false ? $row : null;
     }
 
+    public function findByOAuthProvider(string $provider, string $providerId): ?AuthUser
+    {
+        $statement = $this->connection->prepare(
+            'SELECT u.id, u.email, u.username, u.password_hash, u.is_active, u.email_verified_at,
+                    r.name AS role, up.display_name
+            FROM users u
+            JOIN roles r ON r.id = u.role_id
+            JOIN user_profiles up ON up.user_id = u.id
+            WHERE u.oauth_provider = :provider AND u.oauth_provider_id = :provider_id
+            LIMIT 1'
+        );
+        $statement->bindValue(':provider', $provider);
+        $statement->bindValue(':provider_id', $providerId);
+        $statement->execute();
+
+        $row = $statement->fetch();
+        return $row !== false ? $this->mapAuthUser($row) : null;
+    }
+
+    public function createOAuthUser(string $provider, string $providerId, string $email, string $displayName): AuthUser
+    {
+        $roleId   = $this->userRoleId();
+        $username = $this->uniqueUsername($email);
+
+        $statement = $this->connection->prepare(
+            'INSERT INTO users (role_id, email, username, oauth_provider, oauth_provider_id, email_verified_at, terms_accepted_at)
+            VALUES (:role_id, :email, :username, :provider, :provider_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id'
+        );
+        $statement->bindValue(':role_id',     $roleId, PDO::PARAM_INT);
+        $statement->bindValue(':email',       $email);
+        $statement->bindValue(':username',    $username);
+        $statement->bindValue(':provider',    $provider);
+        $statement->bindValue(':provider_id', $providerId);
+        $statement->execute();
+
+        $userId = (int) $statement->fetchColumn();
+
+        $this->createProfile($userId, $displayName);
+        $this->createDefaultSettings($userId);
+
+        $user = $this->findByOAuthProvider($provider, $providerId);
+        if ($user === null) {
+            throw new \RuntimeException('Created OAuth user cannot be loaded.');
+        }
+
+        return $user;
+    }
+
+    public function linkOAuthToUser(int $userId, string $provider, string $providerId): void
+    {
+        $statement = $this->connection->prepare(
+            'UPDATE users SET oauth_provider = :provider, oauth_provider_id = :provider_id WHERE id = :id'
+        );
+        $statement->bindValue(':provider',    $provider);
+        $statement->bindValue(':provider_id', $providerId);
+        $statement->bindValue(':id',          $userId, PDO::PARAM_INT);
+        $statement->execute();
+    }
+
     /**
      * @param array<string, mixed> $row
      */
@@ -274,12 +334,25 @@ final class UserRepository extends AbstractRepository
             (int) $row['id'],
             (string) $row['email'],
             (string) $row['username'],
-            (string) $row['password_hash'],
+            (string) ($row['password_hash'] ?? ''),
             (bool) $row['is_active'],
             (string) $row['role'],
             (string) $row['display_name'],
             $row['email_verified_at'] !== null,
         );
+    }
+
+    private function uniqueUsername(string $email): string
+    {
+        $base      = strtolower(preg_replace('/[^a-z0-9]/i', '', explode('@', $email)[0]) ?: 'user');
+        $base      = substr($base, 0, 20);
+        $candidate = $base;
+
+        while ($this->usernameExists($candidate)) {
+            $candidate = $base . random_int(100, 9999);
+        }
+
+        return $candidate;
     }
 
     private function userRoleId(): int

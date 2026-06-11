@@ -373,6 +373,22 @@ final class Routing
             "controller" => AiController::class,
             "action" => "warmup",
         ],
+        "auth/google" => [
+            "controller" => SecurityController::class,
+            "action" => "googleAuth",
+        ],
+        "auth/google/callback" => [
+            "controller" => SecurityController::class,
+            "action" => "googleCallback",
+        ],
+        "auth/apple" => [
+            "controller" => SecurityController::class,
+            "action" => "appleAuth",
+        ],
+        "auth/apple/callback" => [
+            "controller" => SecurityController::class,
+            "action" => "appleCallback",
+        ],
         "logout" => [
             "controller" => SecurityController::class,
             "action" => "logout",

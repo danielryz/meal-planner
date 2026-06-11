@@ -9,6 +9,7 @@ use App\Database\Database;
 use App\Http\Response;
 use App\Repositories\UserRepository;
 use App\Services\MailService;
+use App\Services\OAuthService;
 
 final class SecurityController extends AppController
 {
@@ -267,6 +268,90 @@ final class SecurityController extends AppController
         return Response::json(['success' => true]);
     }
 
+    public function googleAuth(): Response
+    {
+        if ($this->sessions->isLoggedIn()) {
+            return $this->redirect('/dashboard');
+        }
+
+        $state                   = bin2hex(random_bytes(16));
+        $_SESSION['oauth_state'] = $state;
+
+        return $this->redirect((new OAuthService())->googleAuthUrl($state));
+    }
+
+    public function googleCallback(): Response
+    {
+        $state = (string) ($this->request->query('state') ?? '');
+        $code  = (string) ($this->request->query('code') ?? '');
+
+        if ($state === '' || $state !== ($_SESSION['oauth_state'] ?? '')) {
+            return $this->redirect('/login?error=oauth_state');
+        }
+        unset($_SESSION['oauth_state']);
+
+        if ($code === '') {
+            return $this->redirect('/login?error=oauth_denied');
+        }
+
+        try {
+            $userData = (new OAuthService())->fetchGoogleUser($code);
+            return $this->handleOAuthLogin($userData);
+        } catch (\Throwable) {
+            return $this->redirect('/login?error=oauth_failed');
+        }
+    }
+
+    public function appleAuth(): Response
+    {
+        if ($this->sessions->isLoggedIn()) {
+            return $this->redirect('/dashboard');
+        }
+
+        $state                   = bin2hex(random_bytes(16));
+        $_SESSION['oauth_state'] = $state;
+
+        return $this->redirect((new OAuthService())->appleAuthUrl($state));
+    }
+
+    public function appleCallback(): Response
+    {
+        // Apple uses POST form_post response mode
+        $state   = (string) ($this->request->input('state') ?? '');
+        $idToken = (string) ($this->request->input('id_token') ?? '');
+
+        if ($state === '' || $state !== ($_SESSION['oauth_state'] ?? '')) {
+            return $this->redirect('/login?error=oauth_state');
+        }
+        unset($_SESSION['oauth_state']);
+
+        if ($idToken === '') {
+            return $this->redirect('/login?error=oauth_denied');
+        }
+
+        // Apple sends `user` JSON only on the very first authentication
+        $userName = null;
+        $userJson = $this->request->input('user');
+        if ($userJson) {
+            $data     = json_decode((string) $userJson, true);
+            $namePart = $data['name'] ?? [];
+            $full     = trim(($namePart['firstName'] ?? '') . ' ' . ($namePart['lastName'] ?? ''));
+            if ($full !== '') {
+                $userName = $full;
+            }
+        }
+
+        try {
+            $userData = (new OAuthService())->verifyAppleIdToken($idToken);
+            if ($userName !== null) {
+                $userData['name'] = $userName;
+            }
+            return $this->handleOAuthLogin($userData);
+        } catch (\Throwable) {
+            return $this->redirect('/login?error=oauth_failed');
+        }
+    }
+
     public function logout(): Response
     {
         if ($this->sessions->isLoggedIn()) {
@@ -274,6 +359,39 @@ final class SecurityController extends AppController
         }
 
         return $this->redirect('/login');
+    }
+
+    private function handleOAuthLogin(array $oauthUser): Response
+    {
+        $users      = $this->userRepository();
+        $provider   = (string) ($oauthUser['provider'] ?? '');
+        $providerId = (string) ($oauthUser['provider_id'] ?? '');
+        $email      = (string) ($oauthUser['email'] ?? '');
+        $name       = (string) ($oauthUser['name'] ?? '') ?: $email;
+
+        $user = $users->findByOAuthProvider($provider, $providerId);
+
+        // Link to existing account by email if OAuth ID not yet registered
+        if ($user === null && $email !== '') {
+            $existing = $users->findAuthUserByEmail($email);
+            if ($existing !== null) {
+                $users->linkOAuthToUser($existing->id(), $provider, $providerId);
+                $user = $existing;
+            }
+        }
+
+        if ($user === null) {
+            $user = $users->createOAuthUser($provider, $providerId, $email, $name);
+        }
+
+        if (!$user->isActive()) {
+            return $this->redirect('/login?error=account_disabled');
+        }
+
+        $this->sessions->login($user->authenticatedUser());
+        $users->markLoggedIn($user->id());
+
+        return $this->redirect('/dashboard');
     }
 
     private function renderLogin(array $errors = [], int $statusCode = 200): Response
