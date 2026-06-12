@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Nieprawidłowe zaproszenie — MealPlanner';
+      include __DIR__ . '/partials/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+    <link rel="stylesheet" href="/public/features/auth/auth.css" />
+  </head>
+  <body class="auth-page">
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <a class="auth-brand" href="/">
+            <img src="/public/assets/icons/brand.svg" alt="MealPlanner" />
+            <span>MealPlanner</span>
+          </a>
+          <h1>Zaproszenie jest nieważne</h1>
+          <p>Link wygasł, został już wykorzystany lub jest nieprawidłowy.</p>
+        </div>
+        <div style="padding: 0 0 8px; text-align: center;">
+          <a class="button" href="/login">Przejdź do logowania</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

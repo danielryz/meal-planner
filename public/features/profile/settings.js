@@ -193,14 +193,35 @@
   });
 
   // --- Email form (stub — verification not yet implemented) ---
-  view.querySelector('[data-settings-form="email"]')?.addEventListener("submit", (event) => {
+  view.querySelector('[data-settings-form="email"]')?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const validEmail = isValidEmail(emailInput.value);
     setFieldState(emailInput, emailError, validEmail);
     if (!validEmail) { emailInput.focus(); return; }
 
-    if (window.toast) window.toast.info("Weryfikacja e-mail nie jest jeszcze dostępna.");
+    const btn = event.target.querySelector("button[type=submit]");
+    if (btn) { btn.disabled = true; btn.textContent = "Wysyłam…"; }
+
+    try {
+      const res  = await fetch("/api/settings/change-email", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ email: emailInput.value.trim() }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        emailInput.value = "";
+        if (window.toast) window.toast.success("Link potwierdzający wysłany na nowy adres e-mail.");
+      } else {
+        if (window.toast) window.toast.error(data.error ?? "Nie udało się wysłać linku.");
+      }
+    } catch {
+      if (window.toast) window.toast.error("Błąd połączenia z serwerem.");
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = "Wyślij potwierdzenie"; }
+    }
   });
 
   // --- Password form ---

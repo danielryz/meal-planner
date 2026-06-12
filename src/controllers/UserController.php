@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Database\Database;
 use App\Http\Response;
 use App\Repositories\UserRepository;
+use App\Services\MailService;
 
 final class UserController extends AppController
 {
@@ -109,6 +110,40 @@ final class UserController extends AppController
             return $response;
         }
 
-        return $this->jsonError('Zaproszenia nie są jeszcze obsługiwane.', 501);
+        if (!$this->isPost()) {
+            return $this->jsonError('Metoda niedozwolona.', 405);
+        }
+
+        $email = trim(strtolower((string) $this->request->input('email', '')));
+        $role  = (string) $this->request->input('role', 'employee');
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return Response::json(['error' => 'Podaj poprawny adres e-mail.'], 422);
+        }
+
+        $allowedRoles = ['employee', 'user'];
+        if (!in_array($role, $allowedRoles, true)) {
+            $role = 'employee';
+        }
+
+        $db    = new Database();
+        $users = new UserRepository($db->connection());
+
+        if ($users->emailExists($email)) {
+            return Response::json(['error' => 'Użytkownik z tym adresem e-mail już istnieje.'], 409);
+        }
+
+        $invitedById = $this->sessions->currentUser()->id();
+        $inviterName = $this->sessions->currentUser()->displayName();
+        $expiresAt   = new \DateTime('+7 days');
+
+        $rawToken = $users->createInvitation($invitedById, $email, $role, $expiresAt);
+
+        try {
+            (new MailService())->sendInvitationEmail($email, $inviterName, $role, $rawToken);
+        } catch (\Throwable) {
+        }
+
+        return Response::json(['success' => true], 201);
     }
 }

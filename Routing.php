@@ -30,6 +30,14 @@ final class Routing
             "controller" => SecurityController::class,
             "action" => "register",
         ],
+        "confirm-email-change" => [
+            "controller" => SecurityController::class,
+            "action" => "confirmEmailChange",
+        ],
+        "invitation/{token}" => [
+            "controller" => SecurityController::class,
+            "action" => "invitationPage",
+        ],
         "about" => [
             "controller" => DashboardController::class,
             "action" => "about",
@@ -238,6 +246,10 @@ final class Routing
             "controller" => MealPlanController::class,
             "action" => "removeRecipe",
         ],
+        "api/meal-plans/{planId}/generate" => [
+            "controller" => MealPlanController::class,
+            "action" => "regenerate",
+        ],
         "api/media/avatars" => [
             "controller" => MediaController::class,
             "action"     => "uploadAvatar",
@@ -293,6 +305,14 @@ final class Routing
         "api/settings/preference-options" => [
             "controller" => ProfileController::class,
             "action" => "preferenceOptions",
+        ],
+        "api/settings/change-email" => [
+            "controller" => ProfileController::class,
+            "action" => "requestEmailChange",
+        ],
+        "api/invitation/{token}/accept" => [
+            "controller" => SecurityController::class,
+            "action" => "acceptInvitation",
         ],
         "admin-panel/login" => [
             "controller" => AdminController::class,

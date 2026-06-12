@@ -314,6 +314,51 @@ final class UserRepository extends AbstractRepository
         return $user;
     }
 
+    public function setPendingEmail(int $userId, string $newEmail): void
+    {
+        $this->connection->prepare('UPDATE users SET pending_email = ? WHERE id = ?')
+            ->execute([$newEmail, $userId]);
+    }
+
+    public function confirmEmailChange(int $userId): void
+    {
+        $this->connection->prepare(
+            'UPDATE users SET email = pending_email, pending_email = NULL, email_verified_at = CURRENT_TIMESTAMP WHERE id = ? AND pending_email IS NOT NULL'
+        )->execute([$userId]);
+    }
+
+    public function createInvitation(int $invitedById, string $email, string $role, \DateTimeInterface $expiresAt): string
+    {
+        $rawToken  = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $rawToken);
+
+        $this->connection->prepare(
+            'INSERT INTO user_invitations (invited_by_user_id, email, role, token_hash, expires_at)
+             VALUES (?, ?, ?, ?, ?)'
+        )->execute([$invitedById, $email, $role, $tokenHash, $expiresAt->format('Y-m-d H:i:sP')]);
+
+        return $rawToken;
+    }
+
+    public function findInvitationByToken(string $rawToken): ?array
+    {
+        $tokenHash = hash('sha256', $rawToken);
+        $stmt = $this->connection->prepare(
+            'SELECT id, email, role, expires_at, accepted_at FROM user_invitations WHERE token_hash = ?'
+        );
+        $stmt->execute([$tokenHash]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    public function markInvitationAccepted(int $invitationId): void
+    {
+        $this->connection->prepare(
+            'UPDATE user_invitations SET accepted_at = CURRENT_TIMESTAMP WHERE id = ?'
+        )->execute([$invitationId]);
+    }
+
     public function linkOAuthToUser(int $userId, string $provider, string $providerId): void
     {
         $statement = $this->connection->prepare(

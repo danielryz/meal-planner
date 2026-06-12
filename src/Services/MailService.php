@@ -22,6 +22,38 @@ final class MailService
         $this->send($toEmail, $toName, 'Potwierdź adres e-mail — MealPlanner', $body);
     }
 
+    public function sendEmailChangeConfirmation(string $toEmail, string $toName, string $rawToken): void
+    {
+        $confirmUrl = $this->appUrl() . '/confirm-email-change?token=' . urlencode($rawToken);
+
+        $body = $this->renderTemplate('email-change', [
+            'name'       => $toName,
+            'confirmUrl' => $confirmUrl,
+            'newEmail'   => $toEmail,
+        ]);
+
+        $this->send($toEmail, $toName, 'Potwierdź nowy adres e-mail — MealPlanner', $body);
+    }
+
+    public function sendInvitationEmail(string $toEmail, string $inviterName, string $role, string $rawToken): void
+    {
+        $inviteUrl = $this->appUrl() . '/invitation/' . urlencode($rawToken);
+
+        $roleLabel = match ($role) {
+            'employee' => 'pracownika',
+            'admin'    => 'administratora',
+            default    => 'użytkownika',
+        };
+
+        $body = $this->renderTemplate('invitation', [
+            'inviterName' => $inviterName,
+            'roleLabel'   => $roleLabel,
+            'inviteUrl'   => $inviteUrl,
+        ]);
+
+        $this->send($toEmail, '', 'Zaproszenie do MealPlanner', $body);
+    }
+
     public function sendPasswordResetEmail(string $toEmail, string $toName, string $rawToken): void
     {
         $resetUrl = $this->appUrl() . '/reset-password?token=' . urlencode($rawToken);

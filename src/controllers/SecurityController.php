@@ -268,6 +268,101 @@ final class SecurityController extends AppController
         return Response::json(['success' => true]);
     }
 
+    public function confirmEmailChange(): Response
+    {
+        $token = (string) ($this->request->query('token') ?? '');
+
+        if ($token === '') {
+            return $this->redirect('/settings?email_change=invalid');
+        }
+
+        $users  = $this->userRepository();
+        $userId = $users->findAndConsumeEmailToken($token, 'email_change');
+
+        if ($userId === null) {
+            return $this->redirect('/settings?email_change=invalid');
+        }
+
+        $users->confirmEmailChange($userId);
+
+        $current = $this->sessions->currentUser();
+        if ($current !== null && $current->id() === $userId) {
+            $this->sessions->logout();
+        }
+
+        return $this->redirect('/login?email_changed=1');
+    }
+
+    public function invitationPage(): Response
+    {
+        $token = (string) ($this->request->routeParam('token') ?? '');
+
+        if ($token === '') {
+            return $this->redirect('/login');
+        }
+
+        $users      = $this->userRepository();
+        $invitation = $users->findInvitationByToken($token);
+
+        if ($invitation === null || $invitation['accepted_at'] !== null || new \DateTime($invitation['expires_at']) < new \DateTime()) {
+            return $this->render('invitation-invalid', [], 410);
+        }
+
+        return $this->render('invitation', [
+            'token' => $token,
+            'email' => $invitation['email'],
+            'role'  => $invitation['role'],
+        ]);
+    }
+
+    public function acceptInvitation(): Response
+    {
+        if (!$this->isPost()) {
+            return $this->jsonError('Metoda niedozwolona.', 405);
+        }
+
+        $token       = (string) ($this->request->routeParam('token') ?? '');
+        $displayName = trim((string) $this->request->input('displayName', ''));
+        $password    = (string) $this->request->input('password', '');
+
+        $users      = $this->userRepository();
+        $invitation = $users->findInvitationByToken($token);
+
+        if ($invitation === null || $invitation['accepted_at'] !== null || new \DateTime($invitation['expires_at']) < new \DateTime()) {
+            return Response::json(['error' => 'Link jest nieważny lub wygasł.'], 410);
+        }
+
+        if (strlen($password) < 8) {
+            return Response::json(['error' => 'Hasło musi mieć co najmniej 8 znaków.'], 422);
+        }
+
+        $email = $invitation['email'];
+        $role  = $invitation['role'];
+
+        if ($users->emailExists($email)) {
+            return Response::json(['error' => 'Ten adres e-mail jest już zarejestrowany.'], 409);
+        }
+
+        if ($displayName === '') {
+            $displayName = explode('@', $email)[0];
+        }
+
+        $newUser = $users->createUserWithRole(
+            $role,
+            $email,
+            substr(bin2hex(random_bytes(8)), 0, 16),
+            password_hash($password, PASSWORD_BCRYPT),
+            $displayName
+        );
+
+        $users->markInvitationAccepted((int) $invitation['id']);
+
+        $this->sessions->login($newUser->authenticatedUser());
+        $users->markLoggedIn($newUser->id());
+
+        return Response::json(['success' => true]);
+    }
+
     public function googleAuth(): Response
     {
         if ($this->sessions->isLoggedIn()) {

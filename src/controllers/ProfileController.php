@@ -8,6 +8,8 @@ use App\Database\Database;
 use App\Http\Response;
 use App\Repositories\ProfileRepository;
 use App\Repositories\SettingsRepository;
+use App\Repositories\UserRepository;
+use App\Services\MailService;
 
 final class ProfileController extends AppController
 {
@@ -286,5 +288,42 @@ final class ProfileController extends AppController
         $repo = new SettingsRepository($db->connection());
 
         return Response::json($repo->getPreferenceOptions());
+    }
+
+    public function requestEmailChange(): Response
+    {
+        if ($response = $this->requireLogin()) {
+            return $response;
+        }
+
+        if (!$this->isPost()) {
+            return $this->jsonError('Method not allowed.', 405);
+        }
+
+        $newEmail = trim(strtolower((string) $this->request->input('email', '')));
+
+        if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+            return Response::json(['error' => 'Podaj poprawny adres e-mail.'], 422);
+        }
+
+        $db    = new Database();
+        $users = new UserRepository($db->connection());
+
+        if ($users->emailExists($newEmail)) {
+            return Response::json(['error' => 'Ten adres e-mail jest już zajęty.'], 409);
+        }
+
+        $userId = $this->sessions->currentUser()->id();
+        $users->setPendingEmail($userId, $newEmail);
+
+        $rawToken = $users->createEmailToken($userId, 'email_change', 24 * 3600);
+
+        $displayName = $this->sessions->currentUser()->displayName();
+        try {
+            (new MailService())->sendEmailChangeConfirmation($newEmail, $displayName, $rawToken);
+        } catch (\Throwable) {
+        }
+
+        return Response::json(['success' => true]);
     }
 }

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <?php
+      $pageTitle = 'Przyjmij zaproszenie — MealPlanner';
+      include $partialsPath . '/head.html';
+    ?>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+    <link rel="stylesheet" href="/public/features/auth/auth.css" />
+  </head>
+  <body class="auth-page">
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <a class="auth-brand" href="/">
+            <img src="/public/assets/icons/brand.svg" alt="MealPlanner" />
+            <span>MealPlanner</span>
+          </a>
+          <h1>Zaproszenie do MealPlanner</h1>
+          <p>Utwórz konto jako <strong><?= htmlspecialchars($role ?? 'pracownik') ?></strong></p>
+        </div>
+
+        <form class="auth-form" data-accept-form novalidate>
+          <input type="hidden" data-token value="<?= htmlspecialchars($token ?? '') ?>" />
+
+          <div class="auth-field">
+            <label for="email">Adres e-mail</label>
+            <input id="email" type="email" value="<?= htmlspecialchars($email ?? '') ?>" disabled />
+          </div>
+
+          <div class="auth-field">
+            <label for="displayName">Imię i nazwisko</label>
+            <input id="displayName" type="text" placeholder="Jan Kowalski" data-display-name autocomplete="name" />
+          </div>
+
+          <div class="auth-field">
+            <label for="password">Hasło</label>
+            <input id="password" type="password" placeholder="Minimum 8 znaków" data-password autocomplete="new-password" />
+          </div>
+
+          <p data-accept-error hidden class="auth-error"></p>
+
+          <button class="button auth-submit" type="submit">Utwórz konto</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const form    = document.querySelector('[data-accept-form]');
+        const token   = document.querySelector('[data-token]')?.value ?? '';
+        const nameEl  = document.querySelector('[data-display-name]');
+        const passEl  = document.querySelector('[data-password]');
+        const errEl   = document.querySelector('[data-accept-error]');
+        const btn     = form?.querySelector('button[type="submit"]');
+
+        form?.addEventListener('submit', async e => {
+          e.preventDefault();
+          if (errEl) errEl.hidden = true;
+          if (btn) { btn.disabled = true; btn.textContent = 'Tworzę konto…'; }
+
+          try {
+            const res  = await fetch(`/api/invitation/${encodeURIComponent(token)}/accept`, {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({ displayName: nameEl?.value ?? '', password: passEl?.value ?? '' }),
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+              window.location.href = '/dashboard';
+            } else {
+              if (errEl) { errEl.textContent = data.error ?? 'Wystąpił błąd.'; errEl.hidden = false; }
+              if (btn) { btn.disabled = false; btn.textContent = 'Utwórz konto'; }
+            }
+          } catch {
+            if (errEl) { errEl.textContent = 'Błąd połączenia z serwerem.'; errEl.hidden = false; }
+            if (btn) { btn.disabled = false; btn.textContent = 'Utwórz konto'; }
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
