@@ -19,6 +19,7 @@ final class ViewRenderer
         'resend-activation' => 'public/features/auth/resend-activation.html',
         'forgot-password'  => 'public/features/auth/forgot-password.html',
         'reset-password'   => 'public/features/auth/reset-password.html',
+        'invitation'       => 'public/features/auth/invitation.html',
         'dashboard' => 'public/features/app/dashboard.html',
         'app-placeholder' => 'public/features/app/app-placeholder.html',
         'meal-planner' => 'public/features/meal-planner/meal-planner.html',
