@@ -65,6 +65,10 @@ final class MealPlanController extends AppController
         $db   = new Database();
         $repo = new MealPlanRepository($db->connection());
 
+        $generate       = (bool) $this->request->input('generate', false);
+        $dietPreference = trim((string) $this->request->input('dietPreference', 'none'));
+        $allergies      = array_filter(array_map('trim', (array) $this->request->input('allergies', [])));
+
         try {
             $planId = $repo->create($userId, [
                 'name'          => $name,
@@ -80,6 +84,10 @@ final class MealPlanController extends AppController
             }
 
             return $this->jsonError('Błąd serwera.', 500);
+        }
+
+        if ($generate) {
+            $repo->generateMeals($planId, $dietPreference, array_values($allergies));
         }
 
         return Response::json(['planId' => $planId, 'name' => $name], 201);
@@ -176,6 +184,32 @@ final class MealPlanController extends AppController
         }
 
         return Response::json(['removed' => true]);
+    }
+
+    public function regenerate(): Response
+    {
+        if ($redirect = $this->requireLogin()) {
+            return $redirect;
+        }
+        if (!$this->isPost()) {
+            return $this->jsonError('Metoda niedozwolona.', 405);
+        }
+
+        $planId        = (int) $this->request->routeParam('planId');
+        $userId        = $this->sessions->currentUser()->id();
+        $dietPreference = trim((string) $this->request->input('dietPreference', 'none'));
+        $allergies      = array_filter(array_map('trim', (array) $this->request->input('allergies', [])));
+
+        $db   = new Database();
+        $repo = new MealPlanRepository($db->connection());
+
+        if (!$repo->planBelongsToUser($planId, $userId)) {
+            return $this->jsonError('Brak dostępu.', 403);
+        }
+
+        $repo->generateMeals($planId, $dietPreference, array_values($allergies));
+
+        return Response::json(['generated' => true]);
     }
 
     private function currentWeekMonday(): string

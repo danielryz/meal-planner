@@ -32,6 +32,10 @@
                 <img src="/public/assets/icons/grocery.svg" alt="" />
                 Generuj listę zakupów
               </button>
+              <button class="button button-secondary" type="button" data-regenerate-plan>
+                <img src="/public/assets/icons/recipes.svg" alt="" />
+                Regeneruj posiłki
+              </button>
             </div>
           </header>
 
@@ -150,6 +154,12 @@
                 <h2 id="schedule-title">Jak planujesz tydzień?</h2>
                 <p>Wybierz dni i typy posiłków, które MealPlanner ma uwzględnić.</p>
               </div>
+              <div class="planner-week-pick">
+                <button type="button" class="planner-cal-nav__btn" data-wizard-prev-week aria-label="Poprzedni tydzień">‹</button>
+                <span data-wizard-week-label></span>
+                <button type="button" class="planner-cal-nav__btn" data-wizard-next-week aria-label="Następny tydzień">›</button>
+              </div>
+              <input type="hidden" name="weekStartDate" data-wizard-week-value>
               <div class="day-grid" role="group" aria-label="Dni planowania">
                 <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="monday" checked /><span>Pon</span></label>
                 <label class="choice-chip"><input type="checkbox" name="planningDays[]" value="tuesday" checked /><span>Wt</span></label>
@@ -190,6 +200,38 @@
 
       </main>
     </div>
+
+    <!-- Regenerate dialog -->
+    <dialog class="regen-dialog" data-regen-dialog>
+      <div class="regen-dialog__inner">
+        <header>
+          <h2>Regeneruj plan posiłków</h2>
+          <button type="button" data-close-regen aria-label="Zamknij">×</button>
+        </header>
+        <p>Losowo przypisze przepisy do wszystkich slotów, zastępując obecne.</p>
+        <label class="regen-dialog__label">
+          Dieta
+          <select data-regen-diet>
+            <option value="none">Bez preferencji</option>
+            <option value="vegetarian">Wegetariańska</option>
+            <option value="vegan">Wegańska</option>
+            <option value="gluten_free">Bez glutenu</option>
+            <option value="lactose_free">Bez laktozy</option>
+          </select>
+        </label>
+        <fieldset class="regen-dialog__allergies">
+          <legend>Wyklucz alergeny</legend>
+          <label><input type="checkbox" value="gluten" data-regen-allergy /> Gluten</label>
+          <label><input type="checkbox" value="dairy" data-regen-allergy /> Nabiał</label>
+          <label><input type="checkbox" value="eggs" data-regen-allergy /> Jajka</label>
+          <label><input type="checkbox" value="nuts" data-regen-allergy /> Orzechy</label>
+        </fieldset>
+        <footer>
+          <button type="button" class="button button-secondary" data-close-regen>Anuluj</button>
+          <button type="button" class="button" data-confirm-regen>Generuj</button>
+        </footer>
+      </div>
+    </dialog>
 
     <!-- Recipe picker dialog -->
     <dialog class="recipe-picker-dialog" data-recipe-picker>

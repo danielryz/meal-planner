@@ -221,4 +221,118 @@ final class MealPlanRepository
 
         return $stmt->rowCount() > 0;
     }
+
+    public function getSlotsForPlan(int $planId): array
+    {
+        $stmt = $this->connection->prepare('
+            SELECT ms.id, ms.slot_type
+            FROM meal_slots ms
+            JOIN meal_plan_days mpd ON mpd.id = ms.meal_plan_day_id
+            WHERE mpd.meal_plan_id = ?
+            ORDER BY mpd.planned_date, ms.position
+        ');
+        $stmt->execute([$planId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function generateMeals(int $planId, string $dietPreference, array $allergies): void
+    {
+        $stmt = $this->connection->prepare('SELECT weekly_budget FROM meal_plans WHERE id = ?');
+        $stmt->execute([$planId]);
+        $weeklyBudget = (int) $stmt->fetchColumn();
+
+        $slots    = $this->getSlotsForPlan($planId);
+        $numSlots = count($slots);
+
+        $budgetCentsPerSlot = ($weeklyBudget > 0 && $numSlots > 0)
+            ? (int) (($weeklyBudget * 100) / $numSlots)
+            : 0;
+
+        $this->connection->prepare('
+            DELETE FROM meal_slot_recipes WHERE meal_slot_id IN (
+                SELECT ms.id FROM meal_slots ms
+                JOIN meal_plan_days mpd ON mpd.id = ms.meal_plan_day_id
+                WHERE mpd.meal_plan_id = ?
+            )
+        ')->execute([$planId]);
+
+        foreach ($slots as $slot) {
+            $recipe = $this->randomRecipeForSlot($slot['slot_type'], $dietPreference, $allergies, $budgetCentsPerSlot);
+            if ($recipe === null && $budgetCentsPerSlot > 0) {
+                $recipe = $this->randomRecipeForSlot($slot['slot_type'], $dietPreference, $allergies, 0);
+            }
+            if ($recipe !== null) {
+                $this->addRecipeToSlot((int) $slot['id'], (int) $recipe['id'], 1);
+            }
+        }
+    }
+
+    private function randomRecipeForSlot(
+        string $slotType,
+        string $dietPreference,
+        array  $allergies,
+        int    $budgetCentsPerSlot = 0
+    ): ?array {
+        $categoryMap = [
+            'breakfast' => ['breakfast'],
+            'lunch'     => ['dinner', 'lunch', 'soup'],
+            'dinner'    => ['supper', 'dinner'],
+            'snack'     => ['snack', 'dessert'],
+        ];
+
+        $categories = $categoryMap[$slotType] ?? [];
+        if (empty($categories)) {
+            return null;
+        }
+
+        $catPlaceholders = implode(',', array_fill(0, count($categories), '?'));
+        $params          = $categories;
+        $dietJoin        = '';
+        $allergyWhere    = '';
+        $budgetWhere     = '';
+
+        if ($dietPreference !== '' && $dietPreference !== 'none') {
+            $dietJoin = 'JOIN recipe_diet_types rdt ON rdt.recipe_id = r.id
+                         JOIN diet_types dt ON dt.id = rdt.diet_type_id AND dt.code = ?';
+            $params[] = $dietPreference;
+        }
+
+        if (!empty($allergies)) {
+            $aPlaceholders = implode(',', array_fill(0, count($allergies), '?'));
+            $allergyWhere  = "AND r.id NOT IN (
+                SELECT rat.recipe_id FROM recipe_allergy_types rat
+                JOIN allergy_types at2 ON at2.id = rat.allergy_type_id
+                WHERE at2.code IN ($aPlaceholders)
+            )";
+            foreach ($allergies as $a) {
+                $params[] = $a;
+            }
+        }
+
+        if ($budgetCentsPerSlot > 0) {
+            $budgetWhere = 'AND (
+                SELECT COALESCE(SUM(ri.estimated_price_cents), 0)
+                FROM recipe_ingredients ri WHERE ri.recipe_id = r.id
+            ) BETWEEN 1 AND ?';
+            $params[] = $budgetCentsPerSlot;
+        }
+
+        $sql = "
+            SELECT r.id, r.title
+            FROM recipes r
+            JOIN recipe_categories rc ON rc.id = r.category_id AND rc.code IN ($catPlaceholders)
+            $dietJoin
+            WHERE r.status = 'approved' AND r.visibility = 'public'
+            $allergyWhere
+            $budgetWhere
+            ORDER BY RANDOM()
+            LIMIT 1
+        ";
+
+        $stmt = $this->connection->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
 }

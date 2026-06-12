@@ -419,8 +419,40 @@
     function getRadio(name)   { return stepForm.querySelector(`[name="${name}"]:checked`)?.value ?? ''; }
     function getInput(id)     { return stepForm.querySelector(`#${id}`)?.value ?? ''; }
 
+    // Week selector
+    const weekPickPrev  = stepForm.querySelector('[data-wizard-prev-week]');
+    const weekPickNext  = stepForm.querySelector('[data-wizard-next-week]');
+    const weekPickLabel = stepForm.querySelector('[data-wizard-week-label]');
+    const weekPickValue = stepForm.querySelector('[data-wizard-week-value]');
+    let wizardWeek = getMondayOf(new Date());
+
+    function updateWizardWeekLabel() {
+      const str = toDateStr(wizardWeek);
+      if (weekPickValue) weekPickValue.value = str;
+      if (weekPickLabel) {
+        weekPickLabel.textContent = formatWeekLabel(wizardWeek);
+      }
+    }
+    updateWizardWeekLabel();
+
+    weekPickPrev?.addEventListener('click', () => {
+      const prev = new Date(wizardWeek);
+      prev.setDate(prev.getDate() - 7);
+      const currentMonday = getMondayOf(new Date());
+      if (toDateStr(prev) >= toDateStr(currentMonday)) {
+        wizardWeek = prev;
+        updateWizardWeekLabel();
+      }
+    });
+    weekPickNext?.addEventListener('click', () => {
+      const next = new Date(wizardWeek);
+      next.setDate(next.getDate() + 7);
+      wizardWeek = next;
+      updateWizardWeekLabel();
+    });
+
     function getMondayStr() {
-      return toDateStr(getMondayOf(new Date()));
+      return toDateStr(wizardWeek);
     }
 
     function updateSummary() {
@@ -492,16 +524,19 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            weekStartDate: getMondayStr(),
-            planningDays:  getChecked('planningDays[]'),
-            mealTypes:     getChecked('mealTypes[]'),
-            weeklyBudget:  Math.max(0, parseInt(getInput('weekly-budget'), 10) || 0),
+            weekStartDate:  getMondayStr(),
+            planningDays:   getChecked('planningDays[]'),
+            mealTypes:      getChecked('mealTypes[]'),
+            weeklyBudget:   Math.max(0, parseInt(getInput('weekly-budget'), 10) || 0),
+            dietPreference: getRadio('dietPreference'),
+            allergies:      getChecked('allergies[]'),
+            generate:       true,
           }),
         });
         const data = await res.json();
         if (res.ok) {
-          sessionStorage.setItem('flash', JSON.stringify({ type: 'success', message: `Plan „${data.name}" zapisany!` }));
-          window.location.reload();
+          window.toast?.success(`Plan „${data.name}" zapisany i wygenerowany!`);
+          setTimeout(() => window.location.reload(), 800);
         } else {
           showError(data.error ?? 'Wystąpił błąd.');
         }
@@ -531,4 +566,44 @@
   }
 
   initWizard();
+
+  // ================================================================
+  // REGENERATE DIALOG
+  // ================================================================
+
+  const regenDialog    = document.querySelector('[data-regen-dialog]');
+  const regenBtn       = document.querySelector('[data-regenerate-plan]');
+  const closeRegenBtns = regenDialog?.querySelectorAll('[data-close-regen]');
+  const confirmRegen   = regenDialog?.querySelector('[data-confirm-regen]');
+  const regenDiet      = regenDialog?.querySelector('[data-regen-diet]');
+  const regenAllergies = () => Array.from(regenDialog?.querySelectorAll('[data-regen-allergy]:checked') ?? []).map(el => el.value);
+
+  regenBtn?.addEventListener('click', () => regenDialog?.showModal());
+  closeRegenBtns?.forEach(b => b.addEventListener('click', () => regenDialog?.close()));
+  regenDialog?.addEventListener('click', e => { if (e.target === regenDialog) regenDialog.close(); });
+
+  confirmRegen?.addEventListener('click', async () => {
+    if (!currentPlanId) return;
+    confirmRegen.disabled    = true;
+    confirmRegen.textContent = 'Generuję…';
+    try {
+      const res = await fetch(`/api/meal-plans/${currentPlanId}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dietPreference: regenDiet?.value ?? 'none',
+          allergies:      regenAllergies(),
+        }),
+      });
+      if (!res.ok) throw new Error();
+      regenDialog?.close();
+      await loadWeek(currentWeek);
+      window.toast?.success('Plan wygenerowany pomyślnie!');
+    } catch {
+      window.toast?.error('Nie udało się wygenerować planu.');
+    } finally {
+      confirmRegen.disabled    = false;
+      confirmRegen.textContent = 'Generuj';
+    }
+  });
 })();
