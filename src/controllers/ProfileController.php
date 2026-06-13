@@ -36,6 +36,7 @@ final class ProfileController extends AppController
             'role'          => $row['role'],
             'status'        => $row['is_active'] ? 'active' : 'inactive',
             'initials'      => $row['avatar_initials'] ?? strtoupper(substr($row['display_name'], 0, 2)),
+            'avatarUrl'     => $row['avatar_url'] ?? null,
             'bio'           => $row['bio'],
             'isPublic'      => (bool) $row['is_public'],
             'joinedAt'      => $row['created_at'],
@@ -70,6 +71,7 @@ final class ProfileController extends AppController
             'role'               => $row['role'],
             'status'             => $row['is_active'] ? 'active' : 'inactive',
             'initials'           => $row['avatar_initials'] ?? strtoupper(substr($row['display_name'], 0, 2)),
+            'avatarUrl'          => $row['avatar_url'] ?? null,
             'lastPasswordChange' => $row['password_changed_at'],
         ]);
     }

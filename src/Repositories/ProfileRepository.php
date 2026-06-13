@@ -24,6 +24,10 @@ final class ProfileRepository extends AbstractRepository
                 up.bio,
                 up.is_public,
                 uas.password_changed_at,
+                (SELECT \'/\' || mf.stored_path FROM user_profile_avatars upa
+                 JOIN media_files mf ON mf.id = upa.media_file_id
+                 WHERE upa.user_id = u.id AND mf.deleted_at IS NULL
+                 LIMIT 1) AS avatar_url,
                 (SELECT COUNT(*) FROM favorite_recipes fr WHERE fr.user_id = u.id) AS favorite_recipes_count,
                 (SELECT COUNT(*) FROM recipes rec WHERE rec.author_user_id = u.id) AS own_recipes_count
             FROM users u
