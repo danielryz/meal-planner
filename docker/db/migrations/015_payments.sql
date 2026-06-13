@@ -15,6 +15,10 @@ CREATE INDEX IF NOT EXISTS payments_paynow_id_idx ON payments (paynow_payment_id
 CREATE INDEX IF NOT EXISTS payments_status_idx ON payments (status);
 CREATE INDEX IF NOT EXISTS payments_user_id_idx ON payments (user_id);
 
-CREATE TRIGGER set_payments_updated_at
+CREATE OR REPLACE TRIGGER set_payments_updated_at
     BEFORE UPDATE ON payments
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+INSERT INTO schema_migrations (version, name)
+VALUES ('015', 'payments')
+ON CONFLICT (version) DO NOTHING;

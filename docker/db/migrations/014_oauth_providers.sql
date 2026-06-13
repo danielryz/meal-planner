@@ -8,3 +8,7 @@ ALTER TABLE users
 CREATE UNIQUE INDEX IF NOT EXISTS users_oauth_unique_idx
     ON users (oauth_provider, oauth_provider_id)
     WHERE oauth_provider IS NOT NULL;
+
+INSERT INTO schema_migrations (version, name)
+VALUES ('014', 'oauth_providers')
+ON CONFLICT (version) DO NOTHING;

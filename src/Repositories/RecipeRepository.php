@@ -81,7 +81,14 @@ final class RecipeRepository extends AbstractRepository
         $sql = "SELECT r.id, r.title, r.difficulty, r.prep_time_minutes, r.servings,
                     rc.code AS category_code, rc.label AS category_label,
                     (SELECT ROUND(AVG(rr.score)::numeric, 1) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS avg_rating,
-                    (SELECT COUNT(*) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS rating_count
+                    (SELECT COUNT(*) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS rating_count,
+                    COALESCE(
+                        (SELECT '/' || mf.stored_path FROM recipe_media rm
+                         JOIN media_files mf ON mf.id = rm.media_file_id
+                         WHERE rm.recipe_id = r.id AND rm.media_role = 'main_image' AND mf.deleted_at IS NULL
+                         LIMIT 1),
+                        r.thumbnail_url
+                    ) AS image_url
                     {$favoriteSelect}
                 FROM recipes r
                 LEFT JOIN recipe_categories rc ON rc.id = r.category_id
@@ -126,6 +133,17 @@ final class RecipeRepository extends AbstractRepository
                 r.status, r.visibility, r.video_url,
                 rc.code AS category_code, rc.label AS category_label,
                 up.display_name AS author_name,
+                (SELECT '/' || mf.stored_path FROM user_profile_avatars upa
+                 JOIN media_files mf ON mf.id = upa.media_file_id
+                 WHERE upa.user_id = r.author_user_id AND mf.deleted_at IS NULL
+                 LIMIT 1) AS author_avatar_url,
+                COALESCE(
+                    (SELECT '/' || mf2.stored_path FROM recipe_media rm
+                     JOIN media_files mf2 ON mf2.id = rm.media_file_id
+                     WHERE rm.recipe_id = r.id AND rm.media_role = 'main_image' AND mf2.deleted_at IS NULL
+                     LIMIT 1),
+                    r.thumbnail_url
+                ) AS image_url,
                 rn.calories, rn.protein_grams, rn.fat_grams, rn.carbohydrates_grams, rn.fiber_grams,
                 (SELECT ROUND(AVG(rr.score)::numeric, 1) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS avg_rating,
                 (SELECT COUNT(*) FROM recipe_ratings rr WHERE rr.recipe_id = r.id) AS rating_count
@@ -612,11 +630,11 @@ final class RecipeRepository extends AbstractRepository
         $stmt = $this->connection->prepare(
             "INSERT INTO recipes
                 (author_user_id, category_id, title, slug, description, difficulty,
-                 prep_time_minutes, servings, status, visibility, video_url,
+                 prep_time_minutes, servings, status, visibility, video_url, thumbnail_url,
                  submitted_at, approved_at, published_at)
             VALUES
                 (:author_id, :category_id, :title, :slug, :description, :difficulty,
-                 :prep_time, :servings, :status, :visibility, :video_url,
+                 :prep_time, :servings, :status, :visibility, :video_url, :thumbnail_url,
                  :submitted_at, :approved_at, :published_at)
             RETURNING id"
         );
@@ -635,6 +653,7 @@ final class RecipeRepository extends AbstractRepository
         $stmt->bindValue(':status', $status);
         $stmt->bindValue(':visibility', $visibility);
         $stmt->bindValue(':video_url', $data['videoUrl'] ?? null);
+        $stmt->bindValue(':thumbnail_url', $data['thumbnailUrl'] ?? null);
         $stmt->bindValue(':submitted_at', $isApproved ? date('Y-m-d H:i:sP') : null);
         $stmt->bindValue(':approved_at', $isApproved ? date('Y-m-d H:i:sP') : null);
         $stmt->bindValue(':published_at', $isApproved ? date('Y-m-d H:i:sP') : null);

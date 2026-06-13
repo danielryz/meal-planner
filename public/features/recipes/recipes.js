@@ -3,7 +3,6 @@
   if (!view) return;
 
   const grid             = view.querySelector("[data-recipe-grid]");
-  const searchInput      = view.querySelector("[data-recipe-search]");
   const clearButton      = view.querySelector("[data-clear-filters]");
   const filterToggle     = view.querySelector("[data-filter-toggle]");
   const filterPanel      = view.querySelector(".recipe-filters");
@@ -29,7 +28,7 @@
   let currentPage     = 1;
   let totalPages      = 1;
   let filtersRendered = false;
-  let debounceTimer   = null;
+  let urlQuery        = new URLSearchParams(location.search).get('query') ?? '';
 
   function escapeHtml(value) {
     return String(value)
@@ -54,9 +53,14 @@
       ? `<strong>${escapeHtml(recipe.rating)}</strong> <small>(${escapeHtml(recipe.reviewCount)} opinii)</small>`
       : `<strong>—</strong>`;
 
+    const mediaClass = recipe.imageUrl ? "recipe-card__media" : "recipe-card__media recipe-card__media--green";
+    const mediaStyle = recipe.imageUrl
+      ? ` style="background-image:url('${escapeHtml(recipe.imageUrl)}');background-size:cover;background-position:center"`
+      : "";
+
     return `
       <article class="recipe-card" data-recipe-card data-recipe-id="${escapeHtml(recipe.id)}">
-        <div class="recipe-card__media recipe-card__media--green">
+        <div class="${mediaClass}"${mediaStyle}>
           <a class="recipe-card__image-link" href="${escapeHtml(detailUrl)}" aria-label="${escapeHtml(recipe.title)}"></a>
           <button class="recipe-favorite ${favoriteClass}" type="button" aria-label="${favoriteLabel}" aria-pressed="${recipe.isFavorite ? "true" : "false"}">♥</button>
           <span class="recipe-card__label">${escapeHtml(recipe.category ?? "")}</span>
@@ -145,8 +149,7 @@
     const params = new URLSearchParams();
     params.set("page", String(currentPage));
 
-    const query = searchInput?.value.trim() ?? "";
-    if (query) params.set("q", query);
+    if (urlQuery) params.set("q", urlQuery);
 
     if (activeCategory && activeCategory !== "all") params.set("category", activeCategory);
     if (favoritesControl?.checked) params.set("favorites", "1");
@@ -227,14 +230,6 @@
     }
   }
 
-  searchInput?.addEventListener("input", () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      currentPage = 1;
-      loadRecipes();
-    }, 400);
-  });
-
   clearButton?.addEventListener("click", () => {
     filterControls.forEach(c => { c.checked = false; });
     if (favoritesControl) favoritesControl.checked = false;
@@ -244,7 +239,7 @@
       b.classList.toggle("is-active", isAll);
       b.setAttribute("aria-pressed", isAll ? "true" : "false");
     });
-    if (searchInput) searchInput.value = "";
+    urlQuery = "";
     currentPage = 1;
     loadRecipes();
   });

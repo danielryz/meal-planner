@@ -26,6 +26,11 @@
   const addToPlanBtn     = view.querySelector("[data-add-to-plan]");
   const addToGroceryBtn  = view.querySelector("[data-add-to-grocery]");
 
+  const authorSection      = view.querySelector("[data-recipe-author-section]");
+  const authorAvatar       = view.querySelector("[data-recipe-author-avatar]");
+  const authorInitials     = view.querySelector("[data-recipe-author-initials]");
+  const authorNameEl       = view.querySelector("[data-recipe-author-name]");
+
   const ratingSection  = view.querySelector("[data-rating-section]");
   const ratingAvgStars = view.querySelector("[data-rating-avg-stars]");
   const ratingAvgValue = view.querySelector("[data-rating-avg-value]");
@@ -209,13 +214,20 @@
   function renderRating(data) {
     if (!ratingSection) return;
     userRating = data.userRating ?? null;
-    updateAvgDisplay(data.averageRating, data.ratingCount ?? 0);
+    const count = data.ratingCount ?? 0;
+
+    const avgSection = ratingSection.querySelector('[data-rating-avg-section]');
+    if (avgSection) avgSection.hidden = count === 0;
+    if (count > 0) updateAvgDisplay(data.averageRating, count);
+
     if (isAuthenticated && ratingUser) {
       renderInputStars(userRating);
-      if (ratingSep) ratingSep.hidden = false;
+      if (ratingSep) ratingSep.hidden = count === 0;
       ratingUser.hidden = false;
+      ratingSection.hidden = false;
+    } else {
+      ratingSection.hidden = count === 0;
     }
-    ratingSection.hidden = false;
   }
 
   async function submitRating(score) {
@@ -280,6 +292,20 @@
     if (prepTimeEl)    prepTimeEl.textContent      = data.prepTimeMinutes ? `${data.prepTimeMinutes} min` : '—';
     if (cookTimeEl)    cookTimeEl.textContent      = data.cookTimeMinutes ? `${data.cookTimeMinutes} min` : '—';
     if (caloriesEl)    caloriesEl.textContent      = data.nutrition?.calories ? `${data.nutrition.calories} kcal` : '—';
+
+    if (authorNameEl) authorNameEl.textContent = data.author ?? '';
+    if (authorSection) authorSection.hidden = !data.author;
+    if (authorAvatar && authorInitials && data.author) {
+      if (data.authorAvatarUrl) {
+        authorAvatar.src    = data.authorAvatarUrl;
+        authorAvatar.hidden = false;
+        authorInitials.hidden = true;
+      } else {
+        authorInitials.textContent = (data.author ?? '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        authorInitials.hidden = false;
+        authorAvatar.hidden = true;
+      }
+    }
 
     if (favoriteBtn) {
       favoriteBtn.classList.toggle('is-active', !!data.isFavorite);

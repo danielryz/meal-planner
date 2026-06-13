@@ -28,6 +28,14 @@
               </div>
             </section>
 
+            <div class="recipe-author" data-recipe-author-section aria-label="Autor przepisu">
+              <div class="recipe-author__avatar" aria-hidden="true">
+                <img class="recipe-author__avatar-img" data-recipe-author-avatar src="" alt="" hidden />
+                <span class="recipe-author__avatar-initials" data-recipe-author-initials></span>
+              </div>
+              <span class="recipe-author__name" data-recipe-author-name></span>
+            </div>
+
             <section class="recipe-detail-actions" aria-label="Akcje przepisu">
               <div class="recipe-servings-control">
                 <button type="button" data-servings-decrease aria-label="Zmniejsz liczbę porcji">−</button>
@@ -64,7 +72,7 @@
             </section>
 
             <section class="recipe-rating" data-rating-section hidden aria-label="Oceny przepisu">
-              <div class="recipe-rating__average">
+              <div class="recipe-rating__average" data-rating-avg-section>
                 <div class="recipe-rating__stars-row" data-rating-avg-stars></div>
                 <span class="recipe-rating__avg-value" data-rating-avg-value>—</span>
                 <span class="recipe-rating__avg-count" data-rating-avg-count></span>
