@@ -30,7 +30,12 @@ RUN apk add --no-cache --virtual .build-deps $BUILD_DEPS \
 
 RUN apk add --no-cache --virtual .run-deps $RUN_DEPS
 
-RUN echo 'memory_limit = -1' >> /usr/local/etc/php/conf.d/docker-php-memlimit.ini;
+RUN { \
+      echo 'memory_limit = -1'; \
+      echo 'upload_max_filesize = 512M'; \
+      echo 'post_max_size = 512M'; \
+      echo 'max_file_uploads = 20'; \
+    } > /usr/local/etc/php/conf.d/mealplanner-uploads.ini;
 
 RUN apk add --no-cache curl \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

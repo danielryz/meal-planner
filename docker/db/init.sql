@@ -17,3 +17,8 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 \i /docker-entrypoint-initdb.d/migrations/011_preference_types_seed.sql
 \i /docker-entrypoint-initdb.d/migrations/012_recipe_ratings.sql
 \i /docker-entrypoint-initdb.d/migrations/013_estimated_item_prices.sql
+\i /docker-entrypoint-initdb.d/migrations/014_oauth_providers.sql
+\i /docker-entrypoint-initdb.d/migrations/015_payments.sql
+\i /docker-entrypoint-initdb.d/migrations/016_pending_email_invitations.sql
+\i /docker-entrypoint-initdb.d/migrations/017_recipe_thumbnail_url.sql
+\i /docker-entrypoint-initdb.d/migrations/018_media_upload_limits.sql

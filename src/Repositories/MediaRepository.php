@@ -80,7 +80,7 @@ final class MediaRepository
     {
         $stmt = $this->db->prepare(
             'INSERT INTO recipe_media (recipe_id, media_file_id, media_role, position)
-             VALUES (:recipe_id, :media_file_id, \'main_video\', 1)
+             VALUES (:recipe_id, :media_file_id, \'video\', 1)
              ON CONFLICT (recipe_id, media_role, position) DO UPDATE SET
                 media_file_id = EXCLUDED.media_file_id,
                 updated_at    = CURRENT_TIMESTAMP'

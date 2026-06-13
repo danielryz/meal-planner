@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS media_files (
     mime_type VARCHAR(120) NOT NULL,
     media_type VARCHAR(16) NOT NULL CHECK (media_type IN ('image', 'video')),
     purpose VARCHAR(32) NOT NULL CHECK (purpose IN ('profile_avatar', 'recipe_photo', 'recipe_video')),
-    size_bytes BIGINT NOT NULL CHECK (size_bytes > 0 AND size_bytes <= 104857600),
+    size_bytes BIGINT NOT NULL CHECK (size_bytes > 0 AND size_bytes <= 524288000),
     width INTEGER CHECK (width IS NULL OR width > 0),
     height INTEGER CHECK (height IS NULL OR height > 0),
     duration_seconds INTEGER CHECK (duration_seconds IS NULL OR duration_seconds > 0),
