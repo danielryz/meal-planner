@@ -246,6 +246,8 @@ final class RecipeController extends AppController
                 'servings'        => (int) $this->request->input('servings', 2),
                 'ingredients'     => $this->normalizeIngredients($ingredients),
                 'steps'           => $steps,
+                'dietTypes'       => (array) $this->request->input('dietTypes', []),
+                'allergyTypes'    => (array) $this->request->input('allergyTypes', []),
                 'videoUrl'        => $videoUrl,
             ]);
         } catch (\RuntimeException $e) {
@@ -364,6 +366,7 @@ final class RecipeController extends AppController
             'ingredients'     => $this->normalizeIngredients($ingredients),
             'steps'           => $steps,
             'dietTypes'       => (array) $this->request->input('dietTypes', []),
+            'allergyTypes'    => (array) $this->request->input('allergyTypes', []),
             'tags'            => (array) $this->request->input('tags', []),
             'nutrition'       => $this->request->input('nutrition'),
             'videoUrl'        => $videoUrl,

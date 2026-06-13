@@ -21,6 +21,9 @@
   const titleError       = view.querySelector("[data-title-error]");
   const descriptionError = view.querySelector("[data-description-error]");
 
+  const dietTagsContainer    = view.querySelector("[data-diet-tags]");
+  const allergyTagsContainer = view.querySelector("[data-allergy-tags]");
+
   const nutritionCalories = view.querySelector("[data-nutrition-calories]");
   const nutritionProtein  = view.querySelector("[data-nutrition-protein]");
   const nutritionFat      = view.querySelector("[data-nutrition-fat]");
@@ -127,6 +130,21 @@
         estimatedPrice: (row.querySelector("input[name='ingredientPrice[]']")?.value ?? "").trim(),
       }))
       .filter((i) => i.name && i.amount);
+  }
+
+  function renderTagGroup(container, options, fieldName) {
+    container.innerHTML = options
+      .map(({ id, label }) => `
+        <label class="add-recipe-tag">
+          <input type="checkbox" value="${escapeHtml(id)}" />
+          <span>${escapeHtml(label)}</span>
+        </label>`)
+      .join("");
+  }
+
+  function collectChecked(container) {
+    return Array.from(container.querySelectorAll("input[type=checkbox]:checked"))
+      .map((cb) => cb.value);
   }
 
   function collectNutrition() {
@@ -307,6 +325,8 @@
       const data = await response.json();
       fillSelect(categorySelect, data.categories, "dinner");
       fillSelect(difficultySelect, data.difficulties, "easy");
+      if (dietTagsContainer && data.diets) renderTagGroup(dietTagsContainer, data.diets);
+      if (allergyTagsContainer && data.allergies) renderTagGroup(allergyTagsContainer, data.allergies);
       prepTimeInput.value = 30;
       servingsInput.value = 2;
       createIngredientRow();
@@ -368,6 +388,8 @@
       servings:        parseInt(servingsInput.value, 10) || 2,
       ingredients:     collectIngredients(),
       steps:           collectSteps(),
+      dietTypes:       dietTagsContainer ? collectChecked(dietTagsContainer) : [],
+      allergyTypes:    allergyTagsContainer ? collectChecked(allergyTagsContainer) : [],
       mediaId:         mediaWidget?._mediaId ?? null,
       videoUrl:        videoUrl || null,
       videoMediaId:    videoMediaId || null,

@@ -249,6 +249,10 @@ final class RecipeRepository extends AbstractRepository
         $stmt->execute();
         $diets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $stmt = $this->connection->prepare('SELECT code AS id, label FROM allergy_types ORDER BY id');
+        $stmt->execute();
+        $allergies = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         return [
             'categories'   => $categories,
             'difficulties' => [
@@ -257,6 +261,7 @@ final class RecipeRepository extends AbstractRepository
                 ['id' => 'advanced', 'label' => 'Zaawansowany'],
             ],
             'diets'        => $diets,
+            'allergies'    => $allergies,
             'timeBuckets'  => [
                 ['id' => '15',  'label' => 'Do 15 min'],
                 ['id' => '30',  'label' => 'Do 30 min'],
@@ -467,6 +472,10 @@ final class RecipeRepository extends AbstractRepository
                 $this->addDietType($recipeId, (string) $code);
             }
 
+            foreach ($data['allergyTypes'] ?? [] as $code) {
+                $this->addAllergyType($recipeId, (string) $code);
+            }
+
             foreach ($data['tags'] ?? [] as $code) {
                 $this->addTag($recipeId, (string) $code);
             }
@@ -556,6 +565,22 @@ final class RecipeRepository extends AbstractRepository
 
             foreach ($data['steps'] ?? [] as $i => $step) {
                 $this->addStep($recipeId, $i + 1, (string) ($step['instruction'] ?? ''));
+            }
+
+            $stmt = $this->connection->prepare('DELETE FROM recipe_diet_types WHERE recipe_id = :id');
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            foreach ($data['dietTypes'] ?? [] as $code) {
+                $this->addDietType($recipeId, (string) $code);
+            }
+
+            $stmt = $this->connection->prepare('DELETE FROM recipe_allergy_types WHERE recipe_id = :id');
+            $stmt->bindValue(':id', $recipeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            foreach ($data['allergyTypes'] ?? [] as $code) {
+                $this->addAllergyType($recipeId, (string) $code);
             }
 
             $this->connection->commit();
@@ -744,6 +769,26 @@ final class RecipeRepository extends AbstractRepository
         );
         $stmt->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
         $stmt->bindValue(':diet_type_id', (int) $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    public function addAllergyType(int $recipeId, string $allergyCode): void
+    {
+        $stmt = $this->connection->prepare('SELECT id FROM allergy_types WHERE code = :code');
+        $stmt->bindValue(':code', $allergyCode);
+        $stmt->execute();
+        $id = $stmt->fetchColumn();
+
+        if ($id === false) {
+            return;
+        }
+
+        $stmt = $this->connection->prepare(
+            'INSERT INTO recipe_allergy_types (recipe_id, allergy_type_id) VALUES (:recipe_id, :allergy_type_id)
+            ON CONFLICT DO NOTHING'
+        );
+        $stmt->bindValue(':recipe_id', $recipeId, PDO::PARAM_INT);
+        $stmt->bindValue(':allergy_type_id', (int) $id, PDO::PARAM_INT);
         $stmt->execute();
     }
 
