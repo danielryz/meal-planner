@@ -10,11 +10,13 @@ final class AiService
 {
     private string $baseUrl;
     private string $model;
+    private int $timeoutSeconds;
 
-    public function __construct()
+    public function __construct(int $timeoutSeconds = 600)
     {
-        $this->baseUrl = rtrim(Env::get('OLLAMA_URL', 'http://ollama:11434'), '/');
-        $this->model   = Env::get('OLLAMA_MODEL', 'llama3.2');
+        $this->baseUrl        = rtrim(Env::get('OLLAMA_URL', 'http://ollama:11434'), '/');
+        $this->model          = Env::get('OLLAMA_MODEL', 'llama3.2');
+        $this->timeoutSeconds = $timeoutSeconds;
     }
 
     /**
@@ -23,7 +25,7 @@ final class AiService
      * @return array{role: string, content: string, tool_calls?: array<mixed>}
      * @throws \RuntimeException when Ollama is unreachable or returns an error
      */
-    public function sendMessage(array $messages, array $tools = []): array
+    public function sendMessage(array $messages, array $tools = [], ?string $format = null): array
     {
         $body = [
             'model'    => $this->model,
@@ -39,6 +41,10 @@ final class AiService
             $body['tools'] = $tools;
         }
 
+        if ($format !== null) {
+            $body['format'] = $format;
+        }
+
         $payload = json_encode($body, JSON_THROW_ON_ERROR);
 
         $context = stream_context_create([
@@ -46,7 +52,7 @@ final class AiService
                 'method'        => 'POST',
                 'header'        => "Content-Type: application/json\r\nAccept: application/json\r\n",
                 'content'       => $payload,
-                'timeout'       => 600,
+                'timeout'       => $this->timeoutSeconds,
                 'ignore_errors' => true,
             ],
         ]);
@@ -64,7 +70,7 @@ final class AiService
             }
         }
 
-        if ($httpCode === 400 && !empty($tools)) {
+        if ($httpCode === 400 && (!empty($tools) || $format !== null)) {
             return $this->sendMessage($messages);
         }
 
@@ -81,9 +87,9 @@ final class AiService
      * @param  array<array{role: string, content: string}> $messages
      * @throws \RuntimeException
      */
-    public function chat(array $messages): string
+    public function chat(array $messages, ?string $format = null): string
     {
-        $message = $this->sendMessage($messages);
+        $message = $this->sendMessage($messages, [], $format);
         return (string) ($message['content'] ?? '');
     }
 }

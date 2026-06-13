@@ -8,6 +8,7 @@ use App\Database\Database;
 use App\Http\Response;
 use App\Repositories\GroceryListRepository;
 use App\Repositories\MealPlanRepository;
+use App\Services\AiPriceEstimator;
 use App\Services\PriceEstimator;
 
 final class GroceryListController extends AppController
@@ -75,8 +76,13 @@ final class GroceryListController extends AppController
             : null;
         $categoryId   = $repo->findCategoryByCode($categoryCode);
         $estimator    = new PriceEstimator();
+        $aiEstimator  = new AiPriceEstimator();
         $manualPrice  = $estimator->parseMoneyToCents($this->request->input('estimatedPrice'));
-        $priceCents   = $manualPrice ?? $estimator->estimateCents($name, $quantity ?: null);
+        $knownPrice   = $estimator->estimateKnownCents($name, $quantity ?: null);
+        $priceCents   = $manualPrice
+            ?? $knownPrice
+            ?? $aiEstimator->estimateCents($name, $quantity ?: null)
+            ?? $estimator->estimateCents($name, $quantity ?: null);
 
         $itemId = $repo->addItem($listId, $name, $quantity ?: null, $categoryId, $note ?: null, $priceCents);
 
@@ -131,7 +137,11 @@ final class GroceryListController extends AppController
             $amount = $this->scaleAmount((string) ($row['amount'] ?? ''), $ratio);
             $priceCents = (int) round(((int) $row['estimated_price_cents']) * $ratio);
             if ($priceCents <= 0) {
-                $priceCents = (new PriceEstimator())->estimateCents((string) $row['name'], $amount ?: null);
+                $estimator  = new PriceEstimator();
+                $name       = (string) $row['name'];
+                $priceCents = $estimator->estimateKnownCents($name, $amount ?: null)
+                    ?? (new AiPriceEstimator())->estimateCents($name, $amount ?: null)
+                    ?? $estimator->estimateCents($name, $amount ?: null);
             }
             $repo->addItem($listId, $row['name'], $amount ?: null, null, null, $priceCents);
             $added++;

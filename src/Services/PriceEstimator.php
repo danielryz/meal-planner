@@ -45,10 +45,15 @@ final class PriceEstimator
 
     public function estimateCents(string $name, ?string $quantity = null): int
     {
+        return $this->estimateKnownCents($name, $quantity) ?? 500;
+    }
+
+    public function estimateKnownCents(string $name, ?string $quantity = null): ?int
+    {
         $entry = $this->matchProduct($name);
 
         if ($entry === null) {
-            return 500;
+            return null;
         }
 
         $amount = $this->parseQuantity($quantity ?? '', $entry['unit']);
