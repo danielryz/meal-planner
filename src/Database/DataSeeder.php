@@ -11,6 +11,54 @@ use PDO;
 
 final class DataSeeder
 {
+    private const THUMBNAIL_POOL = [
+        'breakfast' => [
+            'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1494597564530-871f2b93ac55?w=800&q=80&auto=format&fit=crop',
+        ],
+        'lunch' => [
+            'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=800&q=80&auto=format&fit=crop',
+        ],
+        'dinner' => [
+            'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1598103442097-8b74394b95c3?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1515669097368-22e68427d265?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1603046891699-a40c39cd1fe6?w=800&q=80&auto=format&fit=crop',
+        ],
+        'soup' => [
+            'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1535400255456-984e5f9ff8da?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1603355872921-dbf28d0b9f61?w=800&q=80&auto=format&fit=crop',
+        ],
+        'dessert' => [
+            'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80&auto=format&fit=crop',
+        ],
+        'snack' => [
+            'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1541535650810-10d26f5c2ab3?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=800&q=80&auto=format&fit=crop',
+        ],
+        'supper' => [
+            'https://images.unsplash.com/photo-1607532941433-304659854513?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1540189549336-e6e99eb4b979?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=800&q=80&auto=format&fit=crop',
+        ],
+    ];
+
     public function __construct(
         private readonly PDO $connection,
         private readonly UserRepository $users,
@@ -18,11 +66,19 @@ final class DataSeeder
     ) {
     }
 
+    private function pickThumbnail(string $categoryCode, int $index): string
+    {
+        $pool = self::THUMBNAIL_POOL[$categoryCode] ?? self::THUMBNAIL_POOL['dinner'];
+        return $pool[$index % count($pool)];
+    }
+
     public function run(): void
     {
         $this->seedReferenceData();
         $this->seedDemoUsers();
+        $this->seedBulkDemoUsers();
         $this->seedDemoRecipes();
+        $this->seedBulkDemoRecipes();
         $this->backfillEstimatedIngredientPrices();
         $this->backfillEstimatedGroceryItemPrices();
     }
@@ -139,6 +195,8 @@ final class DataSeeder
             'servings'        => 2,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=800&q=80&auto=format&fit=crop',
+            'videoUrl'        => 'https://www.youtube.com/watch?v=bJUiWdM__Qw',
         ]);
         $this->recipes->addNutrition($id0, ['calories' => 520, 'protein' => 18.00, 'fat' => 15.00, 'carbs' => 72.00, 'fiber' => 9.00]);
         $this->recipes->addIngredient($id0, 1, 'Makaron pelnoziarnisty', '160 g');
@@ -161,6 +219,7 @@ final class DataSeeder
             'servings'        => 1,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=800&q=80&auto=format&fit=crop',
         ]);
         $this->recipes->addNutrition($id1, ['calories' => 380, 'protein' => 12.00, 'fat' => 8.00, 'carbs' => 62.00, 'fiber' => 7.00]);
         $this->recipes->addIngredient($id1, 1, 'Płatki owsiane', '80 g');
@@ -184,6 +243,7 @@ final class DataSeeder
             'servings'        => 4,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80&auto=format&fit=crop',
         ]);
         $this->recipes->addNutrition($id2, ['calories' => 210, 'protein' => 5.00, 'fat' => 9.00, 'carbs' => 28.00, 'fiber' => 5.00]);
         $this->recipes->addIngredient($id2, 1, 'Pomidory pelati', '800 g', 'Lub świeże dojrzałe');
@@ -205,6 +265,8 @@ final class DataSeeder
             'servings'        => 4,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1598103442097-8b74394b95c3?w=800&q=80&auto=format&fit=crop',
+            'videoUrl'        => 'https://www.youtube.com/watch?v=9eRXDAHMUgA',
         ]);
         $this->recipes->addNutrition($id3, ['calories' => 650, 'protein' => 48.00, 'fat' => 28.00, 'carbs' => 45.00, 'fiber' => 4.00]);
         $this->recipes->addIngredient($id3, 1, 'Kurczak', '1,2 kg', 'Cały lub udka');
@@ -227,6 +289,7 @@ final class DataSeeder
             'servings'        => 2,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80&auto=format&fit=crop',
         ]);
         $this->recipes->addNutrition($id4, ['calories' => 320, 'protein' => 28.00, 'fat' => 14.00, 'carbs' => 18.00, 'fiber' => 3.00]);
         $this->recipes->addIngredient($id4, 1, 'Tuńczyk w oliwie', '1 puszka (160 g)');
@@ -248,6 +311,7 @@ final class DataSeeder
             'servings'        => 8,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=800&q=80&auto=format&fit=crop',
         ]);
         $this->recipes->addNutrition($id5, ['calories' => 480, 'protein' => 7.00, 'fat' => 26.00, 'carbs' => 56.00, 'fiber' => 3.00]);
         $this->recipes->addIngredient($id5, 1, 'Czekolada gorzka', '200 g', 'Min. 70%');
@@ -270,6 +334,7 @@ final class DataSeeder
             'servings'        => 2,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80&auto=format&fit=crop',
         ]);
         $this->recipes->addNutrition($id6, ['calories' => 430, 'protein' => 24.00, 'fat' => 29.00, 'carbs' => 18.00, 'fiber' => 2.00]);
         $this->recipes->addIngredient($id6, 1, 'Jajka', '4 sztuki');
@@ -293,6 +358,7 @@ final class DataSeeder
             'servings'        => 3,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800&q=80&auto=format&fit=crop',
         ]);
         $this->recipes->addNutrition($id7, ['calories' => 610, 'protein' => 31.00, 'fat' => 22.00, 'carbs' => 74.00, 'fiber' => 8.00]);
         $this->recipes->addIngredient($id7, 1, 'Tofu naturalne', '400 g');
@@ -317,6 +383,7 @@ final class DataSeeder
             'servings'        => 2,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1540914124281-342587941389?w=800&q=80&auto=format&fit=crop',
         ]);
         $this->recipes->addNutrition($id8, ['calories' => 470, 'protein' => 19.00, 'fat' => 25.00, 'carbs' => 42.00, 'fiber' => 11.00]);
         $this->recipes->addIngredient($id8, 1, 'Ciecierzyca', '1 puszka');
@@ -341,6 +408,8 @@ final class DataSeeder
             'servings'        => 4,
             'status'          => 'approved',
             'visibility'      => 'public',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1604908550664-463eb3bcfe8f?w=800&q=80&auto=format&fit=crop',
+            'videoUrl'        => 'https://www.youtube.com/watch?v=9WXfMEOKZXw',
         ]);
         $this->recipes->addNutrition($id9, ['calories' => 680, 'protein' => 36.00, 'fat' => 24.00, 'carbs' => 78.00, 'fiber' => 6.00]);
         $this->recipes->addIngredient($id9, 1, 'Bulion drobiowy', '1,5 l');
@@ -363,6 +432,7 @@ final class DataSeeder
             'servings'        => 4,
             'status'          => 'submitted',
             'visibility'      => 'private',
+            'thumbnailUrl'    => 'https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80&auto=format&fit=crop',
         ]);
         $this->recipes->addNutrition($id10, ['calories' => 540, 'protein' => 20.00, 'fat' => 18.00, 'carbs' => 76.00, 'fiber' => 15.00]);
         $this->recipes->addIngredient($id10, 1, 'Soczewica czerwona', '250 g');
@@ -392,6 +462,106 @@ final class DataSeeder
         $this->recipes->addFavorite($userId, $id5);
 
         echo "Recipes seeded.\n";
+    }
+
+    private function seedBulkDemoUsers(): void
+    {
+        // password: "Demo1234!"
+        $hash = password_hash('Demo1234!', PASSWORD_BCRYPT);
+        $created = 0;
+
+        foreach (DemoSeedDataset::users() as $user) {
+            if ($this->users->emailExists($user['email'])) {
+                continue;
+            }
+
+            $this->users->createUserWithRole(
+                'user',
+                $user['email'],
+                $user['username'],
+                $hash,
+                $user['fullName']
+            );
+
+            $created++;
+        }
+
+        echo "Bulk demo users seeded: {$created}\n";
+    }
+
+    private function seedBulkDemoRecipes(): void
+    {
+        $bulkUsers = DemoSeedDataset::users();
+        $authorIds = [];
+
+        foreach ($bulkUsers as $user) {
+            $authUser = $this->users->findAuthUserByEmail($user['email']);
+
+            if ($authUser !== null) {
+                $authorIds[] = $authUser->id();
+            }
+        }
+
+        if ($authorIds === []) {
+            $regularUser = $this->users->findAuthUserByEmail('user@mealplanner.test');
+
+            if ($regularUser === null) {
+                throw new \RuntimeException('No users available for bulk recipes.');
+            }
+
+            $authorIds[] = $regularUser->id();
+        }
+
+        $created = 0;
+        $skipped = 0;
+
+        foreach (DemoSeedDataset::recipes() as $index => $recipe) {
+            if ($this->recipes->slugExists($recipe['slug'])) {
+                $skipped++;
+                continue;
+            }
+
+            $recipeId = $this->recipes->createRecipe($authorIds[$index % count($authorIds)], [
+                'categoryCode'    => $recipe['categoryCode'],
+                'title'           => $recipe['title'],
+                'slug'            => $recipe['slug'],
+                'description'     => $recipe['description'],
+                'difficulty'      => $recipe['difficulty'],
+                'prepTimeMinutes' => $recipe['prepTimeMinutes'],
+                'servings'        => $recipe['servings'],
+                'status'          => $recipe['status'],
+                'visibility'      => $recipe['visibility'],
+                'thumbnailUrl'    => $this->pickThumbnail($recipe['categoryCode'], $index),
+            ]);
+
+            $this->recipes->addNutrition($recipeId, $recipe['nutrition']);
+
+            foreach ($recipe['ingredients'] as $position => $ingredient) {
+                $this->recipes->addIngredient(
+                    $recipeId,
+                    $position + 1,
+                    $ingredient['name'],
+                    $ingredient['amount'],
+                    $ingredient['note'] ?? null
+                );
+            }
+
+            foreach ($recipe['steps'] as $position => $step) {
+                $this->recipes->addStep($recipeId, $position + 1, $step);
+            }
+
+            foreach ($recipe['dietTypes'] as $dietType) {
+                $this->recipes->addDietType($recipeId, $dietType);
+            }
+
+            foreach ($recipe['tags'] as $tag) {
+                $this->recipes->addTag($recipeId, $tag);
+            }
+
+            $created++;
+        }
+
+        echo "Bulk demo recipes seeded: {$created}, skipped: {$skipped}\n";
     }
 
     private function upsert(string $table, string $conflictKey, string $labelKey, array $rows): void

@@ -451,9 +451,9 @@ final class UserRepository extends AbstractRepository
         $initials = '';
 
         foreach (array_slice($words, 0, 2) as $word) {
-            $initials .= substr($word, 0, 1);
+            $initials .= mb_substr($word, 0, 1);
         }
 
-        return strtoupper($initials ?: 'U');
+        return mb_strtoupper($initials ?: 'U');
     }
 }
