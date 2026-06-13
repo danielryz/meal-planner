@@ -2,47 +2,111 @@
 <html lang="pl">
   <head>
     <?php
-      $pageTitle = 'Przyjmij zaproszenie — MealPlanner';
+      $pageTitle = 'Przyjmij zaproszenie - MealPlanner';
+      $pageScripts = ['public/features/auth/auth-validation.js'];
       include $partialsPath . '/head.html';
     ?>
     <title><?= htmlspecialchars($pageTitle) ?></title>
-    <link rel="stylesheet" href="/public/features/auth/auth.css" />
   </head>
-  <body class="auth-page">
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <a class="auth-brand" href="/">
-            <img src="/public/assets/icons/brand.svg" alt="MealPlanner" />
-            <span>MealPlanner</span>
-          </a>
-          <h1>Zaproszenie do MealPlanner</h1>
-          <p>Utwórz konto jako <strong><?= htmlspecialchars($role ?? 'pracownik') ?></strong></p>
+  <body>
+    <div class="auth-page auth-page--invitation">
+      <header class="auth-topbar">
+        <a class="auth-topbar__brand" href="/" aria-label="MealPlanner">
+          <img src="/public/assets/icons/logo.svg" alt="" />
+          <span>MealPlanner</span>
+        </a>
+
+        <div class="auth-topbar__actions">
+          <span>Masz już konto?</span>
+          <a class="auth-outline-button" href="/login">Zaloguj się</a>
         </div>
+      </header>
 
-        <form class="auth-form" data-accept-form novalidate>
-          <input type="hidden" data-token value="<?= htmlspecialchars($token ?? '') ?>" />
-
-          <div class="auth-field">
-            <label for="email">Adres e-mail</label>
-            <input id="email" type="email" value="<?= htmlspecialchars($email ?? '') ?>" disabled />
+      <main class="auth-invitation-shell">
+        <section class="auth-invitation-summary" aria-labelledby="invitation-summary-title">
+          <div class="auth-invitation-summary__icon" aria-hidden="true">
+            <img src="/public/assets/icons/email.svg" alt="" />
           </div>
+          <p class="auth-invitation-summary__eyebrow">Zaproszenie zespołowe</p>
+          <h1 id="invitation-summary-title">Dołącz do MealPlanner</h1>
+          <p>
+            Konto zostanie utworzone dla adresu z zaproszenia. Po akceptacji od razu przejdziesz do aplikacji.
+          </p>
 
-          <div class="auth-field">
-            <label for="displayName">Imię i nazwisko</label>
-            <input id="displayName" type="text" placeholder="Jan Kowalski" data-display-name autocomplete="name" />
-          </div>
+          <dl class="auth-invitation-meta">
+            <div>
+              <dt>Adres e-mail</dt>
+              <dd><?= htmlspecialchars($email ?? '') ?></dd>
+            </div>
+            <div>
+              <dt>Rola</dt>
+              <dd><?= htmlspecialchars($role ?? 'pracownik') ?></dd>
+            </div>
+          </dl>
+        </section>
 
-          <div class="auth-field">
-            <label for="password">Hasło</label>
-            <input id="password" type="password" placeholder="Minimum 8 znaków" data-password autocomplete="new-password" />
-          </div>
+        <section class="auth-form-card auth-form-card--register auth-invitation-card" aria-labelledby="invitation-title">
+          <header class="auth-form-card__header">
+            <h2 id="invitation-title">Dokończ tworzenie konta</h2>
+            <p>Podaj imię i hasło, aby przyjąć zaproszenie.</p>
+          </header>
 
-          <p data-accept-error hidden class="auth-error"></p>
+          <form class="auth-form" data-accept-form novalidate>
+            <input type="hidden" data-token value="<?= htmlspecialchars($token ?? '') ?>" />
 
-          <button class="button auth-submit" type="submit">Utwórz konto</button>
-        </form>
-      </div>
+            <div class="form-field">
+              <label class="form-label" for="invitation-email">Adres e-mail</label>
+              <div class="auth-input auth-input--readonly">
+                <img src="/public/assets/icons/email.svg" alt="" aria-hidden="true" />
+                <input id="invitation-email" type="email" value="<?= htmlspecialchars($email ?? '') ?>" disabled />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="invitation-display-name">Imię i nazwisko</label>
+              <div class="auth-input">
+                <img src="/public/assets/icons/profile.svg" alt="" aria-hidden="true" />
+                <input
+                  id="invitation-display-name"
+                  type="text"
+                  placeholder="Jan Kowalski"
+                  data-display-name
+                  autocomplete="name"
+                  required
+                  minlength="2"
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="invitation-password">Hasło</label>
+              <div class="auth-input">
+                <img src="/public/assets/icons/pass.svg" alt="" aria-hidden="true" />
+                <input
+                  id="invitation-password"
+                  type="password"
+                  placeholder="Minimum 8 znaków"
+                  data-password
+                  autocomplete="new-password"
+                  required
+                  minlength="8"
+                />
+                <button class="auth-password-toggle" type="button" aria-label="Pokaż hasło" data-password-toggle="invitation-password">
+                  <img src="/public/assets/icons/eye.svg" alt="" aria-hidden="true" />
+                </button>
+              </div>
+              <p class="form-help">Hasło musi mieć co najmniej 8 znaków.</p>
+            </div>
+
+            <p data-accept-error hidden class="auth-error" aria-live="polite"></p>
+
+            <button class="button auth-primary-button" type="submit" data-accept-submit>
+              <span>Przyjmij zaproszenie</span>
+              <img src="/public/assets/icons/strzalka.svg" alt="" aria-hidden="true" />
+            </button>
+          </form>
+        </section>
+      </main>
     </div>
 
     <script>
@@ -52,30 +116,60 @@
         const nameEl  = document.querySelector('[data-display-name]');
         const passEl  = document.querySelector('[data-password]');
         const errEl   = document.querySelector('[data-accept-error]');
-        const btn     = form?.querySelector('button[type="submit"]');
+        const btn     = document.querySelector('[data-accept-submit]');
+        const btnText = btn?.querySelector('span');
 
-        form?.addEventListener('submit', async e => {
-          e.preventDefault();
+        const setError = (message) => {
+          if (!errEl) return;
+          errEl.textContent = message;
+          errEl.hidden = false;
+        };
+
+        const setLoading = (isLoading) => {
+          if (!btn || !btnText) return;
+          btn.disabled = isLoading;
+          btnText.textContent = isLoading ? 'Tworzę konto...' : 'Przyjmij zaproszenie';
+        };
+
+        form?.addEventListener('submit', async (event) => {
+          event.preventDefault();
           if (errEl) errEl.hidden = true;
-          if (btn) { btn.disabled = true; btn.textContent = 'Tworzę konto…'; }
+
+          const displayName = nameEl?.value.trim() ?? '';
+          const password = passEl?.value ?? '';
+
+          if (displayName.length < 2) {
+            setError('Podaj imię i nazwisko.');
+            nameEl?.focus();
+            return;
+          }
+
+          if (password.length < 8) {
+            setError('Hasło musi mieć co najmniej 8 znaków.');
+            passEl?.focus();
+            return;
+          }
+
+          setLoading(true);
 
           try {
-            const res  = await fetch(`/api/invitation/${encodeURIComponent(token)}/accept`, {
-              method:  'POST',
+            const res = await fetch(`/api/invitation/${encodeURIComponent(token)}/accept`, {
+              method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body:    JSON.stringify({ displayName: nameEl?.value ?? '', password: passEl?.value ?? '' }),
+              body: JSON.stringify({ displayName, password }),
             });
-            const data = await res.json();
+            const data = await res.json().catch(() => ({}));
 
             if (res.ok) {
               window.location.href = '/dashboard';
-            } else {
-              if (errEl) { errEl.textContent = data.error ?? 'Wystąpił błąd.'; errEl.hidden = false; }
-              if (btn) { btn.disabled = false; btn.textContent = 'Utwórz konto'; }
+              return;
             }
+
+            setError(data.error ?? 'Nie udało się przyjąć zaproszenia.');
+            setLoading(false);
           } catch {
-            if (errEl) { errEl.textContent = 'Błąd połączenia z serwerem.'; errEl.hidden = false; }
-            if (btn) { btn.disabled = false; btn.textContent = 'Utwórz konto'; }
+            setError('Błąd połączenia z serwerem.');
+            setLoading(false);
           }
         });
       })();
