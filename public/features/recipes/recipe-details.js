@@ -26,6 +26,11 @@
   const addToPlanBtn     = view.querySelector("[data-add-to-plan]");
   const addToGroceryBtn  = view.querySelector("[data-add-to-grocery]");
 
+  const heroEl             = view.querySelector("[data-recipe-hero]");
+  const videoSection       = view.querySelector("[data-recipe-video-section]");
+  const videoIframeEl      = view.querySelector("[data-recipe-video-iframe]");
+  const videoPlayerEl      = view.querySelector("[data-recipe-video-player]");
+
   const authorSection      = view.querySelector("[data-recipe-author-section]");
   const authorAvatar       = view.querySelector("[data-recipe-author-avatar]");
   const authorInitials     = view.querySelector("[data-recipe-author-initials]");
@@ -63,6 +68,14 @@
   };
 
   const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+  function toEmbedUrl(url) {
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) return { type: 'iframe', src: `https://www.youtube.com/embed/${ytMatch[1]}` };
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) return { type: 'iframe', src: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+    return { type: 'video', src: url };
+  }
 
   function escapeHtml(value) {
     return String(value)
@@ -292,6 +305,26 @@
     if (prepTimeEl)    prepTimeEl.textContent      = data.prepTimeMinutes ? `${data.prepTimeMinutes} min` : '—';
     if (cookTimeEl)    cookTimeEl.textContent      = data.cookTimeMinutes ? `${data.cookTimeMinutes} min` : '—';
     if (caloriesEl)    caloriesEl.textContent      = data.nutrition?.calories ? `${data.nutrition.calories} kcal` : '—';
+
+    if (heroEl && data.imageUrl) {
+      heroEl.style.backgroundImage    = `url('${data.imageUrl}')`;
+      heroEl.style.backgroundSize     = 'cover';
+      heroEl.style.backgroundPosition = 'center';
+    }
+
+    if (videoSection && data.videoUrl) {
+      const embed = toEmbedUrl(data.videoUrl);
+      if (embed.type === 'iframe' && videoIframeEl) {
+        videoIframeEl.src    = embed.src;
+        videoIframeEl.hidden = false;
+        if (videoPlayerEl) videoPlayerEl.hidden = true;
+      } else if (embed.type === 'video' && videoPlayerEl) {
+        videoPlayerEl.src    = embed.src;
+        videoPlayerEl.hidden = false;
+        if (videoIframeEl) videoIframeEl.hidden = true;
+      }
+      videoSection.hidden = false;
+    }
 
     if (authorNameEl) authorNameEl.textContent = data.author ?? '';
     if (authorSection) authorSection.hidden = !data.author;

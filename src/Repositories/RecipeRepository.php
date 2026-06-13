@@ -678,7 +678,7 @@ final class RecipeRepository extends AbstractRepository
         $stmt->bindValue(':calories', $data['calories'] ?? null);
         $stmt->bindValue(':protein', $data['protein'] ?? null);
         $stmt->bindValue(':fat', $data['fat'] ?? null);
-        $stmt->bindValue(':carbs', $data['carbs'] ?? null);
+        $stmt->bindValue(':carbs', $data['carbohydrates'] ?? $data['carbs'] ?? null);
         $stmt->bindValue(':fiber', $data['fiber'] ?? null);
         $stmt->execute();
     }

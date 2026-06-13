@@ -21,6 +21,12 @@
   const titleError       = view.querySelector("[data-title-error]");
   const descriptionError = view.querySelector("[data-description-error]");
 
+  const nutritionCalories = view.querySelector("[data-nutrition-calories]");
+  const nutritionProtein  = view.querySelector("[data-nutrition-protein]");
+  const nutritionFat      = view.querySelector("[data-nutrition-fat]");
+  const nutritionCarbs    = view.querySelector("[data-nutrition-carbohydrates]");
+  const nutritionFiber    = view.querySelector("[data-nutrition-fiber]");
+
   const videoTabs        = view.querySelectorAll("[data-video-tab]");
   const videoUrlPane     = view.querySelector('[data-video-pane="url"]');
   const videoFilePane    = view.querySelector('[data-video-pane="file"]');
@@ -121,6 +127,16 @@
         estimatedPrice: (row.querySelector("input[name='ingredientPrice[]']")?.value ?? "").trim(),
       }))
       .filter((i) => i.name && i.amount);
+  }
+
+  function collectNutrition() {
+    const calories      = parseFloat(nutritionCalories?.value) || null;
+    const protein       = parseFloat(nutritionProtein?.value)  || null;
+    const fat           = parseFloat(nutritionFat?.value)       || null;
+    const carbohydrates = parseFloat(nutritionCarbs?.value)     || null;
+    const fiber         = parseFloat(nutritionFiber?.value)     || null;
+    if (!calories && !protein && !fat && !carbohydrates && !fiber) return null;
+    return { calories, protein, fat, carbohydrates, fiber };
   }
 
   function collectSteps() {
@@ -355,6 +371,7 @@
       mediaId:         mediaWidget?._mediaId ?? null,
       videoUrl:        videoUrl || null,
       videoMediaId:    videoMediaId || null,
+      nutrition:       collectNutrition(),
     };
 
     try {
