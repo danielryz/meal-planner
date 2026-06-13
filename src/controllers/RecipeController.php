@@ -141,6 +141,7 @@ final class RecipeController extends AppController
                 'category'        => $r['category_label'],
                 'prepTimeMinutes' => (int) $r['prep_time_minutes'],
                 'servings'        => (int) $r['servings'],
+                'imageUrl'        => $r['image_url'] ?? null,
             ], $related),
         ]);
     }

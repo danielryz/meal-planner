@@ -186,7 +186,14 @@ final class RecipeRepository extends AbstractRepository
         }
         $stmt = $this->connection->prepare(
             "SELECT r.id, r.title, r.prep_time_minutes, r.servings,
-                    rc.label AS category_label
+                    rc.label AS category_label,
+                    COALESCE(
+                        (SELECT '/' || mf.stored_path FROM recipe_media rm
+                         JOIN media_files mf ON mf.id = rm.media_file_id
+                         WHERE rm.recipe_id = r.id AND rm.media_role = 'main_image' AND mf.deleted_at IS NULL
+                         LIMIT 1),
+                        r.thumbnail_url
+                    ) AS image_url
              FROM recipes r
              LEFT JOIN recipe_categories rc ON rc.id = r.category_id
              WHERE r.category_id = :cat_id

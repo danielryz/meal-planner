@@ -117,9 +117,7 @@
 
     ingredientsList.innerHTML = (recipe.ingredients ?? []).map(ing => {
       const scaled = scaleAmount(ing.amount ?? '', ratio);
-      const price  = ing.estimatedPrice > 0
-        ? `<span class="recipe-ingredient-price">${Number(ing.estimatedPrice).toFixed(2).replace('.', ',')} zł</span>`
-        : '';
+      const price  = renderIngredientPrice(ing, ratio);
       return `
         <li>
           <div class="recipe-ingredient-body">
@@ -143,16 +141,32 @@
     }
   }
 
-  function renderNutrition(nutrition) {
+  function renderNutrition(nutrition, ratio = 1) {
     if (!nutritionList || !nutrition) return;
     nutritionList.innerHTML = Object.entries(nutrition)
       .filter(([, v]) => v != null)
-      .map(([k, v]) => `
+      .map(([k, v]) => {
+        const scaled = Math.round(Number(v) * ratio * 10) / 10;
+        return `
         <div>
           <dt>${escapeHtml(NUTRITION_LABELS[k] ?? k)}</dt>
-          <dd>${escapeHtml(String(v))} ${escapeHtml(NUTRITION_UNITS[k] ?? '')}</dd>
-        </div>`)
+          <dd>${escapeHtml(String(scaled))} ${escapeHtml(NUTRITION_UNITS[k] ?? '')}</dd>
+        </div>`;
+      })
       .join('');
+  }
+
+  function renderCaloriesStat(ratio = 1) {
+    if (!caloriesEl || !recipe?.nutrition?.calories) return;
+    const scaled = Math.round(recipe.nutrition.calories * ratio);
+    caloriesEl.textContent = `${scaled} kcal`;
+  }
+
+  function renderIngredientPrice(ing, ratio) {
+    const price = ing.estimatedPrice;
+    if (!price || Number(price) <= 0) return '';
+    const scaled = (Number(price) * ratio).toFixed(2).replace('.', ',');
+    return `<span class="recipe-ingredient-price">${scaled} zł</span>`;
   }
 
   function renderSteps(steps) {
@@ -170,9 +184,14 @@
   function renderRelated(related) {
     if (!relatedSection || !relatedList || !related?.length) return;
 
-    relatedList.innerHTML = related.map(r => `
+    relatedList.innerHTML = related.map(r => {
+      const imgStyle = r.imageUrl
+        ? `style="background-image:url('${escapeHtml(r.imageUrl)}');background-size:cover;background-position:center"`
+        : '';
+      const mediaClass = r.imageUrl ? 'recipe-card__media' : 'recipe-card__media recipe-card__media--green';
+      return `
       <article class="recipe-card">
-        <div class="recipe-card__media recipe-card__media--green">
+        <div class="${mediaClass}" ${imgStyle}>
           <a class="recipe-card__image-link" href="/recipe/${escapeHtml(r.id)}" aria-label="${escapeHtml(r.title)}"></a>
           <span class="recipe-card__label">${escapeHtml(r.category ?? '')}</span>
         </div>
@@ -189,7 +208,8 @@
             </span>
           </div>
         </div>
-      </article>`).join('');
+      </article>`;
+    }).join('');
 
     relatedSection.hidden = false;
   }
@@ -348,7 +368,8 @@
 
     renderServings();
     renderIngredients();
-    renderNutrition(data.nutrition);
+    renderNutrition(data.nutrition, 1);
+    renderCaloriesStat(1);
     renderSteps(data.steps);
     renderRelated(data.related);
     renderRating(data);
@@ -406,13 +427,23 @@
   decreaseBtn?.addEventListener('click', () => {
     currentServings = Math.max(1, currentServings - 1);
     renderServings();
-    if (recipe) renderIngredients();
+    if (recipe) {
+      const ratio = currentServings / baseServings;
+      renderIngredients();
+      renderNutrition(recipe.nutrition, ratio);
+      renderCaloriesStat(ratio);
+    }
   });
 
   increaseBtn?.addEventListener('click', () => {
     currentServings++;
     renderServings();
-    if (recipe) renderIngredients();
+    if (recipe) {
+      const ratio = currentServings / baseServings;
+      renderIngredients();
+      renderNutrition(recipe.nutrition, ratio);
+      renderCaloriesStat(ratio);
+    }
   });
 
   favoriteBtn?.addEventListener('click', async () => {
