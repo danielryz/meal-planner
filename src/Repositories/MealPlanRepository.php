@@ -261,6 +261,9 @@ final class MealPlanRepository
             if ($recipe === null && $budgetCentsPerSlot > 0) {
                 $recipe = $this->randomRecipeForSlot($slot['slot_type'], $dietPreference, $allergies, 0);
             }
+            if ($recipe === null && $dietPreference !== '' && $dietPreference !== 'none') {
+                $recipe = $this->randomRecipeForSlot($slot['slot_type'], 'none', $allergies, 0);
+            }
             if ($recipe !== null) {
                 $this->addRecipeToSlot((int) $slot['id'], (int) $recipe['id'], 1);
             }
